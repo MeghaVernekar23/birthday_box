@@ -1,0 +1,59 @@
+/* src/Login.css */
+
+.gradient-custom-2 {
+    /* fallback for old browsers */
+    background: #fccb90;
+  
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+  
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
+  }
+  
+  @media (min-width: 768px) {
+    .gradient-form {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #eee;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .gradient-custom-2 {
+      border-top-right-radius: 0.3rem;
+      border-bottom-right-radius: 0.3rem;
+    }
+  }
+
+  .card {
+    width: 100%;
+    max-width: 1000px; 
+    margin: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .login-banner {
+    background-image: url('../assets/Birthdax_login_image.png'); /* Adjust name/path */
+    background-size: cover;
+    background-position: center;
+    border-top-right-radius: 0.3rem;
+    border-bottom-right-radius: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%; /* makes it fill the card height */
+  }
+  
+  .login-banner-content {
+    color: white;
+    background: rgba(0, 0, 0, 0.4); /* optional dark overlay */
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+  
+  
