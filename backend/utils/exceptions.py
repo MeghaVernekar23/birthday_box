@@ -11,4 +11,11 @@ class InvalidCredentialException(Exception):
 
     def __init__(self, message="Invalid Credential. Please enter valid username and password."):
         self.message = message
-        super().__init__((self.message))              
+        super().__init__((self.message))   
+
+
+class BookingDetailsNotFoundException(Exception):
+
+    def __init__(self, message="No booking details found"):
+        self.message = message
+        super().__init__((self.message))                    
