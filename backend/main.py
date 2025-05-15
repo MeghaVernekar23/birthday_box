@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from api.users import users_router
 from api.bookings import bookings_router
+from api.customers import customer_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Birthday Box API implementation",
@@ -16,3 +17,4 @@ app.add_middleware(
 
 app.include_router(users_router)
 app.include_router(bookings_router)
+app.include_router(customer_router)

@@ -19,14 +19,50 @@ class Token(BaseModel):
     role: str
 
 class BookingDetails(BaseModel):
-    id: int
+    booking_id: int
     customer_name: str
     phone_number: str
     event_date: date
     time_slot: str
     package_name: str
     status: str
-    updated_by: str
+    updated_by: Optional[str]
 
     class Config:
         orm_mode = True    
+
+
+class CelebrationDetails(BaseModel):
+    celebration_id: int
+    celebration_name: str
+    active: int
+
+
+class PackageDetails(BaseModel):
+    package_id: int
+    package_name: str
+    description: str
+    price: int
+    is_active: int    
+    
+
+class AddBookingDetails(BaseModel):
+    customer_name: str
+    phone_number: str
+    email: str
+    address: str
+    event_date: date
+    time_slot: str
+    celebration_id: int
+    package_id: int
+    addons_note: str
+    status: str
+    created_by: str
+    updated_by: Optional[str]
+
+
+class CustomerDetails(BaseModel):
+    name: str
+    phone_number: str
+    email: str
+    address: str

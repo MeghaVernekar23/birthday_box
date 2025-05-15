@@ -39,4 +39,5 @@ def authenticate_user(user: OAuth2PasswordRequestForm , db: Session) -> dict:
         "sub": user_detail.username,
         "role": user_detail.role
     })
+    
     return {"access_token": access_token, "token_type": "bearer", "role": user_detail.role  }
