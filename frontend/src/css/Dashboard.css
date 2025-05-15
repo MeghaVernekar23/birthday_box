@@ -198,6 +198,43 @@
     font-size: 14px;
     padding: 8px 12px;
   }
+
+  textarea.form-control {
+    resize: vertical;
+    font-size: 14px;
+  }
+
+  .review-box {
+    background-color: #ffe0ec;
+    border-radius: 10px;
+    padding: 15px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .review-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: black;
+  }
+
+  .btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    position: absolute;
+    right: -15px;
+    top: -15px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .btn-close-modal:hover {
+    color: #e83e8c;
+  }
+  
   
   
   
