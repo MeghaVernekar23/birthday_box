@@ -11,9 +11,9 @@ customer_router = APIRouter()
 create_tables()
 
 
-@customer_router.get("/customer-details/by-phone-no", response_model=list[CustomerDetails], dependencies=[Depends(get_current_user)])
-def get_customer(filter: str = Query(..., description="Filter to customer details"),db: Session = Depends(get_db)):
+@customer_router.get("/customer-details/{phone_number}", response_model=list[CustomerDetails], dependencies=[Depends(get_current_user)])
+def get_customer(phone_number: str,db: Session = Depends(get_db)):
     try:
-        return get_customer_details(filter = filter, db= db)
+        return get_customer_details(phone_number = phone_number, db= db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))  
