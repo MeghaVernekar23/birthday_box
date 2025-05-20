@@ -66,3 +66,76 @@ export const submitBooking = async (formData, token) => {
         throw error;
     }
 };
+
+
+export const getCustomerByPhone = async (phoneNumber, token) => {
+    try {
+        const response = await apiRequest({
+            url: `http://127.0.0.1:8000/customer-details/${phoneNumber}`,
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Failed to fetch customer by phone:", error);
+        throw new Error("Customer not found");
+    }
+};
+
+
+export const deleteBooking = async (bookingId, token) => {
+    try {
+        const response = await apiRequest({
+            url: `http://127.0.0.1:8000/deleteBooking/${bookingId}`,
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Failed to delete booking:", error);
+        throw new Error("Delete failed");
+    }
+};
+
+
+
+export const fetchBookingById = async (bookingId, token) => {
+    try {
+        const response = await apiRequest({
+            url: `http://127.0.0.1:8000/bookings/${bookingId}`,
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Failed to fetch booking by ID:", error);
+        throw new Error("Failed to fetch booking details");
+    }
+};
+
+export const updateBooking = async (bookingId, formData, token) => {
+    try {
+        const response = await apiRequest({
+            url: `http://127.0.0.1:8000/updateBooking/${bookingId}`,
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            data: formData,
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Failed to update booking:", error);
+        throw new Error("Failed to update booking");
+    }
+};

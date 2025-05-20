@@ -12,6 +12,10 @@ import {
   fetchCelebrationType,
   fetchPackage,
   submitBooking,
+  getCustomerByPhone,
+  deleteBooking,
+  fetchBookingById,
+  updateBooking,
 } from "../services/bookingServices";
 
 function Dashboard() {
@@ -37,6 +41,12 @@ function Dashboard() {
 
   const [bookedSlots, setBookedSlots] = useState([]);
 
+  const [isExistingCustomer, setIsExistingCustomer] = useState(false);
+  const [customerChecked, setCustomerChecked] = useState(false);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingBookingId, setEditingBookingId] = useState(null);
+
   const [formData, setFormData] = useState({
     customer_name: "",
     phone_number: "",
@@ -50,6 +60,8 @@ function Dashboard() {
     updated_by: "",
     created_by: "",
     status: "",
+    created_at: "",
+    updated_at: "",
   });
 
   const emptyForm = {
@@ -72,6 +84,7 @@ function Dashboard() {
     { key: "phone_number", label: "Number" },
     { key: "event_date", label: "Event Date" },
     { key: "time_slot", label: "Time Slot" },
+    { key: "celebration_name", label: "Celebration Type" },
     { key: "package_name", label: "Package" },
     { key: "status", label: "Status" },
     { key: "updated_by", label: "Updated By" },
@@ -81,7 +94,7 @@ function Dashboard() {
     <Edit
       className="action-icon text-primary"
       size={18}
-      onClick={() => console.log("Edit", row)}
+      onClick={() => handleEditBooking(row)}
     />
   );
 
@@ -89,7 +102,7 @@ function Dashboard() {
     <Trash2
       className="action-icon text-danger"
       size={18}
-      onClick={() => console.log("Delete", row)}
+      onClick={() => handleDeleteBooking(row)}
     />
   );
 
@@ -145,18 +158,115 @@ function Dashboard() {
 
   const submitBookingDetails = async () => {
     try {
-      formData.created_by = JSON.parse(user).username;
-      formData.status = "pending";
-      await submitBooking(formData, token);
-      alert("Booking successful!");
+      const username = JSON.parse(user).username;
+      const updatedForm = {
+        ...formData,
+        updated_by: username,
+        booking_id: editingBookingId,
+      };
+
+      if (isEditMode) {
+        await updateBooking(editingBookingId, updatedForm, token);
+        alert("Booking updated successfully!");
+      } else {
+        updatedForm.created_by = username;
+        updatedForm.status = "pending";
+        await submitBooking(updatedForm, token);
+        alert("Booking created successfully!");
+      }
+
       setShowModal(false);
       setFormData(emptyForm);
       setStep(1);
+      setCustomerChecked(false);
+      setIsEditMode(false);
+      setEditingBookingId(null);
+
+      // Refresh data
       fetchTodaysBookings();
       fetchUpcomingBookings();
     } catch (error) {
-      alert("Booking failed. Please try again.");
-      console.error("Booking failed in service:", error);
+      alert("Something went wrong. Please try again.");
+      console.error("Submit failed:", error);
+    }
+  };
+
+  const checkCustomerByPhone = async () => {
+    try {
+      const data = await getCustomerByPhone(formData.phone_number, token);
+      console.log("customer details found", data);
+      setIsExistingCustomer(true);
+      setFormData({
+        ...formData,
+        customer_name: data[0].name,
+        email: data[0].email,
+        address: data[0].address,
+      });
+      console.log("formData", formData);
+    } catch (error) {
+      console.log("customer details not found");
+      setIsExistingCustomer(false);
+      setFormData({ ...formData, customer_name: "", email: "", address: "" });
+    } finally {
+      setCustomerChecked(true);
+    }
+  };
+
+  const handleEditBooking = async (booking) => {
+    try {
+      console.log("fetching booking...", booking);
+      const fullBooking = await fetchBookingById(booking.booking_id, token);
+      console.log("full booking...", fullBooking);
+      setFormData({
+        customer_name: fullBooking.customer_name,
+        phone_number: fullBooking.phone_number,
+        email: fullBooking.email,
+        address: fullBooking.address,
+        event_date: fullBooking.event_date,
+        time_slot: fullBooking.time_slot,
+        celebration_id: String(fullBooking.celebration_id),
+        package_id: String(fullBooking.package_id),
+        addons_note: fullBooking.addons_note,
+        updated_by: fullBooking.updated_by,
+        created_by: fullBooking.created_by,
+        status: fullBooking.status,
+        created_at: fullBooking.created_at,
+        updated_at: fullBooking.updated_at,
+      });
+
+      if (fullBooking.event_date) {
+        setBookingDate(new Date(fullBooking.event_date));
+      } else {
+        console.warn("Invalid event_date", fullBooking.event_date);
+      }
+      setSelectedTime(fullBooking.time_slot);
+      setIsEditMode(true);
+      setEditingBookingId(fullBooking.booking_id);
+      setCustomerChecked(true);
+      setStep(1);
+      setShowModal(true);
+    } catch (error) {
+      console.error("Error fetching booking for edit:", error);
+      alert("Failed to load booking details for editing.");
+    }
+  };
+
+  const handleDeleteBooking = async (booking) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the booking for ${booking.customer_name}?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteBooking(booking.booking_id, token);
+      alert("Booking deleted successfully!");
+
+      fetchTodaysBookings();
+      fetchUpcomingBookings();
+      fetchOlderBookings();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete the booking. Please try again.");
     }
   };
 
@@ -240,7 +350,7 @@ function Dashboard() {
                 className="modal-title"
                 style={{ marginLeft: "10px", margin: "0 auto" }}
               >
-                Add Booking
+                {isEditMode ? "Edit Booking" : "Add Booking"}
               </h5>
               <button
                 className="btn-close-modal"
@@ -248,6 +358,7 @@ function Dashboard() {
                   setShowModal(false);
                   setFormData(emptyForm);
                   setStep(1);
+                  setCustomerChecked(false);
                 }}
               >
                 &times;
@@ -287,19 +398,7 @@ function Dashboard() {
                   <div className="input-group-wrapper">
                     <input
                       className="form-control mb-3"
-                      placeholder="Customer Name"
-                      value={formData.customer_name}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          customer_name: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                    <input
-                      className="form-control mb-3"
-                      placeholder="Phone"
+                      placeholder="Enter Phone Number"
                       value={formData.phone_number}
                       onChange={(e) =>
                         setFormData({
@@ -307,26 +406,55 @@ function Dashboard() {
                           phone_number: e.target.value,
                         })
                       }
-                      required
+                      disabled={isEditMode}
                     />
 
-                    <input
-                      className="form-control mb-3"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                    />
+                    <button
+                      className="btn btn-pink mb-3"
+                      onClick={() => {
+                        checkCustomerByPhone();
+                      }}
+                    >
+                      Check
+                    </button>
 
-                    <input
-                      className="form-control mb-3"
-                      placeholder="Address"
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
-                    />
+                    {customerChecked && (
+                      <>
+                        <input
+                          className="form-control mb-3"
+                          placeholder="Customer Name"
+                          value={formData.customer_name}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              customer_name: e.target.value,
+                            })
+                          }
+                          disabled={isExistingCustomer || isEditMode}
+                        />
+                        <input
+                          className="form-control mb-3"
+                          placeholder="Email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                          disabled={isExistingCustomer}
+                        />
+                        <input
+                          className="form-control mb-3"
+                          placeholder="Address"
+                          value={formData.address}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              address: e.target.value,
+                            })
+                          }
+                          disabled={isExistingCustomer}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -494,6 +622,24 @@ function Dashboard() {
                       }
                     ></textarea>
                   </div>
+                  <div className="mb-5"></div>
+                  {isEditMode && (
+                    <div className="d-flex flex-column align-items-center mt-3">
+                      <h6 className="mb-3">Booking Status</h6>
+                      <select
+                        className="form-select w-auto"
+                        style={{ minWidth: "200px" }}
+                        value={formData.status}
+                        onChange={(e) =>
+                          setFormData({ ...formData, status: e.target.value })
+                        }
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               )}
               {step === 6 && (
@@ -570,6 +716,34 @@ function Dashboard() {
                       <p>{formData.addons_note}</p>
                     </div>
                   )}
+
+                  <div className="review-box mb-3">
+                    <h5 className="review-title">Booking Status</h5>
+                    <p>{formData.status}</p>
+                  </div>
+
+                  <div className="review-box mb-3">
+                    <h5 className="review-title">Audit Trail</h5>
+                    <p>
+                      <strong>Created By:</strong> {formData.created_by}
+                    </p>
+                    <p>
+                      <strong>Created At:</strong>{" "}
+                      {formData.created_at
+                        ? new Date(formData.created_at).toLocaleString()
+                        : "N/A"}
+                    </p>
+                    <p>
+                      <strong>Updated By:</strong>{" "}
+                      {formData.updated_by || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Updated At:</strong>{" "}
+                      {formData.updated_at
+                        ? new Date(formData.updated_at).toLocaleString()
+                        : "N/A"}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -629,6 +803,7 @@ function Dashboard() {
                     submitBookingDetails();
                     setShowModal(false);
                     setStep(1);
+                    setCustomerChecked(false);
                     return;
                   }
 

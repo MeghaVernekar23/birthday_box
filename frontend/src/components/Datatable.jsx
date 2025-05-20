@@ -11,7 +11,7 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
   return (
     <div
       className="table-container"
-      style={{ maxWidth: "2400px", margin: "0 auto" }}
+      style={{ maxWidth: "2000px", margin: "0 auto" }}
     >
       <div
         className="table-header d-flex justify-content-between align-items-center"
