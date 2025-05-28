@@ -38,26 +38,37 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
               </tr>
             </thead>
             <tbody>
-              {data
-                .slice(
-                  (currentPage - 1) * entriesPerPage,
-                  currentPage * entriesPerPage
-                )
-                .map((row, index) => (
-                  <tr key={row.id || index}>
-                    <td>{(currentPage - 1) * entriesPerPage + index + 1}</td>
-                    {columns.map((col) => (
-                      <td key={col.key}>{row[col.key]}</td>
-                    ))}
-                    {actions.length > 0 && (
-                      <td>
-                        {actions.map((ActionBtn, i) => (
-                          <ActionBtn key={i} row={row} />
-                        ))}
-                      </td>
-                    )}
-                  </tr>
-                ))}
+              {data.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length + (actions.length > 0 ? 2 : 1)}
+                    className="text-center"
+                  >
+                    No bookings found.
+                  </td>
+                </tr>
+              ) : (
+                data
+                  .slice(
+                    (currentPage - 1) * entriesPerPage,
+                    currentPage * entriesPerPage
+                  )
+                  .map((row, index) => (
+                    <tr key={row.id || index}>
+                      <td>{(currentPage - 1) * entriesPerPage + index + 1}</td>
+                      {columns.map((col) => (
+                        <td key={col.key}>{row[col.key]}</td>
+                      ))}
+                      {actions.length > 0 && (
+                        <td>
+                          {actions.map((ActionBtn, i) => (
+                            <ActionBtn key={i} row={row} />
+                          ))}
+                        </td>
+                      )}
+                    </tr>
+                  ))
+              )}
             </tbody>
           </table>
 

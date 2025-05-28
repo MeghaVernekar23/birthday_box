@@ -182,7 +182,6 @@ function Dashboard() {
       setIsEditMode(false);
       setEditingBookingId(null);
 
-      // Refresh data
       fetchTodaysBookings();
       fetchUpcomingBookings();
     } catch (error) {
@@ -334,7 +333,6 @@ function Dashboard() {
         title="Older Bookings"
         columns={columns}
         data={olderBookingData}
-        actions={[ActionEdit, ActionDelete]}
         collapseId="olderTable"
       />
       {showModal && (
@@ -395,34 +393,41 @@ function Dashboard() {
               {step === 1 && (
                 <div className="form-step-wrapper text-center">
                   <h6 className="mb-3">Customer Details</h6>
-                  <div className="input-group-wrapper">
+                  <div className="input-group-wrapper text-start">
+                    <label className="form-label">Phone Number</label>
                     <input
                       className="form-control mb-3"
                       placeholder="Enter Phone Number"
                       value={formData.phone_number}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          phone_number: e.target.value,
-                        })
-                      }
+                      maxLength={11}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Allow only digits
+                        if (/^\d*$/.test(value)) {
+                          setFormData({ ...formData, phone_number: value });
+                        }
+                      }}
                       disabled={isEditMode}
                     />
 
                     <button
                       className="btn btn-pink mb-3"
-                      onClick={() => {
-                        checkCustomerByPhone();
-                      }}
+                      onClick={checkCustomerByPhone}
+                      disabled={
+                        !formData.phone_number ||
+                        formData.phone_number.length < 7
+                      }
                     >
                       Check
                     </button>
 
                     {customerChecked && (
                       <>
+                        <div className="mb-1"></div>
+                        <label className="form-label">Customer Name</label>
                         <input
                           className="form-control mb-3"
-                          placeholder="Customer Name"
+                          placeholder="Enter Customer Name"
                           value={formData.customer_name}
                           onChange={(e) =>
                             setFormData({
@@ -432,18 +437,20 @@ function Dashboard() {
                           }
                           disabled={isExistingCustomer || isEditMode}
                         />
+                        <label className="form-label">Email</label>
                         <input
                           className="form-control mb-3"
-                          placeholder="Email"
+                          placeholder="Enter Email"
                           value={formData.email}
                           onChange={(e) =>
                             setFormData({ ...formData, email: e.target.value })
                           }
                           disabled={isExistingCustomer}
                         />
+                        <label className="form-label">Address</label>
                         <input
                           className="form-control mb-3"
-                          placeholder="Address"
+                          placeholder="Enter Address"
                           value={formData.address}
                           onChange={(e) =>
                             setFormData({
@@ -509,6 +516,15 @@ function Dashboard() {
                               slot.time_slot?.trim().substring(0, 5) === time
                           );
 
+                          const now = new Date();
+                          const isToday =
+                            bookingDate.toDateString() === now.toDateString();
+                          const slotTime = new Date(bookingDate);
+                          slotTime.setHours(hour, 0, 0, 0);
+                          const isPastTime = isToday && slotTime < now;
+
+                          const isDisabled = isBooked || isPastTime;
+
                           return (
                             <button
                               key={time}
@@ -517,13 +533,13 @@ function Dashboard() {
                                   ? "btn-pink"
                                   : "btn-outline-secondary"
                               }`}
-                              disabled={isBooked}
+                              disabled={isDisabled}
                               style={{
-                                opacity: isBooked ? 0.5 : 1,
-                                cursor: isBooked ? "not-allowed" : "pointer",
+                                opacity: isDisabled ? 0.5 : 1,
+                                cursor: isDisabled ? "not-allowed" : "pointer",
                               }}
                               onClick={() => {
-                                if (!isBooked) setSelectedTime(time);
+                                if (!isDisabled) setSelectedTime(time);
                               }}
                             >
                               {time}
@@ -716,34 +732,36 @@ function Dashboard() {
                       <p>{formData.addons_note}</p>
                     </div>
                   )}
-
-                  <div className="review-box mb-3">
-                    <h5 className="review-title">Booking Status</h5>
-                    <p>{formData.status}</p>
-                  </div>
-
-                  <div className="review-box mb-3">
-                    <h5 className="review-title">Audit Trail</h5>
-                    <p>
-                      <strong>Created By:</strong> {formData.created_by}
-                    </p>
-                    <p>
-                      <strong>Created At:</strong>{" "}
-                      {formData.created_at
-                        ? new Date(formData.created_at).toLocaleString()
-                        : "N/A"}
-                    </p>
-                    <p>
-                      <strong>Updated By:</strong>{" "}
-                      {formData.updated_by || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Updated At:</strong>{" "}
-                      {formData.updated_at
-                        ? new Date(formData.updated_at).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </div>
+                  {isEditMode && (
+                    <div className="review-box mb-3">
+                      <h5 className="review-title">Booking Status</h5>
+                      <p>{formData.status}</p>
+                    </div>
+                  )}
+                  {isEditMode && (
+                    <div className="review-box mb-3">
+                      <h5 className="review-title">Audit Trail</h5>
+                      <p>
+                        <strong>Created By:</strong> {formData.created_by}
+                      </p>
+                      <p>
+                        <strong>Created At:</strong>{" "}
+                        {formData.created_at
+                          ? new Date(formData.created_at).toLocaleString()
+                          : "N/A"}
+                      </p>
+                      <p>
+                        <strong>Updated By:</strong>{" "}
+                        {formData.updated_by || "N/A"}
+                      </p>
+                      <p>
+                        <strong>Updated At:</strong>{" "}
+                        {formData.updated_at
+                          ? new Date(formData.updated_at).toLocaleString()
+                          : "N/A"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -755,6 +773,8 @@ function Dashboard() {
                   if (step === 1) {
                     setShowModal(false);
                     setFormData(emptyForm);
+                    setStep(1);
+                    setCustomerChecked(false);
                   } else {
                     setStep(step - 1);
                   }
@@ -766,11 +786,23 @@ function Dashboard() {
                 className="btn btn-pink"
                 onClick={() => {
                   if (step === 1) {
+                    const nameRegex = /^[A-Za-z\s]+$/;
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (formData.customer_name.trim() === "") {
+                      alert("Customer details are required.");
+                      return;
+                    }
+                    if (!nameRegex.test(formData.customer_name.trim())) {
+                      alert(
+                        "Customer name should contain only alphabets and spaces."
+                      );
+                      return;
+                    }
                     if (
-                      formData.customer_name.trim() === "" ||
-                      formData.phone_number.trim() === ""
+                      formData.email.trim() &&
+                      !emailRegex.test(formData.email)
                     ) {
-                      alert("Customer name and phone number are required.");
+                      alert("Please enter a valid email address.");
                       return;
                     }
                   }

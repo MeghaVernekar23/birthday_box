@@ -3,7 +3,7 @@ export const apiRequest = async ({
   method = "GET",
   headers = {},
   body = null,
-  data = null, // optional alias
+  data = null,
 }) => {
   const payload = body || data;
 
@@ -22,12 +22,18 @@ export const apiRequest = async ({
 
   const response = await fetch(url, options);
 
+  // Read the body once only
+  const contentType = response.headers.get("content-type");
+  const isJson = contentType && contentType.includes("application/json");
+  const responseData = isJson ? await response.json() : await response.text();
+
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Server responded with status ${response.status}: ${errorText}`
-    );
+    throw {
+      status: response.status,
+      message: responseData.detail || "Request failed",
+      body: responseData,
+    };
   }
 
-  return await response.json();
+  return responseData;
 };
