@@ -30,7 +30,7 @@ def authenticate_user(user: OAuth2PasswordRequestForm , db: Session) -> dict:
     
     user_detail =  db.query(Users).filter(Users.username == user.username).first()
     if not user_detail:
-        raise InvalidCredentialException("Invalid username. Please enter Valid email Id")   
+        raise InvalidCredentialException("Invalid username. Please enter Valid Username")   
     
     if not verify_password(user.password, user_detail.password_hash): 
         raise InvalidCredentialException("Invalid password. Please enter valid Password")
