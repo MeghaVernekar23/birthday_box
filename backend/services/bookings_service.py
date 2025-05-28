@@ -4,6 +4,7 @@ from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, Cele
 from db.models.pydantic_models import AddBookingDetails, EditBookingDetails
 from utils.exceptions import BookingDetailsNotFoundException
 from fastapi import HTTPException
+from datetime import datetime, timezone
 
 def get_bookings_details(filter= str, db= Session):
         
@@ -94,7 +95,8 @@ def get_package(db= Session):
 def add_booking_details(bookingDetails= AddBookingDetails, db= Session):
 
  
-    customer = Customer(name = bookingDetails.customer_name, phone_number = bookingDetails.phone_number, email = bookingDetails.email, address = bookingDetails.address)
+    customer = Customer(name = bookingDetails.customer_name, phone_number = bookingDetails.phone_number, 
+                        email = bookingDetails.email, address = bookingDetails.address)
     db.add(customer)
     db.commit()
     db.refresh(customer)
@@ -103,7 +105,7 @@ def add_booking_details(bookingDetails= AddBookingDetails, db= Session):
     get_created_by = db.query(Users).filter(Users.username == bookingDetails.created_by).first()
 
     booking = Booking(customer_id= get_customer.customer_id, package_id= bookingDetails.package_id,celebration_id= bookingDetails.celebration_id, event_date= bookingDetails.event_date, event_time= bookingDetails.time_slot,
-                      status= bookingDetails.status, notes= bookingDetails.addons_note, created_by= get_created_by.id
+                      status= bookingDetails.status, notes= bookingDetails.addons_note, created_by= get_created_by.id,created_at=datetime.now(timezone.utc) 
                       )
 
     db.add(booking)
@@ -153,7 +155,7 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
         if booking_details.updated_by else None
             )
         
-       
+        booking.updated_at = datetime.now(timezone.utc)
 
         
         customer = db.query(Customer).filter(Customer.phone_number == booking_details.phone_number).first()
