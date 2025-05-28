@@ -1,4 +1,3 @@
-
 import { React, useState } from "react";
 import "../css/Login.css";
 import BirthdayLoginImage from "../images/Birthdax_login_image.jpg";
@@ -9,10 +8,13 @@ import { useNavigate } from "react-router-dom";
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage(""); // clear previous error
+
     try {
       const formData = new URLSearchParams();
       formData.append("username", username);
@@ -43,6 +45,9 @@ function Login() {
       navigate("/dashboard");
     } catch (error) {
       console.error("Error during login:", error);
+      setErrorMessage(
+        error.message || "Something went wrong. Please try again."
+      );
     }
   };
 
@@ -101,6 +106,14 @@ function Login() {
                         <label className="form-label" htmlFor="form2Example22">
                           Password
                         </label>
+                        {errorMessage && (
+                          <div
+                            className="text-danger mt-1"
+                            style={{ fontSize: "0.9rem" }}
+                          >
+                            {errorMessage}
+                          </div>
+                        )}
                       </div>
 
                       <div className="text-center pt-1 mb-5 pb-1">
