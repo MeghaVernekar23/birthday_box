@@ -19,7 +19,7 @@ export const fetchBookingsByFilter = async (filter, token) => {
 export const fetchCelebrationType = async (token) => {
     try {
         const data = await apiRequest({
-            url: `http://127.0.0.1:8000/celebration-type`,
+            url: `http://127.0.0.1:8000/bookings/celebration-type`,
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ export const fetchCelebrationType = async (token) => {
 export const fetchPackage = async (token) => {
     try {
         const data = await apiRequest({
-            url: `http://127.0.0.1:8000/package`,
+            url: `http://127.0.0.1:8000/bookings/package`,
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ export const submitBooking = async (formData, token) => {
 
 
         await apiRequest({
-            url: "http://127.0.0.1:8000/submitBookings",
+            url: "http://127.0.0.1:8000/bookings/submit",
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -71,7 +71,7 @@ export const submitBooking = async (formData, token) => {
 export const getCustomerByPhone = async (phoneNumber, token) => {
     try {
         const response = await apiRequest({
-            url: `http://127.0.0.1:8000/customer-details/${phoneNumber}`,
+            url: `http://127.0.0.1:8000/customers/details/${phoneNumber}`,
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ export const getCustomerByPhone = async (phoneNumber, token) => {
 export const deleteBooking = async (bookingId, token) => {
     try {
         const response = await apiRequest({
-            url: `http://127.0.0.1:8000/deleteBooking/${bookingId}`,
+            url: `http://127.0.0.1:8000/bookings/delete/${bookingId}`,
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -125,7 +125,7 @@ export const fetchBookingById = async (bookingId, token) => {
 export const updateBooking = async (bookingId, formData, token) => {
     try {
         const response = await apiRequest({
-            url: `http://127.0.0.1:8000/updateBooking/${bookingId}`,
+            url: `http://127.0.0.1:8000/bookings/update/${bookingId}`,
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,

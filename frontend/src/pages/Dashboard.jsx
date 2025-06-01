@@ -119,6 +119,7 @@ function Dashboard() {
 
   const fetchTodaysBookings = async () => {
     const data = await fetchBookingsByFilter("today", token);
+    console.log("data::", data);
     setTodaysBookings(data);
   };
 
