@@ -1,171 +1,247 @@
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
-from db.models.pydantic_models import AddBookingDetails, EditBookingDetails
-from utils.exceptions import BookingDetailsNotFoundException
+from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails, AddBookingDetails
+from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 from fastapi import HTTPException
 from datetime import datetime, timezone
-
-def get_bookings_details(filter= str, db= Session):
-        
-    today = date.today()
-
-    print("date:", today)
-    query = (
-        db.query(
-            Booking.booking_id,
-            Customer.name.label("customer_name"),
-            Booking.event_date,
-            Customer.phone_number,
-            Booking.event_time.label("time_slot"),
-            CelebrationType.celebration_name.label("celebration_name"),
-            Packages.package_name.label("package_name"),
-            Booking.status,
-            Users.username.label("updated_by")
-        )
-        .join(Customer, Booking.customer_id == Customer.customer_id)
-        .join(CelebrationType, Booking.celebration_id == CelebrationType.celebration_id)
-        .join(Packages, Booking.package_id == Packages.package_id)
-        .join(Users, Booking.updated_by == Users.id, isouter=True)
-    )
-        
-    if filter == "today":
-        query = query.filter(Booking.event_date == today)
-    elif filter == "future":    
-        query = query.filter(Booking.event_date > today)
-    elif filter == "past":   
-        query = query.filter(Booking.event_date < today)
-    elif filter == "all": 
-        query = query.filter(Booking.event_date >= today)
-        
-    results = query.order_by(Booking.event_date).all()
-        
-    return results
+from utils.db_utils import get_active_celebration_types, get_active_packages, get_booking_query, get_customer_by_phone, get_user_by_username
+from typing import List
 
 
-def get_booking_details_by_id(booking_id: int, db: Session):
+def get_celebration_type(db: Session) -> List[CelebrationType]:
+    """
+    Retrieve all active celebration types from the database.
 
-    
-    updated_by_user = aliased(Users)
-    created_by_user = aliased(Users)
+    Args:
+        db (Session): SQLAlchemy database session.
 
-    query = (
-    db.query(
-        Booking.booking_id,
-        Customer.name.label("customer_name"),
-        Customer.email,
-        Customer.address,
-        Customer.phone_number,
-        Booking.event_date,
-        Booking.event_time.label("time_slot"),
-        Booking.celebration_id,  
-        Booking.package_id,      
-        Booking.notes.label("addons_note"),  
-        Booking.status,
-        Booking.created_at,
-        Booking.updated_at,
-        updated_by_user.username.label("updated_by"),
-        created_by_user.username.label("created_by"),
-    )
-    .join(Customer, Booking.customer_id == Customer.customer_id)
-    .join(CelebrationType, Booking.celebration_id == CelebrationType.celebration_id)
-    .join(Packages, Booking.package_id == Packages.package_id)
-    .join(updated_by_user, Booking.updated_by == updated_by_user.id, isouter=True)
-    .join(created_by_user, Booking.created_by == created_by_user.id, isouter=True)
-    .filter(Booking.booking_id == booking_id)
-    .first()
-)
-
-    if not query:
-        raise BookingDetailsNotFoundException()
-    return query
-
-
-
-def get_celebration_type(db= Session):
-
-    return db.query(CelebrationType).filter(CelebrationType.active == 1)
-
-
-def get_package(db= Session):
-
-    return db.query(Packages).filter(Packages.is_active == 1)
-
-
-def add_booking_details(bookingDetails= AddBookingDetails, db= Session):
-
- 
-    customer = Customer(name = bookingDetails.customer_name, phone_number = bookingDetails.phone_number, 
-                        email = bookingDetails.email, address = bookingDetails.address)
-    db.add(customer)
-    db.commit()
-    db.refresh(customer)
-    get_customer = db.query(Customer).filter(Customer.phone_number == bookingDetails.phone_number).first()
-
-    get_created_by = db.query(Users).filter(Users.username == bookingDetails.created_by).first()
-
-    booking = Booking(customer_id= get_customer.customer_id, package_id= bookingDetails.package_id,celebration_id= bookingDetails.celebration_id, event_date= bookingDetails.event_date, event_time= bookingDetails.time_slot,
-                      status= bookingDetails.status, notes= bookingDetails.addons_note, created_by= get_created_by.id,created_at=datetime.now(timezone.utc) 
-                      )
-
-    db.add(booking)
-    db.commit()
-    db.refresh(booking)
-    return {"message": "Booking Created successfully"}
-
-
-def delete_booking_detail(booking_id= int,db= Session):
+    Returns:
+        List[CelebrationType]: A list of active celebration types.
+    """
     try:
-        bookings = db.get(Booking,booking_id)
-        if not bookings:
-            raise BookingDetailsNotFoundException()
-        
-        db.delete(bookings)
-        db.commit()
-        return {"message": "booking deleted successfully"}
+        return get_active_celebration_types(db)
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching celebration types: {e}")
+    
+
+def get_package(db: Session) -> List[Packages]:
+    """
+    Fetch active packages using the utility function.
+
+    Args:
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        List[Packages]: A list of active packages.
+    """
+    try:
+        return get_active_packages(db)
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching package details: {e}")    
+
+
+def get_bookings_details(filter: str, db: Session) -> List[BookingDetails]:
+    """
+    Fetch booking details based on filter (today, future, past, all).
+
+    Args:
+        filter (str): Filter type (today, future, past, all).
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        List[Any]: List of booking details.
+
+    Raises:
+        InvalidFilterException: If the filter value is invalid.
+    """
+    try:
+        query = get_booking_query(db)
+        today = date.today()
+
+        filter_map = {
+            "today": Booking.event_date == today,
+            "future": Booking.event_date > today,
+            "past": Booking.event_date < today,
+            "all": Booking.event_date >= today,
+        }
+
+        filter_condition = filter_map.get(filter.lower())
+        if filter_condition is None:
+            raise InvalidFilterException(filter_value=filter, allowed_filters=list(filter_map.keys()))
+
+        query = query.filter(filter_condition)
+
+        return query.order_by(Booking.event_date).all()
+
+    except InvalidFilterException:
+        raise
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching booking details: {e}")
+
+
+
+def get_booking_details_by_id(booking_id: int, db: Session)-> BookingDetails:
+    """
+    Fetch booking details by booking ID.
+
+    Args:
+        booking_id (int): ID of the booking.
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        Any: Booking details.
+
+    Raises:
+        BookingDetailsNotFoundException: If the booking ID does not exist.
+    """
+    try:
+        query = get_booking_query(db)
+        result = query.filter(Booking.booking_id == booking_id).first()
+
+        if not result:
+            raise BookingDetailsNotFoundException(f"No booking found with ID: {booking_id}")
+
+        return result
+
     except BookingDetailsNotFoundException:
         raise
     except Exception as e:
+        raise Exception(f"An error occurred while fetching booking details: {e}")
+
+
+def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
+    """
+    Create a new booking for a customer. If the customer doesn't exist, create a new customer.
+    
+    Args:
+        bookingDetails (AddBookingDetails): Booking information.
+        db (Session): SQLAlchemy DB session.
+
+    Returns:
+        dict: Success message and booking ID.
+    """
+    try:
+        
+        customer = get_customer_by_phone(bookingDetails.phone_number, db)
+        if not customer:
+            customer = Customer(
+                name=bookingDetails.customer_name,
+                phone_number=bookingDetails.phone_number,
+                email=bookingDetails.email,
+                address=bookingDetails.address
+            )
+            db.add(customer)
+            db.commit()
+            db.refresh(customer)
+
+        user = get_user_by_username(bookingDetails.created_by, db)
+
+        booking = Booking(
+            customer_id=customer.customer_id,
+            package_id=bookingDetails.package_id,
+            celebration_id=bookingDetails.celebration_id,
+            event_date=bookingDetails.event_date,
+            event_time=bookingDetails.time_slot,
+            status=bookingDetails.status,
+            notes=bookingDetails.addons_note,
+            created_by=user.id,
+            created_at=datetime.now(timezone.utc)
+        )
+
+        db.add(booking)
+        db.commit()
+        db.refresh(booking)
+
+        return {
+            "message": "Booking created successfully",
+            "booking_id": booking.booking_id,
+            "customer_id": customer.customer_id
+        }
+
+    except HTTPException as e:
+        raise e  
+
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
+def delete_booking_detail(booking_id: int, db: Session) -> dict:
+    """
+    Delete a booking by ID. Raises a 404 error if the booking is not found.
+
+    Args:
+        booking_id (int): The ID of the booking to delete.
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        dict: Success message on deletion.
+    """
+    try:
+        booking = db.query(Booking).filter(Booking.booking_id == booking_id).first()
+
+        if not booking:
+            raise BookingDetailsNotFoundException(f"No booking found with ID: {booking_id}")
+
+        db.delete(booking)
+        db.commit()
+
+        return {"message": "Booking deleted successfully"}
+
+    except BookingDetailsNotFoundException:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
     
 
+def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, db: Session) -> dict:
+    """
+    Update an existing booking and its associated customer details.
 
-def update_booking_detail(booking_id= int,booking_details= EditBookingDetails, db= Session):
-    from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from datetime import datetime
+    Args:
+        booking_id (int): ID of the booking to update.
+        booking_details (EditBookingDetails): New booking details.
+        db (Session): SQLAlchemy DB session.
 
-def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, db: Session):
+    Returns:
+        dict: Success message.
+    """
     try:
         booking = db.get(Booking, booking_id)
         if not booking:
             raise BookingDetailsNotFoundException(f"Booking with ID {booking_id} not found.")
 
-        
-        
+        user = get_user_by_username(booking_details.updated_by, db)
+
         booking.package_id = booking_details.package_id
         booking.celebration_id = booking_details.celebration_id
         booking.event_date = booking_details.event_date
         booking.event_time = booking_details.time_slot
         booking.notes = booking_details.addons_note
         booking.status = booking_details.status
-        booking.updated_by = (
-        db.query(Users).filter(Users.username == booking_details.updated_by).first().id
-        if booking_details.updated_by else None
-            )
-        
         booking.updated_at = datetime.now(timezone.utc)
+        booking.updated_by = user.id
 
-        
-        customer = db.query(Customer).filter(Customer.phone_number == booking_details.phone_number).first()
-        if customer:
+        try:
+            customer = get_customer_by_phone(booking_details.phone_number, db)
             customer.name = booking_details.customer_name
             customer.email = booking_details.email
             customer.address = booking_details.address
+        except HTTPException:
+            pass
 
+        
         db.commit()
-        return {"message": "Booking updated successfully"}
+        return {
+            "message": "Booking created successfully",
+            "booking_id": booking.booking_id
+        }
+
+    except BookingDetailsNotFoundException as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
     except Exception as e:
         db.rollback()
