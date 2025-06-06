@@ -1,11 +1,12 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
 import BirthdayLogo from "../images/logo.jpg";
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [showBookingSubmenu, setShowBookingSubmenu] = useState(false);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -108,15 +109,58 @@ const Layout = () => {
               </li>
               <li className="nav-item mb-2">
                 <button
-                  className={`nav-link ${
-                    location.pathname === "/bookings" ? "active" : ""
+                  className={`nav-link d-flex justify-content-between align-items-center ${
+                    location.pathname.startsWith("/bookings") ? "active" : ""
                   }`}
                   title="Booking Details"
-                  onClick={() => navigate("/bookings")}
+                  onClick={() => setShowBookingSubmenu(!showBookingSubmenu)}
                 >
-                  {collapsed ? "👥" : "Booking Details"}
+                  <span>{collapsed ? "📖" : "Booking Details"}</span>
+                  {!collapsed && <span>{showBookingSubmenu ? "▾" : "▸"}</span>}
                 </button>
+
+                {!collapsed && showBookingSubmenu && (
+                  <ul className="nav flex-column ms-3 mt-1">
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${
+                          location.pathname === "/bookings/today"
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => navigate("/bookings/today")}
+                      >
+                        📅 Today's Bookings
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${
+                          location.pathname === "/bookings/upcoming"
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => navigate("/bookings/upcoming")}
+                      >
+                        📆 Upcoming Bookings
+                      </button>
+                    </li>
+                    <li className="nav-item">
+                      <button
+                        className={`nav-link ${
+                          location.pathname === "/bookings/older"
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => navigate("/bookings/older")}
+                      >
+                        🕓 Older Bookings
+                      </button>
+                    </li>
+                  </ul>
+                )}
               </li>
+
               <li className="nav-item mb-2">
                 <button
                   className={`nav-link ${
