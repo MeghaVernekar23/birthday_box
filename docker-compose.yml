@@ -1,0 +1,54 @@
+version: '3.9'
+
+networks:
+  task_network:
+    driver: bridge
+
+volumes:
+  postgres_data: 
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/backend
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/birthdayBox_db
+    networks:
+      - task_network  
+    depends_on:
+      - db
+      - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/frontend 
+    working_dir: /frontend          
+    command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - task_network   
+
+  db:
+    image: postgres:13
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PG_HOST=db
+      - PG_PORT=5432
+      - PG_DATABASE=birthdayBox_db
+      - PG_USER=postgres
+      - PG_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - task_network
