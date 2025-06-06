@@ -159,10 +159,6 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             "customer_id": customer.customer_id
         }
 
-    except HTTPException as e:
-        raise e  
-
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 

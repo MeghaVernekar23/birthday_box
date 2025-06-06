@@ -83,11 +83,11 @@ def authenticate_user(user: OAuth2PasswordRequestForm, db: Session) -> dict:
         
         user_detail = get_user_by_username(user.username, db)
         if not user_detail:
-            raise InvalidCredentialException("Invalid username. Please enter a valid username.")
+            raise InvalidCredentialException("Invalid credential. Please enter a valid username and password.")
 
         
         if not verify_password(user.password, user_detail.password_hash):
-            raise InvalidCredentialException("Invalid password. Please enter a valid password.")
+            raise InvalidCredentialException("Invalid credential. Please enter a valid username and password.")
 
         
         access_token = create_access_token(
