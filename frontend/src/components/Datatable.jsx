@@ -6,13 +6,19 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
   const totalPages = Math.ceil(data.length / entriesPerPage);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const maxVisiblePages = 5;
+  const currentGroup = Math.floor((currentPage - 1) / maxVisiblePages);
+  const startPage = currentGroup * maxVisiblePages + 1;
+  const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+  const pageNumbers = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
 
   return (
-    <div
-      className="table-container"
-      style={{ maxWidth: "2000px", margin: "0 auto" }}
-    >
+    <div className="table-container">
       <div
         className="table-header d-flex justify-content-between align-items-center"
         style={{ cursor: "pointer" }}
@@ -25,6 +31,7 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
           <h5 className="mb-0">{title}</h5>
         </div>
       </div>
+
       {!isCollapsed && (
         <div>
           <table className="table custom-table mt-3">
@@ -44,7 +51,7 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
                     colSpan={columns.length + (actions.length > 0 ? 2 : 1)}
                     className="text-center"
                   >
-                    No bookings found.
+                    No details found
                   </td>
                 </tr>
               ) : (
@@ -72,19 +79,36 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
             </tbody>
           </table>
 
+          {/* Pagination Controls */}
           <div className="pagination d-flex align-items-center gap-2 ">
+            {/* First */}
             <span
               className="page-link"
               style={{
                 cursor: currentPage === 1 ? "not-allowed" : "pointer",
                 opacity: currentPage === 1 ? 0.5 : 1,
               }}
-              onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+              onClick={() => currentPage > 1 && setCurrentPage(1)}
+            >
+              {"<<"}
+            </span>
+
+            {/* Previous Group */}
+            <span
+              className="page-link"
+              style={{
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                opacity: currentPage === 1 ? 0.5 : 1,
+              }}
+              onClick={() => {
+                if (startPage > 1) setCurrentPage(startPage - 1);
+              }}
             >
               {"<"}
             </span>
 
-            {pages.map((page) => (
+            {/* Page Numbers */}
+            {pageNumbers.map((page) => (
               <span
                 key={page}
                 className={`page-link ${
@@ -97,6 +121,21 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
               </span>
             ))}
 
+            {/* Next Group */}
+            <span
+              className="page-link"
+              style={{
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                opacity: currentPage === totalPages ? 0.5 : 1,
+              }}
+              onClick={() => {
+                if (endPage < totalPages) setCurrentPage(endPage + 1);
+              }}
+            >
+              {">"}
+            </span>
+
+            {/* Last */}
             <span
               className="page-link"
               style={{
@@ -104,10 +143,10 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
                 opacity: currentPage === totalPages ? 0.5 : 1,
               }}
               onClick={() =>
-                currentPage < totalPages && setCurrentPage(currentPage + 1)
+                currentPage < totalPages && setCurrentPage(totalPages)
               }
             >
-              {">"}
+              {">>"}
             </span>
           </div>
         </div>
