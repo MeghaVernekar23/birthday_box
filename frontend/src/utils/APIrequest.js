@@ -1,39 +1,64 @@
-export const apiRequest = async ({
-  url,
-  method = "GET",
-  headers = {},
-  body = null,
-  data = null,
-}) => {
-  const payload = body || data;
+
+export const apiRequest = async ({ url, method = "GET", data = null, headers = {} }) => {
+  const token = localStorage.getItem("access_token");
+
+  const defaultHeaders = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  const finalHeaders = { ...defaultHeaders, ...headers };
 
   const options = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers: finalHeaders,
   };
 
-  if (payload) {
-    options.body =
-      typeof payload === "string" ? payload : JSON.stringify(payload);
+  if (data) {
+
+    if (finalHeaders["Content-Type"] === "application/json") {
+      options.body = JSON.stringify(data);
+    } else {
+      options.body = data;
+    }
   }
 
-  const response = await fetch(url, options);
+  try {
+    const response = await fetch(url, options);
+    const contentType = response.headers.get("content-type");
 
-  // Read the body once only
-  const contentType = response.headers.get("content-type");
-  const isJson = contentType && contentType.includes("application/json");
-  const responseData = isJson ? await response.json() : await response.text();
+    let responseData;
+    if (contentType && contentType.includes("application/json")) {
+      responseData = await response.json();
+    } else {
+      responseData = await response.text();
+    }
 
-  if (!response.ok) {
-    throw {
-      status: response.status,
-      message: responseData.detail || "Request failed",
-      body: responseData,
-    };
+    if (!response.ok) {
+
+      if (response.status === 401) {
+        const detail = responseData?.detail || "";
+
+        if (typeof detail === "string" && detail.includes("Invalid credential. Please enter a valid username and password.")) {
+
+          throw new Error("Invalid credentials. Please try again.");
+        } else {
+
+          localStorage.clear();
+          alert("Session expired. Please log in again.");
+          window.location.href = "/";
+          throw new Error("Session expired");
+        }
+      }
+
+
+      const errorMsg = typeof responseData === "object" ? JSON.stringify(responseData) : responseData;
+      throw new Error(errorMsg);
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
   }
-
-  return responseData;
 };
