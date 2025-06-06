@@ -3,7 +3,7 @@ from typing import List
 from db.models.sqlalchemy_models import Booking, Customer, CelebrationType, Packages, Users
 from fastapi import HTTPException
 
-def get_user_by_username(username: str, db: Session) -> Users | None:
+def get_user_by_username(username: str, db: Session) -> Users :
     """
     Retrieve a user from the database by username.
 
