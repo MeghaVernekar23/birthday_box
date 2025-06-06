@@ -117,6 +117,17 @@ const Layout = () => {
                   {collapsed ? "👥" : "Booking Details"}
                 </button>
               </li>
+              <li className="nav-item mb-2">
+                <button
+                  className={`nav-link ${
+                    location.pathname === "/addbooking" ? "active" : ""
+                  }`}
+                  title="Add Booking"
+                  onClick={() => navigate("/addbooking")}
+                >
+                  {collapsed ? "👥" : "Add Booking"}
+                </button>
+              </li>
             </ul>
           </div>
 
