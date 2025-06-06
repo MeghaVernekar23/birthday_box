@@ -13,7 +13,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage(""); // clear previous error
+    setErrorMessage("");
 
     try {
       const formData = new URLSearchParams();
@@ -26,7 +26,7 @@ function Login() {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: formData.toString(),
+        data: formData.toString(),
       });
 
       console.log("Login successful:", data);
