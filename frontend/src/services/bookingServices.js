@@ -1,141 +1,58 @@
+
+
 import { apiRequest } from "../utils/APIrequest";
 
-export const fetchBookingsByFilter = async (filter, token) => {
-    try {
-        const data = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/by-filter?filter=${filter}`,
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return data;
-    } catch (err) {
-        console.error(`Failed to fetch booking details for filter: ${filter}`, err);
-        throw err;
-    }
+const BASE_URL = "http://127.0.0.1:8000";
+
+
+export const fetchBookingsByFilter = (filter) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/by-filter?filter=${filter}`,
+    });
 };
 
-export const fetchCelebrationType = async (token) => {
-    try {
-        const data = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/celebration-type`,
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return data;
-    } catch (err) {
-        console.error("Failed to fetch celebration Type details:", err);
-    }
+export const submitBooking = (formData) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/submit`,
+        method: "POST",
+        data: formData,
+    });
 };
 
-export const fetchPackage = async (token) => {
-    try {
-        const data = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/package`,
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        return data;
-    } catch (err) {
-        console.error("Failed to fetch package details:", err);
-    }
+export const updateBooking = (bookingId, formData) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/update/${bookingId}`,
+        method: "PUT",
+        data: formData,
+    });
 };
 
-export const submitBooking = async (formData, token) => {
-    try {
+export const deleteBooking = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/delete/${bookingId}`,
+        method: "DELETE",
+    });
+};
 
-
-        await apiRequest({
-            url: "http://127.0.0.1:8000/bookings/submit",
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            data: formData,
-        });
-
-        return { success: true };
-    } catch (error) {
-        console.error("Booking failed in service:", error);
-        throw error;
-    }
+export const fetchBookingById = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/${bookingId}`,
+    });
 };
 
 
-export const getCustomerByPhone = async (phoneNumber, token) => {
-    try {
-        const response = await apiRequest({
-            url: `http://127.0.0.1:8000/customers/details/${phoneNumber}`,
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        return response;
-    } catch (error) {
-        console.error("Failed to fetch customer by phone:", error);
-        throw new Error("Customer not found");
-    }
+export const fetchCelebrationType = () => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/celebration-type`,
+    });
 };
 
 
-export const deleteBooking = async (bookingId, token) => {
-    try {
-        const response = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/delete/${bookingId}`,
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        return response;
-    } catch (error) {
-        console.error("Failed to delete booking:", error);
-        throw new Error("Delete failed");
-    }
+export const fetchPackage = () => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/package`,
+    });
 };
 
 
 
-export const fetchBookingById = async (bookingId, token) => {
-    try {
-        const response = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/${bookingId}`,
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        return response;
-    } catch (error) {
-        console.error("Failed to fetch booking by ID:", error);
-        throw new Error("Failed to fetch booking details");
-    }
-};
-
-export const updateBooking = async (bookingId, formData, token) => {
-    try {
-        const response = await apiRequest({
-            url: `http://127.0.0.1:8000/bookings/update/${bookingId}`,
-            method: "PUT",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            data: formData,
-        });
-
-        return response;
-    } catch (error) {
-        console.error("Failed to update booking:", error);
-        throw new Error("Failed to update booking");
-    }
-};
