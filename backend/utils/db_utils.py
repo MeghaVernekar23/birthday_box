@@ -93,7 +93,33 @@ def get_booking_query(db: Session) -> List[Booking]:
 
 def get_customer_by_phone(phone_number: str, db: Session) -> Customer:
     """
-    Retrieve a customer by phone number. Raise HTTP 404 if not found.
+    Retrieve a customer by phone number. 
     """
     return db.query(Customer).filter(Customer.phone_number == phone_number).first()
+
+
+def fetch_all_customers(db: Session) -> List[Customer]:
+    """
+    Utility function to fetch all customers from the database.
+
+    Args:
+        db (Session): SQLAlchemy session object.
+
+    Returns:
+        List[Customer]: List of all customer objects.
+    """
+    return db.query(Customer).all()
     
+
+def fetch_customer_by_id(customer_id: int, db: Session) -> Customer:
+    """
+    Fetch a customer by their ID.
+
+    Args:
+        customer_id (int): ID of the customer.
+        db (Session): SQLAlchemy session.
+
+    Returns:
+        Customer: Customer object if found, else None.
+    """
+    return db.query(Customer).filter(Customer.customer_id == customer_id).first()    

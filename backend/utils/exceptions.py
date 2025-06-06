@@ -20,6 +20,17 @@ class BookingDetailsNotFoundException(Exception):
         self.message = message
         super().__init__((self.message))  
 
+class CustomerNotFoundException(Exception):
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__((self.message))  
+
+class CustomerAlreadyExistsException(Exception):
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__((self.message))                 
 
 class InvalidFilterException(Exception):
     
