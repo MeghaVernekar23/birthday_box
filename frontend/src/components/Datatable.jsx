@@ -18,139 +18,129 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
   }
 
   return (
-    <div className="table-container">
-      <div
-        className="table-header d-flex justify-content-between align-items-center"
-        style={{ cursor: "pointer" }}
-      >
-        <div
-          className="d-flex align-items-center gap-2"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-          <h5 className="mb-0">{title}</h5>
+    <div
+      className="table-container"
+      style={{ height: "70vh", overflowY: "auto" }}
+    >
+      <h5 className="mb-0">{title}</h5>
+
+      <div>
+        <table className="table custom-table mt-3">
+          <thead>
+            <tr>
+              <th></th>
+              {columns.map((col) => (
+                <th key={col.key}>{col.label}</th>
+              ))}
+              {actions.length > 0 && <th>Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (actions.length > 0 ? 2 : 1)}
+                  className="text-center"
+                >
+                  No details found
+                </td>
+              </tr>
+            ) : (
+              data
+                .slice(
+                  (currentPage - 1) * entriesPerPage,
+                  currentPage * entriesPerPage
+                )
+                .map((row, index) => (
+                  <tr key={row.id || index}>
+                    <td>{(currentPage - 1) * entriesPerPage + index + 1}</td>
+                    {columns.map((col) => (
+                      <td key={col.key}>{row[col.key]}</td>
+                    ))}
+                    {actions.length > 0 && (
+                      <td>
+                        {actions.map((ActionBtn, i) => (
+                          <ActionBtn key={i} row={row} />
+                        ))}
+                      </td>
+                    )}
+                  </tr>
+                ))
+            )}
+          </tbody>
+        </table>
+
+        {/* Pagination Controls */}
+        <div className="pagination d-flex align-items-center gap-2 ">
+          {/* First */}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => currentPage > 1 && setCurrentPage(1)}
+          >
+            {"<<"}
+          </span>
+
+          {/* Previous Group */}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (startPage > 1) setCurrentPage(startPage - 1);
+            }}
+          >
+            {"<"}
+          </span>
+
+          {/* Page Numbers */}
+          {pageNumbers.map((page) => (
+            <span
+              key={page}
+              className={`page-link ${
+                page === currentPage ? "custom-active" : ""
+              }`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </span>
+          ))}
+
+          {/* Next Group */}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (endPage < totalPages) setCurrentPage(endPage + 1);
+            }}
+          >
+            {">"}
+          </span>
+
+          {/* Last */}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() =>
+              currentPage < totalPages && setCurrentPage(totalPages)
+            }
+          >
+            {">>"}
+          </span>
         </div>
       </div>
-
-      {!isCollapsed && (
-        <div>
-          <table className="table custom-table mt-3">
-            <thead>
-              <tr>
-                <th></th>
-                {columns.map((col) => (
-                  <th key={col.key}>{col.label}</th>
-                ))}
-                {actions.length > 0 && <th>Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + (actions.length > 0 ? 2 : 1)}
-                    className="text-center"
-                  >
-                    No details found
-                  </td>
-                </tr>
-              ) : (
-                data
-                  .slice(
-                    (currentPage - 1) * entriesPerPage,
-                    currentPage * entriesPerPage
-                  )
-                  .map((row, index) => (
-                    <tr key={row.id || index}>
-                      <td>{(currentPage - 1) * entriesPerPage + index + 1}</td>
-                      {columns.map((col) => (
-                        <td key={col.key}>{row[col.key]}</td>
-                      ))}
-                      {actions.length > 0 && (
-                        <td>
-                          {actions.map((ActionBtn, i) => (
-                            <ActionBtn key={i} row={row} />
-                          ))}
-                        </td>
-                      )}
-                    </tr>
-                  ))
-              )}
-            </tbody>
-          </table>
-
-          {/* Pagination Controls */}
-          <div className="pagination d-flex align-items-center gap-2 ">
-            {/* First */}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => currentPage > 1 && setCurrentPage(1)}
-            >
-              {"<<"}
-            </span>
-
-            {/* Previous Group */}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (startPage > 1) setCurrentPage(startPage - 1);
-              }}
-            >
-              {"<"}
-            </span>
-
-            {/* Page Numbers */}
-            {pageNumbers.map((page) => (
-              <span
-                key={page}
-                className={`page-link ${
-                  page === currentPage ? "custom-active" : ""
-                }`}
-                style={{ cursor: "pointer" }}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </span>
-            ))}
-
-            {/* Next Group */}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (endPage < totalPages) setCurrentPage(endPage + 1);
-              }}
-            >
-              {">"}
-            </span>
-
-            {/* Last */}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() =>
-                currentPage < totalPages && setCurrentPage(totalPages)
-              }
-            >
-              {">>"}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
