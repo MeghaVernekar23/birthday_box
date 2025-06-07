@@ -32,7 +32,7 @@ function Login() {
       console.log("Login successful:", data);
 
       const user_email = await apiRequest({
-        url: "http://localhost:8000/users/me",
+        url: "http://127.0.0.1:8000/users/me",
         method: "GET",
         headers: {
           Authorization: `Bearer ${data.access_token}`,
