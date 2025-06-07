@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
 
 const DataTable = ({ title, columns, data, actions = [] }) => {

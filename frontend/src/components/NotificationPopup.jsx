@@ -1,4 +1,5 @@
 import "../css/NotificationPopup.css";
+import React from "react";
 
 function NotificationPopup({ message, onConfirm, onCancel }) {
   return (
