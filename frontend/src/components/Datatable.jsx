@@ -4,7 +4,7 @@ import { Search, ChevronUp, ChevronDown } from "lucide-react";
 const DataTable = ({ title, columns, data, actions = [] }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 5;
+  const entriesPerPage = 20;
   const totalPages = Math.ceil(data.length / entriesPerPage);
 
   const maxVisiblePages = 5;

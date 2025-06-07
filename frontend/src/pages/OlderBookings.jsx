@@ -1,4 +1,4 @@
-import { useState, React, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import "../css/Dashboard.css";
 import BirthdayLogo from "../images/logo.jpg";
@@ -28,8 +28,6 @@ function Bookings() {
   const [bookingDate, setBookingDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
 
-  const [todayBookingData, setTodaysBookings] = useState([]);
-  const [upcomingBookingData, setUpcomingBookings] = useState([]);
   const [olderBookingData, setOlderBookings] = useState([]);
 
   const [celebrationOptions, setcelebrationOptions] = useState([]);
@@ -109,21 +107,8 @@ function Bookings() {
   );
 
   useEffect(() => {
-    fetchTodaysBookings();
-    fetchUpcomingBookings();
     fetchOlderBookings();
   }, []);
-
-  const fetchTodaysBookings = async () => {
-    const data = await fetchBookingsByFilter("today");
-    console.log("data::", data);
-    setTodaysBookings(data);
-  };
-
-  const fetchUpcomingBookings = async () => {
-    const data = await fetchBookingsByFilter("future");
-    setUpcomingBookings(data);
-  };
 
   const fetchOlderBookings = async () => {
     const data = await fetchBookingsByFilter("past");
@@ -248,8 +233,6 @@ function Bookings() {
       await deleteBooking(popup.booking.booking_id);
       setPopup({ visible: false, booking: null });
       alert("Booking deleted successfully!");
-      fetchTodaysBookings();
-      fetchUpcomingBookings();
       fetchOlderBookings();
     } catch (error) {
       console.error("Delete failed:", error);
@@ -264,45 +247,6 @@ function Bookings() {
 
   return (
     <div>
-      <div className="mb-3"></div>
-      <div className="d-flex justify-content-end">
-        <button
-          className="btn btn-pink"
-          onClick={() => {
-            setIsEditMode(false);
-            setFormData(emptyForm);
-
-            setCustomerChecked(false);
-            setEditingBookingId(null);
-            setShowModal(true);
-          }}
-        >
-          Add Booking
-        </button>
-      </div>
-
-      <div className="mb-3"></div>
-
-      <DataTable
-        title="Today's Bookings"
-        columns={columns}
-        data={todayBookingData}
-        actions={[ActionEdit, ActionDelete]}
-        collapseId="todayTable"
-      />
-
-      <div className="mb-5"></div>
-
-      <DataTable
-        title="Upcoming Bookings"
-        columns={columns}
-        data={upcomingBookingData}
-        actions={[ActionEdit, ActionDelete]}
-        collapseId="upcomingTable"
-      />
-
-      <div className="mb-5"></div>
-
       <DataTable
         title="Older Bookings"
         columns={columns}
@@ -335,8 +279,6 @@ function Bookings() {
             setCustomerChecked(false);
             setIsEditMode(false);
             setEditingBookingId(null);
-            fetchTodaysBookings();
-            fetchUpcomingBookings();
             fetchOlderBookings();
           }}
           isEditMode={isEditMode}

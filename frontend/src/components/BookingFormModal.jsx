@@ -1,10 +1,7 @@
-// File: src/components/BookingFormModal.jsx
-
 import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { getCustomerByPhone } from "../services/CustomerService";
-
+import "../css/Dashboard.css";
 const BookingFormModal = ({
   show,
   onClose,
@@ -18,10 +15,7 @@ const BookingFormModal = ({
 }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(initialData);
-  const [isExistingCustomer, setIsExistingCustomer] = useState(false);
-  const [customerChecked, setCustomerChecked] = useState(false);
-  const [checkMessage, setCheckMessage] = useState("");
-  
+
   const [bookingDate, setBookingDate] = useState(
     initialData.event_date ? new Date(initialData.event_date) : null
   );
@@ -50,38 +44,12 @@ const BookingFormModal = ({
     }
   }, [show]);
 
-
   const handlePrevious = () => {
     if (step === 1) {
-      
       setFormData(emptyForm);
       setStep(1);
-      setCustomerChecked(false);
     } else {
       setStep((prev) => prev - 1);
-    }
-  };
-
-  const checkCustomerByPhone = async () => {
-    try {
-      const data = await getCustomerByPhone(formData.phone_number);
-      console.log("data ", data);
-      setIsExistingCustomer(true);
-      setFormData({
-        ...formData,
-        customer_name: data.name,
-        email: data.email,
-        address: data.address,
-      });
-      setCheckMessage("Customer details found");
-    } catch (error) {
-      console.log("error ", error);
-      setIsExistingCustomer(false);
-      setFormData({ ...formData, customer_name: "", email: "", address: "" });
-      setCheckMessage("Customer details not found");
-    } finally {
-      setCustomerChecked(true);
-      setTimeout(() => setCheckMessage(""), 3000);
     }
   };
 
@@ -96,7 +64,7 @@ const BookingFormModal = ({
             className="modal-title"
             style={{ marginLeft: "10px", margin: "0 auto" }}
           >
-            {isEditMode ? "Edit Booking" : "Add Booking"}
+            Edit Booking
           </h5>
           <button className="btn-close-modal" onClick={onClose}>
             &times;
@@ -104,30 +72,27 @@ const BookingFormModal = ({
         </div>
 
         <div className="stepper">
-          <div className={`step ${step === 1 ? "active" : ""}`}>
-            <div className="step-number">1</div>
-            Customer Details
-          </div>
-          <div className={`step ${step === 2 ? "active" : ""}`}>
-            <div className="step-number">2</div>
-            Date & Time
-          </div>
-          <div className={`step ${step === 3 ? "active" : ""}`}>
-            <div className="step-number">3</div>
-            Celebration Type
-          </div>
-          <div className={`step ${step === 4 ? "active" : ""}`}>
-            <div className="step-number">4</div>
-            Package
-          </div>
-          <div className={`step ${step === 5 ? "active" : ""}`}>
-            <div className="step-number">5</div>
-            Add-ons
-          </div>
-          <div className={`step ${step === 6 ? "active" : ""}`}>
-            <div className="step-number">6</div>
-            Review
-          </div>
+          {[1, 2, 3, 4, 5, 6].map((num) => (
+            <div
+              key={num}
+              className={`step 
+        ${step === num ? "active" : ""} 
+        ${step > num ? "completed" : ""}`}
+            >
+              <div className="step-number">{num}</div>
+              {
+                [
+                  "Customer Details",
+                  "Date & Time",
+                  "Celebration Type",
+                  "Package",
+                  "Add-ons",
+                  "Review",
+                ][num - 1]
+              }
+              {num < 6 && <div className="step-line" />}
+            </div>
+          ))}
         </div>
 
         <div className="modal-body">
@@ -147,34 +112,10 @@ const BookingFormModal = ({
                       setFormData({ ...formData, phone_number: value });
                     }
                   }}
-                  disabled={isEditMode} // Only disabled during edit
+                  disabled={isEditMode}
                 />
 
-                {!isEditMode && (
-                  <>
-                    <button
-                      className="btn btn-pink mb-3"
-                      onClick={checkCustomerByPhone}
-                      disabled={
-                        !formData.phone_number ||
-                        formData.phone_number.length < 7
-                      }
-                    >
-                      Check
-                    </button>
-                    {checkMessage && (
-                      <div
-                        className="form-label"
-                        style={{ fontSize: "1.0rem" }}
-                      >
-                        {checkMessage}
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* These fields should be shown if either a customer was checked or it's edit mode */}
-                {(customerChecked || isEditMode) && (
+                {isEditMode && (
                   <>
                     <label className="form-label">Customer Name</label>
                     <input
@@ -187,7 +128,7 @@ const BookingFormModal = ({
                           customer_name: e.target.value,
                         })
                       }
-                      disabled={isEditMode || isExistingCustomer}
+                      disabled={isEditMode}
                     />
                     <label className="form-label">Email</label>
                     <input
@@ -200,7 +141,7 @@ const BookingFormModal = ({
                           email: e.target.value,
                         })
                       }
-                      disabled={isEditMode || isExistingCustomer}
+                      disabled={isEditMode}
                     />
                     <label className="form-label">Address</label>
                     <input
@@ -213,7 +154,7 @@ const BookingFormModal = ({
                           address: e.target.value,
                         })
                       }
-                      disabled={isEditMode || isExistingCustomer}
+                      disabled={isEditMode}
                     />
                   </>
                 )}
@@ -255,7 +196,6 @@ const BookingFormModal = ({
                 />
               </div>
 
-              {/* Time Slots */}
               {bookingDate && (
                 <>
                   <h6>Available Time Slots</h6>

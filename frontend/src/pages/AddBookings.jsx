@@ -1,4 +1,4 @@
-import { useState, React, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { getCustomerByPhone } from "../services/CustomerService";
 import DatePicker from "react-datepicker";
 import NotificationPopup from "../components/NotificationPopup";
