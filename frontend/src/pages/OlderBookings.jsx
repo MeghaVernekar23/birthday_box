@@ -1,83 +1,20 @@
 import React, { useState, useEffect } from "react";
 
-import "../css/Dashboard.css";
-import BirthdayLogo from "../images/logo.jpg";
-import { Edit, Trash2, Search } from "lucide-react";
+import "../css/Booking.css";
+import { Eye } from "lucide-react";
 import DataTable from "../components/Datatable";
-import NotificationPopup from "../components/NotificationPopup";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import BookingFormModal from "../components/BookingFormModal";
 
 import {
   fetchBookingsByFilter,
-  fetchCelebrationType,
-  fetchPackage,
-  submitBooking,
-  deleteBooking,
   fetchBookingById,
-  updateBooking,
 } from "../services/bookingServices";
-import { getCustomerByPhone } from "../services/CustomerService";
 
 function Bookings() {
-  const user = localStorage.getItem("current_user");
+  const [popupView, setPopupView] = useState({ visible: false, booking: null });
 
   const [showModal, setShowModal] = useState(false);
 
-  const [bookingDate, setBookingDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-
   const [olderBookingData, setOlderBookings] = useState([]);
-
-  const [celebrationOptions, setcelebrationOptions] = useState([]);
-
-  const [packageOptions, setpackageOptions] = useState([]);
-
-  const [bookedSlots, setBookedSlots] = useState([]);
-
-  const [isExistingCustomer, setIsExistingCustomer] = useState(false);
-  const [customerChecked, setCustomerChecked] = useState(false);
-
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  const [editingBookingId, setEditingBookingId] = useState(null);
-
-  const [popup, setPopup] = useState({ visible: false, booking: null });
-
-  const [checkMessage, setCheckMessage] = useState("");
-
-  const [formData, setFormData] = useState({
-    customer_name: "",
-    phone_number: "",
-    email: "",
-    address: "",
-    event_date: "",
-    time_slot: "",
-    celebration_id: "",
-    package_id: "",
-    addons_note: "",
-    updated_by: "",
-    created_by: "",
-    status: "",
-    created_at: "",
-    updated_at: "",
-  });
-
-  const emptyForm = {
-    customer_name: "",
-    phone_number: "",
-    email: "",
-    address: "",
-    event_date: "",
-    time_slot: "",
-    celebration_id: "",
-    package_id: "",
-    addons_note: "",
-    updated_by: "",
-    created_by: "",
-    status: "",
-  };
 
   const columns = [
     { key: "customer_name", label: "Customer Name" },
@@ -90,19 +27,11 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
-  const ActionEdit = ({ row }) => (
-    <Edit
-      className="action-icon text-primary"
+  const ActionView = ({ row }) => (
+    <Eye
+      className="action-icon text-info"
       size={18}
-      onClick={() => handleEditBooking(row)}
-    />
-  );
-
-  const ActionDelete = ({ row }) => (
-    <Trash2
-      className="action-icon text-danger"
-      size={18}
-      onClick={() => handleDeleteBooking(row)}
+      onClick={() => handleViewBooking(row)}
     />
   );
 
@@ -121,14 +50,7 @@ function Bookings() {
 
       const fetchModalData = async () => {
         try {
-          const [bookings, celebrations, packages] = await Promise.all([
-            fetchBookingsByFilter("all"),
-            fetchCelebrationType(),
-            fetchPackage(),
-          ]);
-          setBookedSlots(bookings);
-          setcelebrationOptions(celebrations);
-          setpackageOptions(packages);
+          fetchBookingsByFilter("all");
         } catch (err) {
           console.error("Error fetching modal data", err);
         }
@@ -139,110 +61,14 @@ function Bookings() {
     }
   }, [showModal]);
 
-  const submitBookingDetails = async (formValues) => {
-    try {
-      const username = JSON.parse(user).username;
-      const updatedForm = {
-        ...formValues,
-        updated_by: username,
-        booking_id: editingBookingId,
-      };
-
-      if (isEditMode) {
-        await updateBooking(editingBookingId, updatedForm);
-        alert("Booking updated successfully!");
-      } else {
-        updatedForm.created_by = username;
-        updatedForm.status = "pending";
-        await submitBooking(updatedForm);
-        alert("Booking created successfully!");
-      }
-    } catch (error) {
-      alert("Something went wrong. Please try again.");
-      console.error("Submit failed:", error);
-    }
-  };
-
-  const checkCustomerByPhone = async () => {
-    try {
-      const data = await getCustomerByPhone(formData.phone_number);
-      console.log("data ", data);
-      setIsExistingCustomer(true);
-      setFormData({
-        ...formData,
-        customer_name: data.name,
-        email: data.email,
-        address: data.address,
-      });
-      setCheckMessage("Customer details found");
-    } catch (error) {
-      console.log("error ", error);
-      setIsExistingCustomer(false);
-      setFormData({ ...formData, customer_name: "", email: "", address: "" });
-      setCheckMessage("Customer details not found");
-    } finally {
-      setCustomerChecked(true);
-      setTimeout(() => setCheckMessage(""), 3000);
-    }
-  };
-
-  const handleEditBooking = async (booking) => {
+  const handleViewBooking = async (booking) => {
     try {
       const fullBooking = await fetchBookingById(booking.booking_id);
-
-      setFormData({
-        customer_name: fullBooking.customer_name,
-        phone_number: fullBooking.phone_number,
-        email: fullBooking.email,
-        address: fullBooking.address,
-        event_date: fullBooking.event_date,
-        time_slot: fullBooking.time_slot,
-        celebration_id: String(fullBooking.celebration_id),
-        package_id: String(fullBooking.package_id),
-        addons_note: fullBooking.addons_note,
-        updated_by: fullBooking.updated_by,
-        created_by: fullBooking.created_by,
-        status: fullBooking.status,
-        created_at: fullBooking.created_at,
-        updated_at: fullBooking.updated_at,
-      });
-
-      if (fullBooking.event_date) {
-        setBookingDate(new Date(fullBooking.event_date));
-      } else {
-        console.warn("Invalid event_date", fullBooking.event_date);
-      }
-      setSelectedTime(fullBooking.time_slot);
-      setIsEditMode(true);
-      setEditingBookingId(fullBooking.booking_id);
-      setCustomerChecked(true);
-
-      setShowModal(true);
+      setPopupView({ visible: true, booking: fullBooking });
     } catch (error) {
-      console.error("Error fetching booking for edit:", error);
-      alert("Failed to load booking details for editing.");
+      alert("Failed to load booking details.");
+      console.error("View error:", error);
     }
-  };
-
-  const handleDeleteBooking = (booking) => {
-    setPopup({ visible: true, booking });
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await deleteBooking(popup.booking.booking_id);
-      setPopup({ visible: false, booking: null });
-      alert("Booking deleted successfully!");
-      fetchOlderBookings();
-    } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Failed to delete the booking. Please try again.");
-      setPopup({ visible: false, booking: null });
-    }
-  };
-
-  const cancelDelete = () => {
-    setPopup({ visible: false, booking: null });
   };
 
   return (
@@ -251,56 +77,138 @@ function Bookings() {
         title="Older Bookings"
         columns={columns}
         data={olderBookingData}
-        collapseId="olderTable"
+        actions={[ActionView]}
+        searchableFields={["customer_name", "phone_number"]}
       />
 
-      {popup.visible && (
-        <NotificationPopup
-          message={`Are you sure you want to delete the booking for ${popup.booking.customer_name}?`}
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
-      )}
+      {popupView.visible && popupView.booking && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div
+              className="modal-close-icon"
+              onClick={() => setPopupView({ visible: false, booking: null })}
+            >
+              ×
+            </div>
+            <h5 className="text-center mb-3">Booking Details</h5>
 
-      {showModal && (
-        <BookingFormModal
-          show={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setFormData(emptyForm);
+            <div className="form-step-wrapper text-start px-3">
+              <div className="review-box mb-3">
+                <h5 className="review-title">Customer Details</h5>
+                <p>
+                  <strong>Name:</strong> {popupView.booking.customer_name}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {popupView.booking.phone_number}
+                </p>
+                {popupView.booking.email && (
+                  <p>
+                    <strong>Email:</strong> {popupView.booking.email}
+                  </p>
+                )}
+                {popupView.booking.address && (
+                  <p>
+                    <strong>Address:</strong> {popupView.booking.address}
+                  </p>
+                )}
+              </div>
 
-            setCustomerChecked(false);
-          }}
-          onSubmit={async (formValues) => {
-            await submitBookingDetails(formValues);
-            setShowModal(false);
-            setFormData(emptyForm);
+              <div className="review-box mb-3">
+                <h5 className="review-title">Date & Time</h5>
+                <p>
+                  <strong>Date:</strong> {popupView.booking.event_date}
+                </p>
+                <p>
+                  <strong>Time Slot:</strong> {popupView.booking.time_slot}
+                </p>
+              </div>
 
-            setCustomerChecked(false);
-            setIsEditMode(false);
-            setEditingBookingId(null);
-            fetchOlderBookings();
-          }}
-          isEditMode={isEditMode}
-          initialData={formData}
-          celebrationOptions={celebrationOptions}
-          packageOptions={packageOptions}
-          bookedSlots={bookedSlots}
-          checkCustomerByPhone={checkCustomerByPhone}
-          customerChecked={customerChecked}
-          isExistingCustomer={isExistingCustomer}
-          checkMessage={checkMessage}
-          fetchModalData={async () => {
-            const [bookings, celebrations, packages] = await Promise.all([
-              fetchBookingsByFilter("all"),
-              fetchCelebrationType(),
-              fetchPackage(),
-            ]);
-            setBookedSlots(bookings);
-            setcelebrationOptions(celebrations);
-            setpackageOptions(packages);
-          }}
-        />
+              <div className="review-box mb-3">
+                <h5 className="review-title">Celebration Type</h5>
+                <p>{popupView.booking.celebration_name}</p>
+              </div>
+
+              <div className="review-box mb-3">
+                <h5 className="review-title">Package</h5>
+                <p>{popupView.booking.package_name}</p>
+              </div>
+
+              {popupView.booking.additional_items?.length > 0 && (
+                <div className="review-box mb-3">
+                  <h6>Additional Requirements:</h6>
+                  <ul>
+                    {popupView.booking.additional_items.map((item, index) => (
+                      <li key={index}>
+                        {item.description} – ₹{item.price}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="review-box mb-3">
+                <h5 className="review-title">Booking Status</h5>
+                <p>{popupView.booking.status}</p>
+              </div>
+
+              <div className="review-box mb-3">
+                <h5 className="review-title">Payment Details</h5>
+                <p>
+                  <strong>Payment Mode:</strong>{" "}
+                  {popupView.booking.payment_mode
+                    ? popupView.booking.payment_mode
+                        .replace("_", " ")
+                        .toUpperCase()
+                    : "N/A"}
+                </p>
+                <p>
+                  <strong>Total Amount:</strong> ₹
+                  {popupView.booking.payment_total || "0"}
+                </p>
+                <p>
+                  <strong>Amount Paid:</strong> ₹
+                  {popupView.booking.payment_paid || "0"}
+                </p>
+                <p>
+                  <strong>Balance:</strong> ₹
+                  {Math.max(
+                    0,
+                    (Number(popupView.booking.payment_total) || 0) -
+                      (Number(popupView.booking.payment_paid) || 0)
+                  )}
+                </p>
+                {popupView.booking.payment_notes && (
+                  <p>
+                    <strong>Notes:</strong> {popupView.booking.payment_notes}
+                  </p>
+                )}
+              </div>
+
+              <div className="review-box mb-3">
+                <h5 className="review-title">Audit Trail</h5>
+                <p>
+                  <strong>Created By:</strong> {popupView.booking.created_by}
+                </p>
+                <p>
+                  <strong>Created At:</strong>{" "}
+                  {popupView.booking.created_at
+                    ? new Date(popupView.booking.created_at).toLocaleString()
+                    : "N/A"}
+                </p>
+                <p>
+                  <strong>Updated By:</strong>{" "}
+                  {popupView.booking.updated_by || "N/A"}
+                </p>
+                <p>
+                  <strong>Updated At:</strong>{" "}
+                  {popupView.booking.updated_at
+                    ? new Date(popupView.booking.updated_at).toLocaleString()
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

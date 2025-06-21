@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
+import "../css/Datatable.css";
 
-const DataTable = ({ title, columns, data, actions = [] }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const DataTable = ({
+  title,
+  columns,
+  data,
+  actions = [],
+  searchableFields = [],
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 20;
-  const totalPages = Math.ceil(data.length / entriesPerPage);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const entriesPerPage = 15;
   const maxVisiblePages = 5;
+  const totalPages = Math.ceil(data.length / entriesPerPage);
   const currentGroup = Math.floor((currentPage - 1) / maxVisiblePages);
   const startPage = currentGroup * maxVisiblePages + 1;
   const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
@@ -16,46 +22,63 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
   for (let i = startPage; i <= endPage; i++) {
     pageNumbers.push(i);
   }
+  const filteredData =
+    searchableFields.length === 0
+      ? data
+      : data.filter((row) => {
+          const query = searchQuery.toLowerCase();
+          return searchableFields.some((field) =>
+            row[field]?.toString().toLowerCase().includes(query)
+          );
+        });
+
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * entriesPerPage,
+    currentPage * entriesPerPage
+  );
 
   return (
-    <div
-      className="table-container"
-      style={{ height: "70vh", overflowY: "auto" }}
-    >
-      <h5 className="mb-0">{title}</h5>
+    <div className="container">
+      <h5 className="mb-3">{title}</h5>
+      {searchableFields.length > 0 && (
+        <input
+          type="text"
+          className="form-control mb-3 search-input"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1); // reset to first page on search
+          }}
+        />
+      )}
 
-      <div>
-        <table className="table custom-table mt-3">
-          <thead>
-            <tr>
-              <th></th>
-              {columns.map((col) => (
-                <th key={col.key}>{col.label}</th>
-              ))}
-              {actions.length > 0 && <th>Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {data.length === 0 ? (
+      <div className="table-wrapper">
+        <div className="table-body-scroll">
+          <table className="table table-bordered table-hover align-middle">
+            <thead className="table-light">
               <tr>
-                <td
-                  colSpan={columns.length + (actions.length > 0 ? 2 : 1)}
-                  className="text-center"
-                >
-                  No details found
-                </td>
+                {columns.map((col) => (
+                  <th key={col.key}>{col.label}</th>
+                ))}
+                {actions.length > 0 && <th>Actions</th>}
               </tr>
-            ) : (
-              data
-                .slice(
-                  (currentPage - 1) * entriesPerPage,
-                  currentPage * entriesPerPage
-                )
-                .map((row, index) => (
+            </thead>
+            <tbody>
+              {filteredData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                    className="text-center"
+                  >
+                    No results found
+                  </td>
+                </tr>
+              ) : (
+                paginatedData.map((row, index) => (
                   <tr key={row.id || index}>
-                    <td>{(currentPage - 1) * entriesPerPage + index + 1}</td>
                     {columns.map((col) => (
-                      <td key={col.key}>{row[col.key]}</td>
+                      <td key={col.key}>{row[col.key] ?? "--"}</td>
                     ))}
                     {actions.length > 0 && (
                       <td>
@@ -66,79 +89,69 @@ const DataTable = ({ title, columns, data, actions = [] }) => {
                     )}
                   </tr>
                 ))
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination Controls */}
-        <div className="pagination d-flex align-items-center gap-2 ">
-          {/* First */}
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              opacity: currentPage === 1 ? 0.5 : 1,
-            }}
-            onClick={() => currentPage > 1 && setCurrentPage(1)}
-          >
-            {"<<"}
-          </span>
-
-          {/* Previous Group */}
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              opacity: currentPage === 1 ? 0.5 : 1,
-            }}
-            onClick={() => {
-              if (startPage > 1) setCurrentPage(startPage - 1);
-            }}
-          >
-            {"<"}
-          </span>
-
-          {/* Page Numbers */}
-          {pageNumbers.map((page) => (
+              )}
+            </tbody>
+          </table>
+          <div className="pagination-bar">
             <span
-              key={page}
-              className={`page-link ${
-                page === currentPage ? "custom-active" : ""
-              }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setCurrentPage(page)}
+              className="page-link"
+              style={{
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                opacity: currentPage === 1 ? 0.5 : 1,
+              }}
+              onClick={() => currentPage > 1 && setCurrentPage(1)}
             >
-              {page}
+              {"<<"}
             </span>
-          ))}
-
-          {/* Next Group */}
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              opacity: currentPage === totalPages ? 0.5 : 1,
-            }}
-            onClick={() => {
-              if (endPage < totalPages) setCurrentPage(endPage + 1);
-            }}
-          >
-            {">"}
-          </span>
-
-          {/* Last */}
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              opacity: currentPage === totalPages ? 0.5 : 1,
-            }}
-            onClick={() =>
-              currentPage < totalPages && setCurrentPage(totalPages)
-            }
-          >
-            {">>"}
-          </span>
+            <span
+              className="page-link"
+              style={{
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                opacity: currentPage === 1 ? 0.5 : 1,
+              }}
+              onClick={() => {
+                if (startPage > 1) setCurrentPage(startPage - 1);
+              }}
+            >
+              {"<"}
+            </span>
+            {pageNumbers.map((page) => (
+              <span
+                key={page}
+                className={`page-link ${
+                  page === currentPage ? "custom-active" : ""
+                }`}
+                style={{ cursor: "pointer" }}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </span>
+            ))}
+            <span
+              className="page-link"
+              style={{
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                opacity: currentPage === totalPages ? 0.5 : 1,
+              }}
+              onClick={() => {
+                if (endPage < totalPages) setCurrentPage(endPage + 1);
+              }}
+            >
+              {">"}
+            </span>
+            <span
+              className="page-link"
+              style={{
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                opacity: currentPage === totalPages ? 0.5 : 1,
+              }}
+              onClick={() =>
+                currentPage < totalPages && setCurrentPage(totalPages)
+              }
+            >
+              {">>"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

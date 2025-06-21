@@ -1,0 +1,145 @@
+.container {
+  padding: 1rem;
+  height: 70vh;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.95rem;
+  
+}
+
+/* Table Header */
+.table thead th {
+  background-color: #b2c1f7;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px;
+   border-bottom: 1px solid #b2c1f7;
+  border-top: 1px solid #b2c1f7;
+  border-left: 1px solid #b2c1f7;
+  border-right: 1px solid #b2c1f7;
+}
+
+/* Table Body */
+.table tbody td {
+  padding: 10px;
+  vertical-align: left;
+  border-bottom: 1px solid #b2c1f7;
+  border-right: 1px solid #b2c1f7;
+}
+
+/* Hover Effect */
+.table tbody tr:hover {
+  background-color: #520a6c;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.table-body-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* Required to align thead and tbody properly */
+.table-body-scroll table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Make thead behave like a block so it can stick */
+.table-body-scroll thead,
+.table-body-scroll tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Sticky header magic */
+.table-body-scroll thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-bar {
+  
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+  padding: 5px 12px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  border-top: 1px solid #b2c1f7;
+  border-right: 1px solid #b2c1f7;
+}
+
+
+
+.pagination-bar .page-link.custom-active {
+  background-color: #b2c1f7;
+  color: black;
+  font-weight: bold;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+ .pagination-bar span {
+    margin: 0 5px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 50%;
+    
+  }
+
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  border: 1px solid #b2c1f7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.page-link {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 6px 12px;
+  border: 1px solid #b2c1f7;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-link.custom-active {
+  background-color: #b2c1f7;
+  color: #b2c1f7;
+  font-weight: bold;
+}
+
+
+.pagination-bar::-webkit-scrollbar {
+  height: 4px;
+}
+.pagination-bar::-webkit-scrollbar-thumb {
+  background-color: #b2c1f7;
+  border-radius: 4px;
+}
+
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Optional: Keep it neat */
+.table-responsive-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+.table-responsive-wrapper::-webkit-scrollbar-thumb {
+  background-color:#b2c1f7;
+  border-radius: 4px;
+}

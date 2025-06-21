@@ -1,18 +1,24 @@
-import "../css/NotificationPopup.css";
 import React from "react";
+import "../css/NotificationPopup.css";
 
 function NotificationPopup({ message, onConfirm, onCancel }) {
   return (
     <>
-      <div className="popup-overlay"></div>
-      <div className="popup-message">
-        <div className="popup-content">
-          <p>{message}</p>
-          <div className="popup-actions">
-            <button className="btn-pink" onClick={onConfirm}>
+      <div className="notification-overlay" />
+      <div className="notification-box">
+        <div className="notification-content">
+          <p className="notification-message">{message}</p>
+          <div className="notification-actions">
+            <button
+              className="btn btn-outline-success btn-sm"
+              onClick={onConfirm}
+            >
               Confirm
             </button>
-            <button className="btn-pink" onClick={onCancel}>
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={onCancel}
+            >
               Cancel
             </button>
           </div>

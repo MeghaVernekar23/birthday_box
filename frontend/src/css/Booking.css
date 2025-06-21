@@ -1,0 +1,104 @@
+.modal-box {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  height: 70vh;
+  max-height: 70vh; 
+  width: 90%;
+  max-width: 1000px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  overflow-y: auto; 
+  overflow-x: hidden;
+  margin: auto;
+  text-align: center;
+}
+
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  overflow-x: auto;
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  gap: 0.5rem;
+  scrollbar-width: none; 
+}
+.stepper::-webkit-scrollbar {
+  display: none; /* hide scrollbar in Chrome/Safari */
+}
+
+/* Individual step */
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 100px;
+  position: relative;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0 4px;
+  color: #aaa;
+  transition: all 0.3s ease-in-out;
+}
+
+.step-number {
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  height: 32px;
+  width: 32px;
+  line-height: 32px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Active Step */
+.step.active .step-number {
+  background-color: #b2c1f7; /* your pink */
+  color: white;
+}
+.step.active {
+  color: black;
+  font-weight: bold;
+}
+
+/* Completed Step */
+.step.completed .step-number {
+  background-color: #b2c1f7;
+  color: white;
+}
+.step.completed {
+  color: #b2c1f7;
+  font-weight: bold;
+}
+
+/* Step line */
+.step-line {
+   position: absolute;
+  top: 16px; /* aligns with middle of the step circle */
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background-color: #ccc;
+  z-index: -1;
+  transform: translateX(-50%);
+}
+.step.completed .step-line {
+  background-color: #b2c1f7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .step {
+    font-size: 0.75rem;
+    min-width: 90px;
+  }
+  .step-number {
+    height: 28px;
+    width: 28px;
+    line-height: 28px;
+    font-size: 0.9rem;
+  }
+}

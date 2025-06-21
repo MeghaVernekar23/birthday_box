@@ -7,9 +7,10 @@ import {
   getCustomerByPhone,
   deleteCustomer,
 } from "../services/CustomerService";
-import { Edit, Trash2 } from "lucide-react";
+import { fetchBookingsByCustomer } from "../services/bookingServices";
+import { Edit, Trash2, Eye } from "lucide-react";
 import NotificationPopup from "../components/NotificationPopup";
-
+import "../css/Customer.css";
 const CustomerDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [customers, setCustomers] = useState([]);
@@ -19,6 +20,9 @@ const CustomerDetails = () => {
   const [customerChecked, setCustomerChecked] = useState(false);
   const [checkMessage, setCheckMessage] = useState("");
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingData, setBookingData] = useState([]);
+  const [selectedCustomerName, setSelectedCustomerName] = useState("");
   const [popup, setPopup] = useState({ visible: false, customer: null });
 
   const [formData, setFormData] = useState({
@@ -34,6 +38,13 @@ const CustomerDetails = () => {
     email: "",
     address: "",
   };
+
+  const bookingColumns = [
+    { key: "booking_id", label: "Booking Id" },
+    { key: "event_date", label: "Date" },
+    { key: "package_name", label: "Package" },
+    { key: "payment_paid", label: "Payment" },
+  ];
 
   useEffect(() => {
     fetchCustomerData();
@@ -88,6 +99,7 @@ const CustomerDetails = () => {
       } else {
         setIsExistingCustomer(false);
         setCheckMessage("No customer found. You can add now.");
+
         setIsSaveDisabled(false);
       }
     } catch (error) {
@@ -163,10 +175,32 @@ const CustomerDetails = () => {
     />
   );
 
+  const ActionView = ({ row }) => (
+    <Eye
+      className="action-icon text-info"
+      size={18}
+      onClick={() => handleViewBookings(row)}
+      title="View Bookings"
+    />
+  );
+
   const handleDeleteCustomer = (customer) => {
     setPopup({ visible: true, customer });
   };
 
+  const handleViewBookings = async (customer) => {
+    try {
+      console.log("**customer_id**", customer.customer_id);
+      const data = await fetchBookingsByCustomer(customer.customer_id);
+      console.log("****", data);
+      setBookingData(data);
+      setSelectedCustomerName(customer.name);
+      setShowBookingModal(true);
+    } catch (err) {
+      console.error("Error fetching bookings", err);
+      alert("Failed to load bookings");
+    }
+  };
   const confirmDelete = async () => {
     try {
       await deleteCustomer(popup.customer.customer_id);
@@ -185,47 +219,98 @@ const CustomerDetails = () => {
   };
 
   return (
-    <div>
-      <div className="mb-3"></div>
+    <div className="container">
       <div className="d-flex justify-content-end">
-        <button className="btn btn-pink" onClick={handleAddCustomer}>
+        <button className="button" onClick={handleAddCustomer}>
           Add Customer
         </button>
       </div>
 
-      <div className="mb-3"></div>
-
       <DataTable
-        title="All Customers"
+        title="Customer Details"
         columns={columns}
         data={customers}
-        actions={[ActionEdit, ActionDelete]}
+        actions={[ActionEdit, ActionDelete, ActionView]}
+        searchableFields={["name", "email", "phone", "address"]}
       />
 
       {popup.visible && (
         <NotificationPopup
-          message={`Are you sure you want to delete the customer for ${popup.customer.name}?`}
+          message={`Are you sure you want to delete the customer ${popup.customer.name}?`}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
         />
       )}
 
       {showModal && (
-        <>
-          <div
-            className="custom-modal-overlay"
-            onClick={() => setShowModal(false)}
-          ></div>
-          <div className="custom-modal">
-            <div className="modal-header">
-              <h5
-                className="modal-title"
-                style={{ marginLeft: "10px", margin: "0 auto" }}
-              >
-                {isEditMode ? "Edit Customer" : "Add Customer"}
-              </h5>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h5>{isEditMode ? "Edit Customer" : "Add Customer"}</h5>
+
+            <input
+              className="form-control"
+              placeholder="Enter Phone Number"
+              value={formData.phone_number}
+              maxLength={11}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  setFormData({ ...formData, phone_number: value });
+                }
+              }}
+              disabled={isEditMode}
+            />
+            {!isEditMode && (
+              <>
+                <button
+                  className="pop-up-button"
+                  onClick={checkCustomerByPhone}
+                  disabled={
+                    !formData.phone_number || formData.phone_number.length < 7
+                  }
+                >
+                  Check
+                </button>
+                {checkMessage && (
+                  <div className="form-label-text">{checkMessage}</div>
+                )}
+              </>
+            )}
+
+            {(isEditMode || (!isExistingCustomer && customerChecked)) && (
+              <>
+                <input
+                  className="form-control"
+                  placeholder="Enter Customer Name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  disabled={isExistingCustomer && !isEditMode}
+                />
+                <input
+                  className="form-control"
+                  placeholder="Enter Email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  disabled={isExistingCustomer && !isEditMode}
+                />
+                <input
+                  className="form-control"
+                  placeholder="Enter Address"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  disabled={isExistingCustomer && !isEditMode}
+                />
+              </>
+            )}
+            <div className="modal-actions">
               <button
-                className="btn-close-modal"
+                className="btn btn-outline-secondary btn-sm"
                 onClick={() => {
                   setShowModal(false);
                   setFormData(emptyForm);
@@ -234,95 +319,10 @@ const CustomerDetails = () => {
                   setIsSaveDisabled(true);
                 }}
               >
-                &times;
+                Cancel
               </button>
-            </div>
-
-            <div className="modal-body">
-              <div className="form-step-wrapper text-center">
-                <div className="input-group-wrapper text-start">
-                  <label className="form-label">Phone Number</label>
-                  <input
-                    className="form-control mb-3"
-                    placeholder="Enter Phone Number"
-                    value={formData.phone_number}
-                    maxLength={11}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        setFormData({ ...formData, phone_number: value });
-                      }
-                    }}
-                    disabled={isEditMode}
-                  />
-
-                  {!isEditMode && (
-                    <>
-                      <button
-                        className="btn btn-pink mb-3"
-                        onClick={checkCustomerByPhone}
-                        disabled={
-                          !formData.phone_number ||
-                          formData.phone_number.length < 7
-                        }
-                      >
-                        Check
-                      </button>
-                      {checkMessage && (
-                        <div
-                          className="form-label"
-                          style={{ fontSize: "1rem" }}
-                        >
-                          {checkMessage}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {(isEditMode || (!isExistingCustomer && customerChecked)) && (
-                    <>
-                      <div className="mb-1"></div>
-                      <label className="form-label">Customer Name</label>
-                      <input
-                        className="form-control mb-3"
-                        placeholder="Enter Customer Name"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        disabled={isExistingCustomer && !isEditMode}
-                      />
-
-                      <label className="form-label">Email</label>
-                      <input
-                        className="form-control mb-3"
-                        placeholder="Enter Email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        disabled={isExistingCustomer && !isEditMode}
-                      />
-
-                      <label className="form-label">Address</label>
-                      <input
-                        className="form-control mb-3"
-                        placeholder="Enter Address"
-                        value={formData.address}
-                        onChange={(e) =>
-                          setFormData({ ...formData, address: e.target.value })
-                        }
-                        disabled={isExistingCustomer && !isEditMode}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
               <button
-                className="btn btn-pink"
+                className="btn btn-outline-primary btn-sm"
                 onClick={() => {
                   const nameRegex = /^[A-Za-z\s]+$/;
                   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -351,7 +351,34 @@ const CustomerDetails = () => {
               </button>
             </div>
           </div>
-        </>
+        </div>
+      )}
+
+      {showBookingModal && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h5>Bookings for {selectedCustomerName}</h5>
+            {bookingData.length === 0 ? (
+              <p>No bookings found for this customer.</p>
+            ) : (
+              <DataTable
+                title=""
+                columns={bookingColumns}
+                data={bookingData}
+                searchableFields={[]}
+                actions={[]}
+              />
+            )}
+            <div className="modal-actions">
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setShowBookingModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
