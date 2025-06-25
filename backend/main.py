@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from api.users import users_router
 from api.bookings import bookings_router
 from api.customers import customer_router
+from api.holidays import holidays_router
 from api.health import health_router
 from fastapi.middleware.cors import CORSMiddleware
 from collections.abc import AsyncGenerator
@@ -36,6 +37,10 @@ app = FastAPI(
             "name": "Customer",
             "description": "APIs for customer validations.",
         },
+        {
+            "name": "Holidays",
+            "description": "APIs for Holidays validations.",
+        },
     ],
 )
 
@@ -51,3 +56,4 @@ app.include_router(health_router)
 app.include_router(users_router)
 app.include_router(bookings_router)
 app.include_router(customer_router)
+app.include_router(holidays_router)
