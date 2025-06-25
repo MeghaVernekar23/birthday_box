@@ -8,6 +8,7 @@ const DataTable = ({
   data,
   actions = [],
   searchableFields = [],
+  rowClassName,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,9 +77,18 @@ const DataTable = ({
                 </tr>
               ) : (
                 paginatedData.map((row, index) => (
-                  <tr key={row.id || index}>
+                  <tr
+                    key={row.id || index}
+                    className={
+                      typeof rowClassName === "function"
+                        ? rowClassName(row)
+                        : ""
+                    }
+                  >
                     {columns.map((col) => (
-                      <td key={col.key}>{row[col.key] ?? "--"}</td>
+                      <td key={col.key}>
+                        {col.render ? col.render(row) : row[col.key] ?? "--"}
+                      </td>
                     ))}
                     {actions.length > 0 && (
                       <td>

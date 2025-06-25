@@ -143,3 +143,12 @@
   background-color:#b2c1f7;
   border-radius: 4px;
 }
+
+.past-payment-row {
+  background-color: #ffe0e0 !important;
+}
+
+.past-payment-row td {
+  color: #b30000;
+  font-weight: 500;
+}

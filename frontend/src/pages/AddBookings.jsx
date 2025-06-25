@@ -94,8 +94,9 @@ function AddBookings() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bookings = await fetchBookingsByFilter("all");
+        const bookings = await fetchBookingsByFilter("todayandfuture");
         const celebrationData = await fetchCelebrationType();
+        console.log("celebration type ", celebrationData);
         const packageData = await fetchPackage();
         setcelebrationOptions(celebrationData);
         setpackageOptions(packageData);

@@ -138,7 +138,7 @@ function Bookings() {
       const fetchModalData = async () => {
         try {
           const [bookings, celebrations, packages] = await Promise.all([
-            fetchBookingsByFilter("all"),
+            fetchBookingsByFilter("todayandfuture"),
             fetchCelebrationType(),
             fetchPackage(),
           ]);
@@ -1137,45 +1137,6 @@ function Bookings() {
             </div>
           </div>
         </div>
-
-        // <BookingFormModal
-        //   show={showModal}
-        //   onClose={() => {
-        //     setShowModal(false);
-        //     setFormData(emptyForm);
-
-        //     setCustomerChecked(false);
-        //   }}
-        //   onSubmit={async (formValues) => {
-        //     await submitBookingDetails(formValues);
-        //     setShowModal(false);
-        //     setFormData(emptyForm);
-
-        //     setCustomerChecked(false);
-        //     setIsEditMode(false);
-        //     setEditingBookingId(null);
-        //     fetchTodaysBookings();
-        //   }}
-        //   isEditMode={isEditMode}
-        //   initialData={formData}
-        //   celebrationOptions={celebrationOptions}
-        //   packageOptions={packageOptions}
-        //   bookedSlots={bookedSlots}
-        //   checkCustomerByPhone={checkCustomerByPhone}
-        //   customerChecked={customerChecked}
-        //   isExistingCustomer={isExistingCustomer}
-        //   checkMessage={checkMessage}
-        //   fetchModalData={async () => {
-        //     const [bookings, celebrations, packages] = await Promise.all([
-        //       fetchBookingsByFilter("all"),
-        //       fetchCelebrationType(),
-        //       fetchPackage(),
-        //     ]);
-        //     setBookedSlots(bookings);
-        //     setcelebrationOptions(celebrations);
-        //     setpackageOptions(packages);
-        //   }}
-        // />
       )}
     </div>
   );

@@ -6,7 +6,6 @@ import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import BookingFormModal from "../components/BookingFormModal";
 
 import {
   fetchBookingsByFilter,
@@ -138,7 +137,7 @@ function Bookings() {
       const fetchModalData = async () => {
         try {
           const [bookings, celebrations, packages] = await Promise.all([
-            fetchBookingsByFilter("all"),
+            fetchBookingsByFilter("todayandfuture"),
             fetchCelebrationType(),
             fetchPackage(),
           ]);

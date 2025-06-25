@@ -1,6 +1,6 @@
 import { apiRequest } from "../utils/APIrequest";
 
-const BASE_URL = "http://18.153.92.37:8000";
+const BASE_URL = "http://127.0.0.1:8000";
 
 
 export const fetchAllCustomers = () => {
@@ -14,6 +14,7 @@ export const getCustomerByPhone = (phoneNumber) => {
         url: `${BASE_URL}/customers/details/${phoneNumber}`,
     });
 };
+
 
 
 export const submitCustomer = (formData) => {

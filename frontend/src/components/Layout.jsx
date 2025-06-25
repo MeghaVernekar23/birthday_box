@@ -9,11 +9,11 @@ const Layout = () => {
     <div style={{ height: "100vh", width: "100vw", overflow: "auto" }}>
       <div className="container-fluid h-100">
         <div className="row">
-          <nav class="navbar navbar-expand-lg navbar-light">
-            <div class="container-fluid">
+          <nav className="navbar navbar-expand-lg navbar-light">
+            <div className="container-fluid">
               <img src={BirthdayLogo} alt="Logo" width="120" height="70" />
               <button
-                class="navbar-toggler"
+                className="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarNavDropdown"
@@ -21,13 +21,13 @@ const Layout = () => {
                 aria-expanded="false"
                 aria-label="Toggle navigation"
               >
-                <span class="navbar-toggler-icon"></span>
+                <span className="navbar-toggler-icon"></span>
               </button>
-              <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav" style={{ marginLeft: "30px" }}>
-                  <li class="nav-item">
+              <div className="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul className="navbar-nav" style={{ marginLeft: "30px" }}>
+                  <li className="nav-item">
                     <a
-                      class="nav-link active"
+                      className="nav-link active"
                       href="#"
                       onClick={() => {
                         navigate("/dashboard");
@@ -36,7 +36,7 @@ const Layout = () => {
                       Dashboard
                     </a>
                   </li>
-                  <li class="nav-item" style={{ marginLeft: "10px" }}>
+                  <li className="nav-item" style={{ marginLeft: "10px" }}>
                     <a
                       className="nav-link"
                       href="#"
@@ -47,7 +47,7 @@ const Layout = () => {
                       Customer Details
                     </a>
                   </li>
-                  <li class="nav-item" style={{ marginLeft: "10px" }}>
+                  <li className="nav-item" style={{ marginLeft: "10px" }}>
                     <a
                       className="nav-link"
                       href="#"
@@ -58,9 +58,12 @@ const Layout = () => {
                       Add Booking
                     </a>
                   </li>
-                  <li class="nav-item dropdown" style={{ marginLeft: "10px" }}>
+                  <li
+                    className="nav-item dropdown"
+                    style={{ marginLeft: "10px" }}
+                  >
                     <a
-                      class="nav-link dropdown-toggle"
+                      className="nav-link dropdown-toggle"
                       href="#"
                       id="navbarDropdownMenuLink"
                       role="button"
@@ -70,12 +73,12 @@ const Layout = () => {
                       Booking Details
                     </a>
                     <ul
-                      class="dropdown-menu"
+                      className="dropdown-menu"
                       aria-labelledby="navbarDropdownMenuLink"
                     >
                       <li>
                         <a
-                          class="dropdown-item"
+                          className="dropdown-item"
                           href="#"
                           onClick={() => navigate("/bookings/today")}
                         >
@@ -84,7 +87,7 @@ const Layout = () => {
                       </li>
                       <li>
                         <a
-                          class="dropdown-item"
+                          className="dropdown-item"
                           href="#"
                           onClick={() => navigate("/bookings/upcoming")}
                         >
@@ -93,7 +96,7 @@ const Layout = () => {
                       </li>
                       <li>
                         <a
-                          class="dropdown-item"
+                          className="dropdown-item"
                           href="#"
                           onClick={() => navigate("/bookings/older")}
                         >
@@ -103,7 +106,7 @@ const Layout = () => {
                     </ul>
                   </li>
 
-                  <li class="nav-item" style={{ marginLeft: "10px" }}>
+                  <li className="nav-item" style={{ marginLeft: "10px" }}>
                     <a
                       className="nav-link"
                       href="#"

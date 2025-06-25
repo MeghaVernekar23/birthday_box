@@ -50,7 +50,7 @@ function Bookings() {
 
       const fetchModalData = async () => {
         try {
-          fetchBookingsByFilter("all");
+          fetchBookingsByFilter("todayandfuture");
         } catch (err) {
           console.error("Error fetching modal data", err);
         }
