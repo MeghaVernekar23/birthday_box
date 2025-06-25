@@ -1,12 +1,14 @@
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
-from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails, AddBookingDetails
+from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails, AddBookingDetails, CustomerBookingSummary
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 from fastapi import HTTPException
 from datetime import datetime, timezone
-from utils.db_utils import get_active_celebration_types, get_active_packages, get_booking_query, get_customer_by_phone, get_user_by_username
+from utils.db_utils import get_active_celebration_types, get_active_packages, get_booking_query, get_customer_by_phone, get_user_by_username, fetch_booking_by_customer_id
 from typing import List
+from sqlalchemy import func
+from sqlalchemy import and_
 
 
 def get_celebration_type(db: Session) -> List[CelebrationType]:
@@ -41,7 +43,7 @@ def get_package(db: Session) -> List[Packages]:
         raise Exception(f"An error occurred while fetching package details: {e}")    
 
 
-def get_bookings_details(filter: str, db: Session) -> List[BookingDetails]:
+def get_bookings_details(filter: str,  db: Session) -> List[BookingDetails]:
     """
     Fetch booking details based on filter (today, future, past, all).
 
@@ -63,14 +65,20 @@ def get_bookings_details(filter: str, db: Session) -> List[BookingDetails]:
             "today": Booking.event_date == today,
             "future": Booking.event_date > today,
             "past": Booking.event_date < today,
-            "all": Booking.event_date >= today,
+            "todayandfuture": Booking.event_date >= today,
+            "all": None
         }
 
-        filter_condition = filter_map.get(filter.lower())
-        if filter_condition is None:
-            raise InvalidFilterException(filter_value=filter, allowed_filters=list(filter_map.keys()))
-
-        query = query.filter(filter_condition)
+        if filter:
+            normalized = filter.lower()
+            filter_condition = filter_map.get(normalized)
+            if normalized not in filter_map:
+                raise InvalidFilterException(
+            filter_value=filter,
+            allowed_filters=list(filter_map.keys())
+            )
+            if filter_condition is not None:
+                query = query.filter(filter_condition)
 
         return query.order_by(Booking.event_date).all()
 
@@ -79,7 +87,42 @@ def get_bookings_details(filter: str, db: Session) -> List[BookingDetails]:
     except Exception as e:
         raise Exception(f"An error occurred while fetching booking details: {e}")
 
+def get_bookings_by_date(date: str,  db: Session) -> List[BookingDetails]:
+    """
+    Fetch booking details based on date .
 
+    Args:
+        date (str): date.
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        List[Any]: List of booking details.
+
+    Raises:
+        InvalidFilterException: If the filter value is invalid.
+    """
+    try:
+        query = get_booking_query(db)
+        
+
+        if date:
+            try:
+                target_date = datetime.strptime(date, "%Y-%m-%d").date()
+                query = query.filter(func.date(Booking.created_at) == target_date)
+            except ValueError:
+                raise InvalidFilterException(
+                    filter_value=date,
+                    allowed_filters=["valid date format: YYYY-MM-DD"]
+                )
+
+        
+
+        return query.order_by(Booking.event_date).all()
+
+    except InvalidFilterException:
+        raise
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching booking details: {e}")
 
 def get_booking_details_by_id(booking_id: int, db: Session)-> BookingDetails:
     """
@@ -145,9 +188,16 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             event_time=bookingDetails.time_slot,
             status=bookingDetails.status,
             notes=bookingDetails.addons_note,
+             payment_mode=bookingDetails.payment_mode,
+            payment_total=bookingDetails.payment_total,
+            payment_paid=bookingDetails.payment_paid,
+            payment_notes=bookingDetails.payment_notes,
             created_by=user.id,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc),
+            additional_items = [item.dict() for item in bookingDetails.additional_items]
         )
+
+
 
         db.add(booking)
         db.commit()
@@ -218,21 +268,17 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
         booking.event_time = booking_details.time_slot
         booking.notes = booking_details.addons_note
         booking.status = booking_details.status
+        booking.payment_mode=booking_details.payment_mode
+        booking.payment_total=booking_details.payment_total
+        booking.payment_paid=booking_details.payment_paid
+        booking.payment_notes=booking_details.payment_notes
         booking.updated_at = datetime.now(timezone.utc)
         booking.updated_by = user.id
-
-        try:
-            customer = get_customer_by_phone(booking_details.phone_number, db)
-            customer.name = booking_details.customer_name
-            customer.email = booking_details.email
-            customer.address = booking_details.address
-        except HTTPException:
-            pass
-
+        booking.additional_items = [item.dict() for item in booking_details.additional_items]
         
         db.commit()
         return {
-            "message": "Booking created successfully",
+            "message": "Booking updated successfully",
             "booking_id": booking.booking_id
         }
 
@@ -242,4 +288,80 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating booking: {str(e)}")
+    
+
+
+def get_booking_summary_by_customer_id(customer_id: int, db: Session) -> list[CustomerBookingSummary]:
+    """
+    Fetch the package, payment, and event date details for all bookings by a customer.
+
+    Args:
+        customer_id (int): ID of the customer.
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        List[CustomerBookingSummary]: List of packages selected, payments made, and event dates.
+    """
+    try:
+        results = fetch_booking_by_customer_id(customer_id, db)
+
+        return [
+            CustomerBookingSummary(
+                booking_id=row.booking_id,
+                package_name=row.package_name,
+                payment_paid=row.payment_paid,
+                event_date=row.event_date
+            )
+            for row in results
+        ]
+
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching booking summary: {e}")
+    
+
+
+
+
+
+
+def get_next_upcoming_booking(db: Session) -> BookingDetails:
+    """
+    Fetch the next upcoming booking for today.
+
+    Args:
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        BookingDetails: Next upcoming booking.
+
+    Raises:
+        BookingDetailsNotFoundException: If no upcoming bookings are found.
+    """
+    try:
+        query = get_booking_query(db)
+
+        now = datetime.now().time()
+        today = date.today()
+
+        result = (
+            query.filter(
+                and_(
+                    Booking.event_date == today,
+                    Booking.event_time > now  
+                )
+            )
+            .order_by(Booking.event_time.asc())
+            .first()
+        )
+
+        if not result:
+            raise BookingDetailsNotFoundException("No upcoming bookings found")
+
+        return result
+
+    except BookingDetailsNotFoundException:
+        raise
+    except Exception as e:
+        raise Exception(f"An error occurred while fetching the next booking: {e}")
+
     

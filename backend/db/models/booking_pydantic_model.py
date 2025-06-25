@@ -1,8 +1,10 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 
-
+class AdditionalItem(BaseModel):
+    description: str
+    price: float
 class BookingDetails(BaseModel):
     booking_id: int
     customer_name: str
@@ -17,10 +19,15 @@ class BookingDetails(BaseModel):
     package_name: str
     addons_note: str
     status: str
+    payment_mode: str
+    payment_total: float
+    payment_paid: float
+    payment_notes: str
     created_by: str
     updated_by: Optional[str]  
     created_at: datetime 
     updated_at: Optional[datetime] 
+    additional_items: Optional[List[AdditionalItem]] = []
 
     class Config:
         from_attributes = True  
@@ -50,9 +57,15 @@ class AddBookingDetails(BaseModel):
     celebration_id: int
     package_id: int
     addons_note: str
-    status: str
+    status: Optional[str] = "pending"
+    payment_mode: str
+    payment_total: float
+    payment_paid: float
+    payment_notes: str
     created_by: str
     updated_by: Optional[str]
+    additional_items: Optional[List[AdditionalItem]] = []
+
 
 class EditBookingDetails(BaseModel):
     booking_id: int
@@ -66,7 +79,18 @@ class EditBookingDetails(BaseModel):
     package_id: int
     addons_note: str
     status: str
+    payment_mode: str
+    payment_total: float
+    payment_paid: float
+    payment_notes: str
     created_by: str
     updated_by: Optional[str]  
     created_at: datetime 
     updated_at: Optional[datetime] 
+    additional_items: Optional[List[AdditionalItem]] = []
+
+class CustomerBookingSummary(BaseModel):
+    booking_id: int
+    package_name: str
+    payment_paid: Optional[float] = 0.0
+    event_date: date    
