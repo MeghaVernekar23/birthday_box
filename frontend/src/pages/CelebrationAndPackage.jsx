@@ -1,3 +1,4 @@
+import React from "react";
 const CelebrationAndPackage = () => {
   return (
     <div className="today-bookings-card shadow-sm">
