@@ -5,7 +5,7 @@ import {
 } from "../services/bookingServices";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "../css/Addbooking.css";
+import "../css/AddBooking.css";
 
 const AvailableSlots = () => {
   const [bookingDate, setBookingDate] = useState(null);

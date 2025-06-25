@@ -3,7 +3,7 @@ import { getCustomerByPhone } from "../services/CustomerService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import NotificationPopup from "../components/NotificationPopup";
-import "../css/Addbooking.css";
+import "../css/AddBooking.css";
 import {
   fetchCelebrationType,
   fetchPackage,
