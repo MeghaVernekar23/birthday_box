@@ -35,23 +35,22 @@ const PaymentStatus = () => {
     fetchData();
   }, []);
   return (
-    <div className="container">
-      <div className="today-bookings-card shadow-sm">
-        <div className="card-content">
-          <div className="card-header">
-            <h6 className="label">Pending Payments</h6>
-            <h2 className="text-center mt-2">{pendingPayments.length}</h2>
-            <div className="holiday-card-footer">
-              <button
-                className="view-all-btn"
-                onClick={() => setShowPaymentModal(true)}
-              >
-                View All <i className="bi bi-arrow-right" />
-              </button>
-            </div>
+    <div className="pending-payment-card shadow-sm">
+      <div className="card-content">
+        <div className="card-header">
+          <h6 className="label">Pending Payments</h6>
+          <h2 className="text-center mt-2">{pendingPayments.length}</h2>
+          <div className="holiday-card-footer">
+            <button
+              className="view-all-btn"
+              onClick={() => setShowPaymentModal(true)}
+            >
+              View All <i className="bi bi-arrow-right" />
+            </button>
           </div>
         </div>
       </div>
+
       {showPaymentModal && (
         <div className="ps-modal-overlay">
           <div className="ps-modal-box">

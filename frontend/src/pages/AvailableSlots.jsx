@@ -30,7 +30,7 @@ const AvailableSlots = () => {
   }, []);
 
   return (
-    <div className="card p-3 mb-4">
+    <div className="slot-availability-card">
       <h5 className="text-center">Check Available Slots</h5>
       <div className="d-flex justify-content-center mb-3">
         <DatePicker

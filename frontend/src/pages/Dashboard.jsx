@@ -5,31 +5,30 @@ import UpcomingHolidaysCard from "./UpcomingHolidays";
 import AvailableSlots from "./AvailableSlots";
 import PaymentStatus from "./PaymentStatus";
 import CelebrationAndPackage from "./CelebrationAndPackage";
+import "../css/Dashboard.css";
 
 function Dashboard() {
   return (
-    <div className="container mt-4">
-      <div className="row">
-        <div className="col-md-4 mb-4">
-          <BookingSummary />
-        </div>
-        <div className="col-md-4 mb-4">
-          <NextBooking />
-        </div>
-        <div className="col-md-4 mb-4">
-          <UpcomingHolidaysCard />
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-md-8 mb-4">
-          <AvailableSlots />
-        </div>
-
-        <div className="col-md-4 d-flex flex-column justify-content-between h-100">
-          <div className="mb-4">
-            <PaymentStatus />
+    <div className="dashboard-wrapper">
+      <div className="container mt-4">
+        <div className="row">
+          <div className="col-md-4 mb-4">
+            <BookingSummary />
           </div>
-          <div className="mb-4">
+          <div className="col-md-4 mb-4">
+            <NextBooking />
+          </div>
+          <div className="col-md-4 mb-4">
+            <UpcomingHolidaysCard />
+          </div>
+        </div>
+        <div className="row align-items-start">
+          <div className="col-md-8 mb-4">
+            <AvailableSlots />
+          </div>
+
+          <div className="col-md-4 d-flex flex-column gap-3">
+            <PaymentStatus />
             <CelebrationAndPackage />
           </div>
         </div>

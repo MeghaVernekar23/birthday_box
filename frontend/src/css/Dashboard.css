@@ -1,5 +1,5 @@
 .today-bookings-card {
-  max-width: 300px;
+  max-width: 400px;
   height: 170px;
   background: linear-gradient(to right, #f0f4ff, #e6f0ff);
   border-radius: 16px;
@@ -7,6 +7,30 @@
   transition: all 0.3s ease;
   border: 1px solid #e0e6f1;
   margin: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pending-payment-card {
+  width: 100%;
+  height: 170px;
+  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e0e6f1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.slot-availability-card {
+  max-width: 800px;
+   height: auto; 
+  min-height: 400px;
+  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e6f1;
+  margin: auto;
+  
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -197,5 +221,15 @@
   color: #b30000 !important;;
   font-weight: 5000 !important;
 }
+
+.dashboard-wrapper {
+  width: 100%;
+  max-width: 1200px; 
+  height: 800px; 
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white; 
+}
+
 
 

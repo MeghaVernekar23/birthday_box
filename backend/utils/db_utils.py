@@ -74,8 +74,13 @@ def get_booking_query(db: Session) -> List[Booking]:
                 Packages.package_name.label("package_name"),   
                 Booking.notes.label("addons_note"),
                 Booking.status,
+                Booking.payment_mode,
+                Booking.payment_total,
+                Booking.payment_paid,
+                Booking.payment_notes,
                 Booking.created_at,
                 Booking.updated_at,
+                Booking.additional_items,
                 updated_by_user.username.label("updated_by"),
                 created_by_user.username.label("created_by"),
             )
@@ -123,3 +128,28 @@ def fetch_customer_by_id(customer_id: int, db: Session) -> Customer:
         Customer: Customer object if found, else None.
     """
     return db.query(Customer).filter(Customer.customer_id == customer_id).first()    
+
+
+def fetch_booking_by_customer_id(customer_id: int, db: Session):
+    """
+    Execute raw booking query to fetch booking_id, package_name, payment_paid, and event_date
+    for a given customer.
+
+    Args:
+        customer_id (int): ID of the customer.
+        db (Session): SQLAlchemy session.
+
+    Returns:
+        List[Row]: List of result rows with selected fields.
+    """
+    return (
+        db.query(
+            Booking.booking_id,
+            Packages.package_name.label("package_name"),
+            Booking.payment_paid,
+            Booking.event_date
+        )
+        .join(Packages, Booking.package_id == Packages.package_id)
+        .filter(Booking.customer_id == customer_id)
+        .all()
+    )

@@ -42,7 +42,7 @@ const NextBookingCard = () => {
 
   return (
     <div className="conainer">
-      <div className="today-bookings-card shadow-sm align-left">
+      <div className="today-bookings-card shadow-sm">
         <div className="card-content">
           <div className="card-header">
             <div>

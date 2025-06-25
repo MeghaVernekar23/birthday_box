@@ -16,12 +16,13 @@ function Login() {
     setErrorMessage("");
 
     try {
+      console.log("clicked login:");
       const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("password", password);
 
       const data = await apiRequest({
-        url: "http://18.153.92.37:8000/users/login",
+        url: "http://18.185.39.103:8000/users/login",
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -32,7 +33,7 @@ function Login() {
       console.log("Login successful:", data);
 
       const user_email = await apiRequest({
-        url: "http://18.153.92.37:8000/users/me",
+        url: "http://18.185.39.103:8000/users/me",
         method: "GET",
         headers: {
           Authorization: `Bearer ${data.access_token}`,
@@ -54,7 +55,7 @@ function Login() {
   return (
     <section
       className="d-flex justify-content-center align-items-center"
-      style={{ backgroundColor: "#eee", height: "100vh", width: "100vw" }}
+      style={{ height: "100vh", width: "100vw" }}
     >
       <div className="container py-5 h-100">
         <div className="row d-flex justify-content-center align-items-center h-100">
