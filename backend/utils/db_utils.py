@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session,aliased
 from typing import List
 from db.models.sqlalchemy_models import Booking, Customer, CelebrationType, Packages, Users
 from fastapi import HTTPException
+from sqlalchemy import desc
 
 def get_user_by_username(username: str, db: Session) -> Users :
     """
@@ -113,7 +114,7 @@ def fetch_all_customers(db: Session) -> List[Customer]:
     Returns:
         List[Customer]: List of all customer objects.
     """
-    return db.query(Customer).all()
+    return db.query(Customer).order_by(desc(Customer.customer_id)).all()
     
 
 def fetch_customer_by_id(customer_id: int, db: Session) -> Customer:

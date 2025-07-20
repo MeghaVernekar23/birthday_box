@@ -9,6 +9,7 @@ const DataTable = ({
   actions = [],
   searchableFields = [],
   rowClassName,
+  actionButton,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,17 +42,23 @@ const DataTable = ({
   return (
     <div className="container">
       <h5 className="mb-3">{title}</h5>
-      {searchableFields.length > 0 && (
-        <input
-          type="text"
-          className="form-control mb-3 search-input"
-          placeholder="Search"
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setCurrentPage(1); // reset to first page on search
-          }}
-        />
+      {(searchableFields.length > 0 || actionButton) && (
+        <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+          {searchableFields.length > 0 && (
+            <input
+              type="text"
+              className="form-control search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{ maxWidth: "300px" }}
+            />
+          )}
+          {actionButton && <div>{actionButton}</div>}
+        </div>
       )}
 
       <div className="table-wrapper">
@@ -60,9 +67,11 @@ const DataTable = ({
             <thead className="table-light">
               <tr>
                 {columns.map((col) => (
-                  <th key={col.key}>{col.label}</th>
+                  <th key={col.key} className="text-center">
+                    {col.label}
+                  </th>
                 ))}
-                {actions.length > 0 && <th>Actions</th>}
+                {actions.length > 0 && <th className="text-center">Actions</th>}
               </tr>
             </thead>
             <tbody>

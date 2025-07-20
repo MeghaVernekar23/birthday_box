@@ -1,13 +1,14 @@
 .container {
   padding: 1rem;
-  height: 70vh;
+  height: auto;
 }
 
 .table {
   border-collapse: collapse;
   width: 100%;
   font-size: 0.95rem;
-  
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Table Header */
@@ -16,7 +17,7 @@
   font-weight: 600;
   text-align: left;
   padding: 12px;
-   border-bottom: 1px solid #b2c1f7;
+  border-bottom: 1px solid #b2c1f7;
   border-top: 1px solid #b2c1f7;
   border-left: 1px solid #b2c1f7;
   border-right: 1px solid #b2c1f7;
@@ -35,6 +36,9 @@
   background-color: #520a6c;
   transition: background-color 0.2s ease-in-out;
 }
+
+
+
 
 .table-body-scroll {
   flex: 1 1 auto;
@@ -66,24 +70,20 @@
 .pagination-bar {
   
   position: sticky;
-  bottom: 0;
-  background-color: #fff;
-  padding: 5px 12px;
-  z-index: 3;
+  background-color: #b2c1f7;
+  padding: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: 4px;
   overflow-x: auto;
-  border-top: 1px solid #b2c1f7;
   border-right: 1px solid #b2c1f7;
 }
 
 
 
 .pagination-bar .page-link.custom-active {
-  background-color: #b2c1f7;
   color: black;
   font-weight: bold;
   font-family: 'Segoe UI', sans-serif;

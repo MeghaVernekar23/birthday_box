@@ -159,29 +159,30 @@ const CustomerDetails = () => {
     { key: "address", label: "Address" },
   ];
 
-  const ActionEdit = ({ row }) => (
-    <Edit
-      className="action-icon text-primary"
-      size={18}
-      onClick={() => handleEditCustomer(row)}
-    />
-  );
-
-  const ActionDelete = ({ row }) => (
-    <Trash2
-      className="action-icon text-danger"
-      size={18}
-      onClick={() => handleDeleteCustomer(row)}
-    />
-  );
-
-  const ActionView = ({ row }) => (
-    <Eye
-      className="action-icon text-info"
-      size={18}
-      onClick={() => handleViewBookings(row)}
-      title="View Bookings"
-    />
+  const ActionButtons = ({ row }) => (
+    <div className="d-flex justify-content-center gap-3">
+      <span title="Edit Customer">
+        <Edit
+          className="action-icon text-primary"
+          size={18}
+          onClick={() => handleEditCustomer(row)}
+        />
+      </span>
+      <span title="Delete Customer">
+        <Trash2
+          className="action-icon text-danger"
+          size={18}
+          onClick={() => handleDeleteCustomer(row)}
+        />
+      </span>
+      <span title="View Bookings">
+        <Eye
+          className="action-icon text-info"
+          size={18}
+          onClick={() => handleViewBookings(row)}
+        />
+      </span>
+    </div>
   );
 
   const handleDeleteCustomer = (customer) => {
@@ -190,9 +191,7 @@ const CustomerDetails = () => {
 
   const handleViewBookings = async (customer) => {
     try {
-      console.log("**customer_id**", customer.customer_id);
       const data = await fetchBookingsByCustomer(customer.customer_id);
-      console.log("****", data);
       setBookingData(data);
       setSelectedCustomerName(customer.name);
       setShowBookingModal(true);
@@ -220,18 +219,20 @@ const CustomerDetails = () => {
 
   return (
     <div className="container">
-      <div className="d-flex justify-content-end">
-        <button className="button" onClick={handleAddCustomer}>
-          Add Customer
-        </button>
-      </div>
-
       <DataTable
         title="Customer Details"
         columns={columns}
         data={customers}
-        actions={[ActionEdit, ActionDelete, ActionView]}
-        searchableFields={["name", "email", "phone", "address"]}
+        actions={[ActionButtons]}
+        searchableFields={["name", "email", "phone_number", "address"]}
+        actionButton={
+          <button
+            className="addbutton d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap"
+            onClick={handleAddCustomer}
+          >
+            Add Customer
+          </button>
+        }
       />
 
       {popup.visible && (
@@ -244,7 +245,7 @@ const CustomerDetails = () => {
 
       {showModal && (
         <div className="modal-overlay">
-          <div className="modal-box">
+          <div className="add-customer-modal-box">
             <h5>{isEditMode ? "Edit Customer" : "Add Customer"}</h5>
 
             <input
@@ -263,7 +264,7 @@ const CustomerDetails = () => {
             {!isEditMode && (
               <>
                 <button
-                  className="pop-up-button"
+                  className="check-button"
                   onClick={checkCustomerByPhone}
                   disabled={
                     !formData.phone_number || formData.phone_number.length < 7
@@ -356,27 +357,29 @@ const CustomerDetails = () => {
 
       {showBookingModal && (
         <div className="modal-overlay">
-          <div className="modal-box">
+          <div className="booking-modal-box">
             <h5>Bookings for {selectedCustomerName}</h5>
+            <div
+              className="modal-close-icon"
+              onClick={() => {
+                setShowBookingModal(false);
+              }}
+            >
+              ×
+            </div>
             {bookingData.length === 0 ? (
               <p>No bookings found for this customer.</p>
             ) : (
-              <DataTable
-                title=""
-                columns={bookingColumns}
-                data={bookingData}
-                searchableFields={[]}
-                actions={[]}
-              />
+              <div className="modal-datatable">
+                <DataTable
+                  title=""
+                  columns={bookingColumns}
+                  data={bookingData}
+                  searchableFields={[]}
+                  actions={[]}
+                />
+              </div>
             )}
-            <div className="modal-actions">
-              <button
-                className="btn btn-outline-secondary btn-sm"
-                onClick={() => setShowBookingModal(false)}
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}
