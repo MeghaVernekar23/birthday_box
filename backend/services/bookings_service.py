@@ -290,6 +290,42 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
         raise HTTPException(status_code=500, detail=f"Error updating booking: {str(e)}")
     
 
+def update_payment_detail(booking_id: int, booking_details: EditBookingDetails, db: Session) -> dict:
+    """
+    Update an existing booking and its associated customer details.
+
+    Args:
+        booking_id (int): ID of the booking to update.
+        booking_details (EditBookingDetails): New booking details.
+        db (Session): SQLAlchemy DB session.
+
+    Returns:
+        dict: Success message.
+    """
+    try:
+        booking = db.get(Booking, booking_id)
+        if not booking:
+            raise BookingDetailsNotFoundException(f"Booking with ID {booking_id} not found.")
+
+        user = get_user_by_username(booking_details.updated_by, db)
+        booking.payment_paid=booking_details.payment_paid
+        booking.updated_at = datetime.now(timezone.utc)
+        booking.updated_by = user.id
+        
+        db.commit()
+        return {
+            "message": "payments updated successfully",
+            "booking_id": booking.booking_id
+        }
+
+    except BookingDetailsNotFoundException as e:
+        raise HTTPException(status_code=404, detail=e.message)
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating booking: {str(e)}")    
+    
+
 
 def get_booking_summary_by_customer_id(customer_id: int, db: Session) -> list[CustomerBookingSummary]:
     """

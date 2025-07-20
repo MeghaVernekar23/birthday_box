@@ -9,6 +9,7 @@ import {
   fetchPackage,
   fetchBookingsByFilter,
   submitBooking,
+  fetchUpcomingHoliday,
 } from "../services/bookingServices";
 function AddBookings() {
   const user = localStorage.getItem("current_user");
@@ -26,6 +27,7 @@ function AddBookings() {
   const [paymentMode, setPaymentMode] = useState("");
   const [amountPaid, setAmountPaid] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [holidayDates, setHolidayDates] = useState([]);
   const [formData, setFormData] = useState({
     customer_name: "",
     phone_number: "",
@@ -101,6 +103,9 @@ function AddBookings() {
         setcelebrationOptions(celebrationData);
         setpackageOptions(packageData);
         setBookedSlots(bookings);
+        const holidays = await fetchUpcomingHoliday();
+        const converted = holidays.map((h) => new Date(h.date));
+        setHolidayDates(converted);
       } catch (err) {
         console.error("Error fetching celebration and package data", err);
       }
@@ -176,7 +181,7 @@ function AddBookings() {
           />
         )}
       </div>
-      <div className="modal-box">
+      <div className="add-booking-modal-box">
         <div
           className="modal-close-icon"
           onClick={() => {
@@ -191,10 +196,9 @@ function AddBookings() {
           ×
         </div>
         {step === 1 && (
-          <div className="form-step-wrapper text-center">
-            <h5>Add Customer</h5>
-            <div className="input-group-wrapper text-start">
-              <label className="form-label">Phone Number</label>
+          <div className="text-center ">
+            <h5 className="mb-5">Add Customer</h5>
+            <div className="input-group-wrapper">
               <input
                 className="form-control"
                 placeholder="Enter Phone Number"
@@ -210,7 +214,7 @@ function AddBookings() {
               />
 
               <button
-                className="pop-up-button"
+                className="check-button"
                 onClick={checkCustomerByPhone}
                 disabled={
                   !formData.phone_number || formData.phone_number.length < 7
@@ -227,7 +231,7 @@ function AddBookings() {
               {customerChecked && (
                 <>
                   <div className="mb-1"></div>
-                  <label className="form-label">Customer Name</label>
+
                   <input
                     className="form-control mb-3"
                     placeholder="Enter Customer Name"
@@ -240,7 +244,7 @@ function AddBookings() {
                     }
                     disabled={isExistingCustomer}
                   />
-                  <label className="form-label">Email</label>
+
                   <input
                     className="form-control mb-3"
                     placeholder="Enter Email"
@@ -253,7 +257,7 @@ function AddBookings() {
                     }
                     disabled={isExistingCustomer}
                   />
-                  <label className="form-label">Address</label>
+
                   <input
                     className="form-control mb-3"
                     placeholder="Enter Address"
@@ -286,6 +290,7 @@ function AddBookings() {
                 maxDate={
                   new Date(new Date().setMonth(new Date().getMonth() + 2))
                 }
+                excludeDates={holidayDates}
                 inline
                 calendarClassName="custom-datepicker"
                 filterDate={(date) => {

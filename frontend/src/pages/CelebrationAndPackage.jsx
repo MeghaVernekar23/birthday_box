@@ -59,24 +59,19 @@ const CelebrationAndPackage = () => {
       {showCelebrationModal && (
         <div className="ps-modal-overlay">
           <div className="ps-modal-box">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Available Celebration Types</h5>
-              <button
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setShowCelebrationModal(false)}
-                style={{
-                  fontSize: "1.2rem",
-                  border: "none",
-                  background: "transparent",
-                }}
-              >
-                &times;
-              </button>
+            <h5 className="mb-3">Available Celebration Types</h5>
+            <div
+              className="modal-close-icon"
+              onClick={() => {
+                setShowCelebrationModal(false);
+              }}
+            >
+              ×
             </div>
-            <ul className="holiday-list">
+
+            <ul className="celebration-package-list">
               {celebrations.map((c) => (
-                <li key={c.celebration_id} className="holiday-item">
+                <li key={c.celebration_id} className="celebration-package-item">
                   {c.celebration_name}
                 </li>
               ))}
@@ -89,24 +84,19 @@ const CelebrationAndPackage = () => {
       {showPackageModal && (
         <div className="ps-modal-overlay">
           <div className="ps-modal-box">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Available Package Types</h5>
-              <button
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setShowPackageModal(false)}
-                style={{
-                  fontSize: "1.2rem",
-                  border: "none",
-                  background: "transparent",
-                }}
-              >
-                &times;
-              </button>
+            <h5 className="mb-3">Available Package Types</h5>
+            <div
+              className="modal-close-icon"
+              onClick={() => {
+                setShowPackageModal(false);
+              }}
+            >
+              ×
             </div>
-            <ul className="holiday-list">
+
+            <ul className="celebration-package-list">
               {packages.map((p) => (
-                <li key={p.package_id} className="holiday-item">
+                <li key={p.package_id} className="celebration-package-item">
                   {p.package_name} {p.description} – ₹{p.price}
                 </li>
               ))}

@@ -8,7 +8,8 @@ def get_all_holidays(db: Session):
     """
     Get all holidays from the database, sorted by date.
     """
-    return db.query(Holiday).order_by(Holiday.date).all()
+    today = date.today()
+    return db.query(Holiday).filter(Holiday.date >= today).order_by(Holiday.date).all()
 
 
 def create_holiday(holiday_data: HolidayCreate, db: Session):

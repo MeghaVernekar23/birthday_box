@@ -33,6 +33,14 @@ export const updateBooking = (bookingId, formData) => {
     });
 };
 
+export const updatePayment = (bookingId, formData) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/update-payment/${bookingId}`,
+        method: "PUT",
+        data: formData,
+    });
+};
+
 export const deleteBooking = (bookingId) => {
     return apiRequest({
         url: `${BASE_URL}/bookings/delete/${bookingId}`,

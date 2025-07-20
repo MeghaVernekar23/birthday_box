@@ -28,11 +28,13 @@ function Bookings() {
   ];
 
   const ActionView = ({ row }) => (
-    <Eye
-      className="action-icon text-info"
-      size={18}
-      onClick={() => handleViewBooking(row)}
-    />
+    <div className="d-flex justify-content-center gap-3">
+      <Eye
+        className="action-icon text-info"
+        size={18}
+        onClick={() => handleViewBooking(row)}
+      />
+    </div>
   );
 
   useEffect(() => {
@@ -72,7 +74,7 @@ function Bookings() {
   };
 
   return (
-    <div>
+    <div className="container">
       <DataTable
         title="Older Bookings"
         columns={columns}

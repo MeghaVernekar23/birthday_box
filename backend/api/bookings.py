@@ -21,7 +21,8 @@ from services.bookings_service import (
     update_booking_detail,
     get_booking_summary_by_customer_id,
     get_bookings_by_date,
-    get_next_upcoming_booking
+    get_next_upcoming_booking,
+    update_payment_detail
 )
 from services.oauth import get_current_user
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
@@ -273,6 +274,36 @@ async def update_booking(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@bookings_router.put(
+    "/update-payment/{booking_id}",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Update a payment by booking ID.",
+)
+async def update_payment(
+    booking_id: int,
+    booking_details: EditBookingDetails,
+    db: Session = Depends(get_db),
+) -> dict:
+    """
+    Update payment details for existing booking by ID.
+
+    Args:
+        booking_id (int): ID of the booking to update.
+        booking_details (EditBookingDetails): Updated payment details.
+        db (Session): SQLAlchemy database session.
+
+    Returns:
+        str: Confirmation message.
+    """
+    try:
+        return update_payment_detail(booking_id=booking_id, booking_details=booking_details, db=db)
+    except BookingDetailsNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    
 
 
 @bookings_router.get(

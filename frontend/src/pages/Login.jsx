@@ -22,7 +22,7 @@ function Login() {
       formData.append("password", password);
 
       const data = await apiRequest({
-        url: "http://18.185.39.103:8000/users/login",
+        url: "http://127.0.0.1:8000/users/login",
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -33,7 +33,7 @@ function Login() {
       console.log("Login successful:", data);
 
       const user_email = await apiRequest({
-        url: "http://18.185.39.103:8000/users/me",
+        url: "http://127.0.0.1:8000/users/me",
         method: "GET",
         headers: {
           Authorization: `Bearer ${data.access_token}`,

@@ -45,7 +45,7 @@ const TodayBookingsSummaryCard = () => {
   };
 
   return (
-    <div className="conainer">
+    <div>
       <div className="today-bookings-card shadow-sm">
         <div className="card-content">
           <div className="card-header">
@@ -66,26 +66,29 @@ const TodayBookingsSummaryCard = () => {
       </div>
       {showBookingModal && (
         <div className="modal-overlay">
-          <div className="modal-box">
+          <div className="booking-taken-modal-box">
+            <h5>Bookings Taken Today</h5>
+            <div
+              className="modal-close-icon"
+              onClick={() => {
+                setShowBookingModal(false);
+              }}
+            >
+              ×
+            </div>
             {bookingData.length === 0 ? (
               <p>No bookings found</p>
             ) : (
-              <DataTable
-                title=""
-                columns={bookingColumns}
-                data={bookingData}
-                searchableFields={[]}
-                actions={[]}
-              />
+              <div className="modal-datatable">
+                <DataTable
+                  title=""
+                  columns={bookingColumns}
+                  data={bookingData}
+                  searchableFields={[]}
+                  actions={[]}
+                />
+              </div>
             )}
-            <div className="modal-actions">
-              <button
-                className="btn btn-outline-secondary btn-sm"
-                onClick={() => setShowBookingModal(false)}
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

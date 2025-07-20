@@ -23,13 +23,18 @@ function Dashboard() {
           </div>
         </div>
         <div className="row align-items-start">
-          <div className="col-md-8 mb-4">
-            <AvailableSlots />
-          </div>
-
-          <div className="col-md-4 d-flex flex-column gap-3">
+          <div className="col-md-6 mb-4">
             <PaymentStatus />
+          </div>
+          <div className="col-md-6 mb-4">
             <CelebrationAndPackage />
+          </div>
+          
+        </div>
+
+        <div className="row align-items-start">
+          <div className="col-md-12">
+            <AvailableSlots />
           </div>
         </div>
       </div>

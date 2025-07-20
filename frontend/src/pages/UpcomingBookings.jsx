@@ -14,6 +14,7 @@ import {
   deleteBooking,
   fetchBookingById,
   updateBooking,
+  fetchUpcomingHoliday,
 } from "../services/bookingServices";
 
 function Bookings() {
@@ -43,6 +44,8 @@ function Bookings() {
   const [popupEdit, setPopupEdit] = useState({ visible: false, booking: null });
 
   const [popupView, setPopupView] = useState({ visible: false, booking: null });
+
+  const [holidayDates, setHolidayDates] = useState([]);
 
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -97,28 +100,30 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
-  const ActionEdit = ({ row }) => (
-    <Edit
-      className="action-icon text-primary"
-      size={18}
-      onClick={() => handleEditBooking(row)}
-    />
-  );
-
-  const ActionDelete = ({ row }) => (
-    <Trash2
-      className="action-icon text-danger"
-      size={18}
-      onClick={() => handleDeleteBooking(row)}
-    />
-  );
-
-  const ActionView = ({ row }) => (
-    <Eye
-      className="action-icon text-info"
-      size={18}
-      onClick={() => handleViewBooking(row)}
-    />
+  const ActionButtons = ({ row }) => (
+    <div className="d-flex justify-content-center gap-3">
+      <span title="Edit Customer">
+        <Edit
+          className="action-icon text-primary"
+          size={18}
+          onClick={() => handleEditBooking(row)}
+        />
+      </span>
+      <span title="Delete Customer">
+        <Trash2
+          className="action-icon text-danger"
+          size={18}
+          onClick={() => handleDeleteBooking(row)}
+        />
+      </span>
+      <span title="View Bookings">
+        <Eye
+          className="action-icon text-info"
+          size={18}
+          onClick={() => handleViewBooking(row)}
+        />
+      </span>
+    </div>
   );
 
   useEffect(() => {
@@ -144,6 +149,9 @@ function Bookings() {
           setBookedSlots(bookings);
           setcelebrationOptions(celebrations);
           setpackageOptions(packages);
+          const holidays = await fetchUpcomingHoliday();
+          const converted = holidays.map((h) => new Date(h.date));
+          setHolidayDates(converted);
         } catch (err) {
           console.error("Error fetching modal data", err);
         }
@@ -257,12 +265,12 @@ function Bookings() {
   };
 
   return (
-    <div>
+    <div className="container">
       <DataTable
         title="Upcoming Bookings"
         columns={columns}
         data={upcomingBookingData}
-        actions={[ActionEdit, ActionDelete, ActionView]}
+        actions={[ActionButtons]}
         searchableFields={["customer_name", "phone_number"]}
       />
 
@@ -538,7 +546,9 @@ function Bookings() {
                     maxDate={
                       new Date(new Date().setMonth(new Date().getMonth() + 2))
                     }
+                    excludeDates={holidayDates}
                     inline
+                    calendarClassName="custom-datepicker"
                     filterDate={(date) => {
                       const formatted = date.toISOString().split("T")[0];
 
