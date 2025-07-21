@@ -34,7 +34,6 @@ const UpcomingHolidaysCard = () => {
     const fetchHolidays = async () => {
       try {
         const upcomingHolidays = await fetchUpcomingHoliday();
-        console.log("data::", upcomingHolidays);
         setHolidays(upcomingHolidays);
       } catch (error) {
         console.error("Error fetching today's bookings", error);
@@ -114,7 +113,7 @@ const UpcomingHolidaysCard = () => {
   };
 
   return (
-    <div className="conainer">
+    <div>
       <div className="today-bookings-card shadow-sm">
         <div className="card-content">
           <div className="card-header">
@@ -139,33 +138,33 @@ const UpcomingHolidaysCard = () => {
       {showHolidayModal && (
         <div className="uh-modal-overlay">
           <div className="uh-modal-box">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Manage Holidays</h5>
-              <button
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setshowHolidayModal(false)}
-                style={{
-                  fontSize: "1.2rem",
-                  border: "none",
-                  background: "transparent",
-                }}
-              >
-                &times;
-              </button>
+            <h5 className="mb-5">Upcoming Holidays</h5>
+            <div
+              className="modal-close-icon"
+              onClick={() => {
+                setshowHolidayModal(false);
+              }}
+            >
+              ×
             </div>
-            <div className="d-flex justify-content-end">
-              <button className="add-holiday-button" onClick={handleAddHoliday}>
-                Add Holiday
-              </button>
+            <div className="modal-datatable">
+              <DataTable
+                title=""
+                columns={columns}
+                data={holidays}
+                actions={[ActionDelete]}
+                actionButton={
+                  <div className="align-right">
+                    <button
+                      className="add-holiday-button"
+                      onClick={handleAddHoliday}
+                    >
+                      Add Holiday
+                    </button>
+                  </div>
+                }
+              />
             </div>
-
-            <DataTable
-              title="Upcoming Holidays"
-              columns={columns}
-              data={holidays}
-              actions={[ActionDelete]}
-            />
 
             {deletePopup.visible && (
               <NotificationPopup
@@ -177,9 +176,19 @@ const UpcomingHolidaysCard = () => {
 
             {showCalenderModal && (
               <div className="uh-modal-overlay">
-                <div className="uh-modal-box">
+                <div className="add-upcoming-holiday-modal-box">
                   <div className="form-step-wrapper text-start px-3">
                     <h5 className="text-center mb-3">Add Holiday</h5>
+                    <div
+                      className="modal-close-icon"
+                      onClick={() => {
+                        setShowCalenderModal(false);
+                        setHolidayTitle("");
+                        setSelectedDate(null);
+                      }}
+                    >
+                      ×
+                    </div>
                     <label htmlFor="holiday-title" className="form-label">
                       Select Date
                     </label>
@@ -195,6 +204,7 @@ const UpcomingHolidaysCard = () => {
                             new Date().setMonth(new Date().getMonth() + 2)
                           )
                         }
+                        excludeDates={holidays}
                         inline
                         calendarClassName="custom-datepicker"
                         dateFormat="yyyy-MM-dd"
@@ -210,22 +220,24 @@ const UpcomingHolidaysCard = () => {
                       value={holidayTitle}
                       onChange={(e) => setHolidayTitle(e.target.value)}
                     />
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleSaveHoliday}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="btn btn-outline-secondary ms-2"
-                      onClick={() => {
-                        setShowCalenderModal(false);
-                        setHolidayTitle("");
-                        setSelectedDate(null);
-                      }}
-                    >
-                      Close
-                    </button>
+                    <div className="d-flex justify-content-end">
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleSaveHoliday}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="btn btn-outline-secondary ms-2"
+                        onClick={() => {
+                          setShowCalenderModal(false);
+                          setHolidayTitle("");
+                          setSelectedDate(null);
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

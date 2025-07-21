@@ -85,7 +85,6 @@ const CustomerDetails = () => {
   const checkCustomerByPhone = async () => {
     try {
       const data = await getCustomerByPhone(formData.phone_number);
-      console.log("data ", data);
       if (data) {
         setIsExistingCustomer(true);
         setFormData({
@@ -185,8 +184,21 @@ const CustomerDetails = () => {
     </div>
   );
 
-  const handleDeleteCustomer = (customer) => {
-    setPopup({ visible: true, customer });
+  const handleDeleteCustomer = async (customer) => {
+    try {
+      const data = await fetchBookingsByCustomer(customer.customer_id);
+      if (data.length > 0) {
+        // Customer has bookings, show error alert
+        alert(`Cannot delete "${customer.name}" – associated bookings exist.`);
+      } else {
+        // No bookings, allow deletion
+        setPopup({ visible: true, customer });
+      }
+    } catch (err) {
+      console.error("Error checking bookings:", err);
+      alert("Failed to check bookings. Try again later.");
+      alert("danger");
+    }
   };
 
   const handleViewBookings = async (customer) => {
@@ -242,6 +254,8 @@ const CustomerDetails = () => {
           onCancel={cancelDelete}
         />
       )}
+
+
 
       {showModal && (
         <div className="modal-overlay">

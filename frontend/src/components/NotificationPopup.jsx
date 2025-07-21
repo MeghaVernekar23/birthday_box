@@ -10,7 +10,7 @@ function NotificationPopup({ message, onConfirm, onCancel }) {
           <p className="notification-message">{message}</p>
           <div className="notification-actions">
             <button
-              className="btn btn-outline-success btn-sm"
+              className="btn btn-outline-primary btn-sm"
               onClick={onConfirm}
             >
               Confirm
