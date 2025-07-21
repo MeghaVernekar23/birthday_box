@@ -2,7 +2,7 @@
 
 import { apiRequest } from "../utils/APIrequest";
 
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "http://3.73.130.224:8000";
 
 
 export const fetchBookingsByFilter = (filter) => {
