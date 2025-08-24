@@ -4,6 +4,7 @@ import BirthdayLoginImage from "../images/Birthdax_login_image.jpg";
 import BirthdayLogo from "../images/logo.jpg";
 import { apiRequest } from "../utils/APIrequest";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../services/utils";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -22,7 +23,7 @@ function Login() {
       formData.append("password", password);
 
       const data = await apiRequest({
-        url: "http://3.73.130.224:8000/users/login",
+        url: `${BASE_URL}/users/login`,
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -33,7 +34,7 @@ function Login() {
       console.log("Login successful:", data);
 
       const user_email = await apiRequest({
-        url: "http://3.73.130.224:8000/users/me",
+        url: `${BASE_URL}/users/me`,
         method: "GET",
         headers: {
           Authorization: `Bearer ${data.access_token}`,

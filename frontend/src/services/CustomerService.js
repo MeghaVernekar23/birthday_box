@@ -1,6 +1,5 @@
 import { apiRequest } from "../utils/APIrequest";
-
-const BASE_URL = "http://3.73.130.224:8000";
+import { BASE_URL } from "../services/utils"
 
 
 export const fetchAllCustomers = () => {
