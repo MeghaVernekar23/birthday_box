@@ -1,0 +1,352 @@
+.today-bookings-card {
+  max-width: 400px;
+  height: 170px;
+  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e6f1;
+  margin: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.pending-payment-card {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e0e6f1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.slot-availability-card {
+  
+   height: auto; 
+  min-height: 450px;
+  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e6f1;
+  margin: auto;
+  
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.align-left {
+  margin-left: -25px;
+}
+
+.today-bookings-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0, 123, 255, 0.2);
+  border-color: #b3d7ff;
+  background: linear-gradient(to right, #e4efff, #d0e4ff);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 1.10rem;
+  color: black;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.count {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: black;
+}
+
+.text {
+  margin-top: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: black;
+}
+
+.icon-box {
+  background-color:  #b2c1f7;
+  color: #fff;
+  padding: 12px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+}
+
+.bts-card-footer {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.nb-card-footer {
+  margin-top: 0px;
+  text-align: right;
+}
+
+.view-all-btn {
+  background: transparent;
+  border: none;
+  color: black;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.view-all-btn i {
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+}
+
+.view-all-btn:hover {
+  color: #0b5ed7;
+  text-decoration: underline;
+}
+
+.view-all-btn:hover i {
+  transform: translateX(4px);
+}
+
+.holiday-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.holiday-item {
+  font-size: 0.9rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.holiday-card:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s ease-in-out;
+  border-left: 4px solid #ffc107;
+  background-color: #fcfcfc;
+}
+
+.celebration-package-list{
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.celebration-package-list li {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+.celebration-package-list li:last-child {
+  border-bottom: none;
+}
+
+.celebration-package-list li:hover {
+  background-color: #e7efff;
+  cursor: default;
+}
+
+.celebration-package-item {
+  font-size: 0.9rem;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.holiday-card-footer {
+  margin-top: 0px;
+  text-align: right;
+}
+
+.uh-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.uh-modal-box {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  height: auto;
+  max-width: 800px;
+  max-height: 90vh; 
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.add-upcoming-holiday-modal-box{
+   position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  height: auto;
+  max-width: 600px;
+  max-height: 90vh; 
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.container {
+   padding: 1rem;
+  min-height: 100vh;
+}
+
+.ps-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.ps-modal-box {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  height: auto;
+  max-width: 800px;
+  max-height: 90vh; 
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.edit-payment-modal-box{
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  height: auto;
+  max-width: 600px;
+  max-height: 90vh; 
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+
+.past-payment-row {
+  background-color: #ffe0e0 !important;
+}
+
+.past-payment-row td {
+  color: #b30000 !important;;
+  font-weight: 5000 !important;
+}
+
+.dashboard-wrapper {
+  width: 100%;
+  max-width: 1200px; 
+  height: 800px; 
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white; 
+}
+
+.booking-taken-modal-box {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  height: auto;
+  max-width: 800px;
+  max-height: 90vh; 
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  
+}
+
+.booking-taken-modal-box table {
+  margin-bottom: 0 !important;
+}
+
+.booking-taken-modal-box .pagination-bar {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.add-holiday-button {
+  background-color: #b2c1f7;  
+  color: black;              
+  border: 1px solid #b2c1f7; 
+  padding: 5px 16px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out;
+  margin-bottom: 0px;
+  
+}
+
+
+.modal-datatable{
+  
+  max-height: 60vh !important;
+}
+
+
+.align-right {
+  display: flex;
+  justify-content: flex-end !important;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+
+
