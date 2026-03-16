@@ -18,6 +18,7 @@ app = FastAPI(
     title="Birthday Box API",
     version="0.1.0",
     lifespan=lifespan,
+    root_path="/api",
     description="API implementation for managing Birthday Box events, bookings, and customer data.",
     contact={"name": "Megha Vernekar"},
     openapi_tags=[
