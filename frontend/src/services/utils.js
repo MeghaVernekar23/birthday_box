@@ -1,1 +1,1 @@
-export const BASE_URL = "http://87.106.147.237/api"
+export const BASE_URL = "https://www.birthday-box.org/api"
