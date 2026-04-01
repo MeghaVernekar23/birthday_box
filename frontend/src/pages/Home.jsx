@@ -152,7 +152,7 @@ export default function Home() {
                 <span>Birthday Setup</span>
               </div>
               <div className="vt vt2">
-                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80" alt="IPL Night" />
+                <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=400&q=80" alt="IPL Night" />
                 <span>IPL Night</span>
               </div>
               <div className="vt vt3">
@@ -208,8 +208,8 @@ export default function Home() {
             <div className="bb-gallery-overlay"><span>💍 Anniversary</span></div>
           </div>
           <div className="bb-gallery-item bb-gallery-wide">
-            <img src="https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800&q=80" alt="Group celebration" />
-            <div className="bb-gallery-overlay"><span>🥳 Group Fun</span></div>
+            <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=80" alt="Cricket stadium IPL" />
+            <div className="bb-gallery-overlay"><span>🏏 IPL Night with the Crew</span></div>
           </div>
           <div className="bb-gallery-item">
             <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80" alt="Party lights" />
