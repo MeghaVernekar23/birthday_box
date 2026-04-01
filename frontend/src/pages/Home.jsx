@@ -192,7 +192,6 @@ export default function Home() {
       {/* ── CTA / CONTACT ── */}
       <section className="bb-cta" id="contact">
         <div className="bb-cta-inner">
-          <img src={logo} alt="Birthday Box" className="bb-cta-logo" />
           <h2>Ready to Celebrate?</h2>
           <p>
             Slots fill up fast — especially on weekends and match days. Get in
