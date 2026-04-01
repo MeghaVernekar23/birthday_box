@@ -1,0 +1,434 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import logo from "../images/logo.jpg";
+import "./BookNow.css";
+
+const TIME_SLOTS = [
+  "1 Hour (Quick)",
+  "1.5 Hours (Classic)",
+  "2 Hours (Dynamic)",
+  "3 Hours (Full)",
+  "Other",
+];
+
+const CELEBRATION_TYPES = [
+  "Birthday Parties",
+  "Teen Nights",
+  "Private Movies",
+  "Anniversaries",
+  "Baby Shower/Gender Reveal",
+  "Retirement",
+  "Proposals",
+  "Bride Events",
+  "Mother's Day",
+  "Father's Day",
+];
+
+const PACKAGES_1HR = [
+  { id: "p1h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹999" },
+  { id: "p1h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,299" },
+  { id: "p1h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹1,799" },
+  { id: "p1h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,199" },
+  { id: "p1h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹2,699" },
+  { id: "p1h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹4,999" },
+  { id: "p1h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" },
+];
+
+const PACKAGES_1HR30 = [
+  { id: "p15h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,499" },
+  { id: "p15h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,799" },
+  { id: "p15h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹2,499" },
+  { id: "p15h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,899" },
+  { id: "p15h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,699" },
+  { id: "p15h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,999" },
+  { id: "p15h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" },
+];
+
+const ADDONS = [
+  "Customised Cake",
+  "Customized Decoration",
+  "Photography - ₹1,500/hr",
+  "Fire Entry - ₹800",
+  "Popcorn",
+  "Fog Entry - ₹750",
+  "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000",
+  "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)",
+];
+
+const REFERRAL_SOURCES = [
+  "Instagram",
+  "Friends",
+  "Google",
+  "Walk-in",
+  "Bakery",
+  "Others",
+];
+
+const TERMS = `BIRTHDAY BOX — CUSTOMER DISCLAIMER
+
+By submitting this form, you acknowledge and agree to the following terms:
+
+1. BOOKING CONFIRMATION: Submitting this form does NOT confirm your booking. You must call us at 8971543330 to check availability and complete payment.
+
+2. GUEST CAPACITY: Up to 10 guests are included in the package. Additional guests may incur extra charges.
+
+3. ARRIVAL: Please arrive 15 minutes before your scheduled slot to ensure a smooth setup and start.
+
+4. EXTERNAL ITEMS: Any food or items brought from outside require prior approval from Birthday Box management.
+
+5. PROHIBITED ITEMS: Alcohol, smoking, and any illegal substances are strictly prohibited on the premises.
+
+6. TIME LIMITS: Time slots are strictly enforced. Overtime will incur additional charges.
+
+7. DAMAGES: Customers are fully liable for any damages caused to the property or equipment during their booking period.
+
+8. CLEANLINESS: All guests are required to maintain cleanliness and follow the cleaning guidelines provided.
+
+9. MEDIA USAGE: Photo and video content captured during your event may be used by Birthday Box for promotional purposes unless you explicitly opt out.
+
+10. CANCELLATION POLICY: Cancellations must be made at least 48 hours in advance for a partial refund. Late cancellations are non-refundable.`;
+
+export default function BookNow() {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    timeSlot: "",
+    needCake: "",
+    preferredDate: "",
+    preferredTime: "",
+    celebrationType: "",
+    packages1hr: [],
+    packages1hr30: [],
+    addons: [],
+    referral: "",
+    confirmation: "",
+    agreement: false,
+    contactUs: "",
+  });
+
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const set = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const toggleCheck = (field, value) => {
+    setForm((prev) => {
+      const arr = prev[field];
+      return {
+        ...prev,
+        [field]: arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value],
+      };
+    });
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = "Name is required.";
+    if (!form.phone.trim()) e.phone = "Phone number is required.";
+    if (!form.timeSlot) e.timeSlot = "Please choose a time slot.";
+    if (!form.preferredTime.trim()) e.preferredTime = "Preferred time is required.";
+    if (!form.celebrationType) e.celebrationType = "Please select a celebration type.";
+    if (!form.referral) e.referral = "Please tell us how you heard about us.";
+    if (!form.confirmation.trim()) e.confirmation = "Please read and type to acknowledge the terms.";
+    if (!form.agreement) e.agreement = "You must agree to the Customer Disclaimer.";
+    return e;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const e2 = validate();
+    if (Object.keys(e2).length > 0) {
+      setErrors(e2);
+      const firstKey = Object.keys(e2)[0];
+      document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="bn-root">
+        <nav className="bn-nav">
+          <img src={logo} alt="Birthday Box" className="bn-logo" onClick={() => navigate("/")} />
+        </nav>
+        <div className="bn-success">
+          <div className="bn-success-card">
+            <div className="bn-success-icon">🎉</div>
+            <h2>Thank You, {form.name}!</h2>
+            <p>Your booking request has been received.</p>
+            <p className="bn-success-note">
+              Please call us at <strong>+91 89715 43330</strong> to confirm availability and complete payment.
+            </p>
+            <button className="bn-btn-primary" onClick={() => navigate("/")}>
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bn-root">
+      {/* Navbar */}
+      <nav className="bn-nav">
+        <img src={logo} alt="Birthday Box" className="bn-logo" onClick={() => navigate("/")} />
+        <span className="bn-nav-title">Book Your Celebration</span>
+        <button className="bn-nav-back" onClick={() => navigate("/")}>
+          ← Home
+        </button>
+      </nav>
+
+      {/* Hero */}
+      <div className="bn-hero">
+        <h1 className="bn-hero-title">B I R T H D A Y &nbsp; B O X</h1>
+        <p className="bn-hero-sub">Fill in the form below to request your celebration slot</p>
+      </div>
+
+      <form className="bn-form" onSubmit={handleSubmit} noValidate>
+        <div className="bn-card">
+
+          {/* NAME */}
+          <div className="bn-field" id="field-name">
+            <label className="bn-label">NAME <span className="bn-req">*</span></label>
+            <input
+              className={`bn-input ${errors.name ? "bn-input-err" : ""}`}
+              type="text"
+              placeholder="Your full name"
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
+            {errors.name && <span className="bn-error">{errors.name}</span>}
+          </div>
+
+          {/* PHONE */}
+          <div className="bn-field" id="field-phone">
+            <label className="bn-label">PHONE NUMBER <span className="bn-req">*</span></label>
+            <input
+              className={`bn-input ${errors.phone ? "bn-input-err" : ""}`}
+              type="tel"
+              placeholder="Your phone number"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+            />
+            {errors.phone && <span className="bn-error">{errors.phone}</span>}
+          </div>
+
+          {/* TIME SLOT */}
+          <div className="bn-field" id="field-timeSlot">
+            <label className="bn-label">CHOOSE YOUR TIME SLOT <span className="bn-req">*</span></label>
+            <div className="bn-radio-group">
+              {TIME_SLOTS.map((slot) => (
+                <label key={slot} className={`bn-radio-option ${form.timeSlot === slot ? "bn-radio-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="timeSlot"
+                    value={slot}
+                    checked={form.timeSlot === slot}
+                    onChange={() => set("timeSlot", slot)}
+                  />
+                  {slot}
+                </label>
+              ))}
+            </div>
+            {errors.timeSlot && <span className="bn-error">{errors.timeSlot}</span>}
+          </div>
+
+          {/* NEED CAKE */}
+          <div className="bn-field">
+            <label className="bn-label">DO YOU NEED A CAKE?</label>
+            <div className="bn-radio-group">
+              {["YES", "NO"].map((opt) => (
+                <label key={opt} className={`bn-radio-option ${form.needCake === opt ? "bn-radio-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="needCake"
+                    value={opt}
+                    checked={form.needCake === opt}
+                    onChange={() => set("needCake", opt)}
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* PREFERRED DATE */}
+          <div className="bn-field">
+            <label className="bn-label">PREFERRED DATE OF BOOKING</label>
+            <input
+              className="bn-input"
+              type="date"
+              value={form.preferredDate}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={(e) => set("preferredDate", e.target.value)}
+            />
+          </div>
+
+          {/* PREFERRED TIME */}
+          <div className="bn-field" id="field-preferredTime">
+            <label className="bn-label">
+              PREFERRED TIME SLOT <span className="bn-req">*</span>
+            </label>
+            <input
+              className={`bn-input ${errors.preferredTime ? "bn-input-err" : ""}`}
+              type="text"
+              placeholder="TIME - (NO OF HRS) e.g. 5:00 PM - 2 Hrs"
+              value={form.preferredTime}
+              onChange={(e) => set("preferredTime", e.target.value)}
+            />
+            {errors.preferredTime && <span className="bn-error">{errors.preferredTime}</span>}
+          </div>
+
+          {/* CELEBRATION TYPE */}
+          <div className="bn-field" id="field-celebrationType">
+            <label className="bn-label">TYPES OF CELEBRATIONS <span className="bn-req">*</span></label>
+            <select
+              className={`bn-select ${errors.celebrationType ? "bn-input-err" : ""}`}
+              value={form.celebrationType}
+              onChange={(e) => set("celebrationType", e.target.value)}
+            >
+              <option value="">-- Select celebration type --</option>
+              {CELEBRATION_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            {errors.celebrationType && <span className="bn-error">{errors.celebrationType}</span>}
+          </div>
+
+          {/* PACKAGES 1 HR */}
+          <div className="bn-field">
+            <label className="bn-label">PACKAGES (1 HR)</label>
+            <div className="bn-checkbox-group">
+              {PACKAGES_1HR.map((pkg) => (
+                <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.packages1hr.includes(pkg.id)}
+                    onChange={() => toggleCheck("packages1hr", pkg.id)}
+                  />
+                  <span className="bn-pkg-label">{pkg.label}</span>
+                  <span className="bn-pkg-price">{pkg.price}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* PACKAGES 1 HR 30 MIN */}
+          <div className="bn-field">
+            <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
+            <div className="bn-checkbox-group">
+              {PACKAGES_1HR30.map((pkg) => (
+                <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.packages1hr30.includes(pkg.id)}
+                    onChange={() => toggleCheck("packages1hr30", pkg.id)}
+                  />
+                  <span className="bn-pkg-label">{pkg.label}</span>
+                  <span className="bn-pkg-price">{pkg.price}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* ADD-ONS */}
+          <div className="bn-field">
+            <label className="bn-label">ADD-ONS</label>
+            <div className="bn-checkbox-group bn-addons-group">
+              {ADDONS.map((addon) => (
+                <label key={addon} className={`bn-checkbox-option ${form.addons.includes(addon) ? "bn-checkbox-selected" : ""}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.addons.includes(addon)}
+                    onChange={() => toggleCheck("addons", addon)}
+                  />
+                  <span>{addon}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* REFERRAL */}
+          <div className="bn-field" id="field-referral">
+            <label className="bn-label">HOW DID YOU HEAR ABOUT US? <span className="bn-req">*</span></label>
+            <select
+              className={`bn-select ${errors.referral ? "bn-input-err" : ""}`}
+              value={form.referral}
+              onChange={(e) => set("referral", e.target.value)}
+            >
+              <option value="">-- Select an option --</option>
+              {REFERRAL_SOURCES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            {errors.referral && <span className="bn-error">{errors.referral}</span>}
+          </div>
+
+          {/* CONFIRMATION / T&C */}
+          <div className="bn-field" id="field-confirmation">
+            <label className="bn-label">CONFIRMATION <span className="bn-req">*</span></label>
+            <div className="bn-terms-box">
+              <pre className="bn-terms-text">{TERMS}</pre>
+            </div>
+            <p className="bn-terms-prompt">
+              Type <strong>"I AGREE"</strong> below to acknowledge that you have read and understood the above terms:
+            </p>
+            <input
+              className={`bn-input ${errors.confirmation ? "bn-input-err" : ""}`}
+              type="text"
+              placeholder='Type "I AGREE" to acknowledge'
+              value={form.confirmation}
+              onChange={(e) => set("confirmation", e.target.value)}
+            />
+            {errors.confirmation && <span className="bn-error">{errors.confirmation}</span>}
+          </div>
+
+          {/* AGREEMENT CHECKBOX */}
+          <div className="bn-field" id="field-agreement">
+            <label className={`bn-agreement-label ${errors.agreement ? "bn-error-border" : ""}`}>
+              <input
+                type="checkbox"
+                checked={form.agreement}
+                onChange={(e) => set("agreement", e.target.checked)}
+              />
+              <span>
+                I have read and agree to the Customer Disclaimer <span className="bn-req">*</span>
+              </span>
+            </label>
+            {errors.agreement && <span className="bn-error">{errors.agreement}</span>}
+          </div>
+
+          {/* CONTACT US */}
+          <div className="bn-field">
+            <label className="bn-label">CONTACT US</label>
+            <p className="bn-contact-info">
+              📞 <a href="tel:+918971543330">+91 89715 43330</a>
+            </p>
+            <input
+              className="bn-input"
+              type="text"
+              placeholder="Any message for us? (optional)"
+              value={form.contactUs}
+              onChange={(e) => set("contactUs", e.target.value)}
+            />
+          </div>
+
+          <button type="submit" className="bn-submit-btn">
+            Submit Booking Request
+          </button>
+        </div>
+      </form>
+
+      <footer className="bn-footer">
+        <p>© {new Date().getFullYear()} Birthday Box. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}

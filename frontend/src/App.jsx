@@ -2,6 +2,7 @@ import React from "react";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import BookNow from "./pages/BookNow";
 import Dashboard from "./pages/Dashboard";
 import CustomerDetails from "./pages/Customer";
 import TodaysBookings from "./pages/TodaysBookings";
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/booknow" element={<BookNow />} />
 
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />

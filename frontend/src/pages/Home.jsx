@@ -63,9 +63,14 @@ export default function Home() {
           <a href="#testimonials">Reviews</a>
           <a href="#contact">Contact</a>
         </nav>
-        <button className="bb-nav-cta" onClick={() => navigate("/login")}>
-          Staff Login
-        </button>
+        <div className="bb-nav-actions">
+          <button className="bb-nav-booknow" onClick={() => navigate("/booknow")}>
+            Book Now
+          </button>
+          <button className="bb-nav-cta" onClick={() => navigate("/login")}>
+            Staff Login
+          </button>
+        </div>
       </header>
 
       {/* ── HERO ── */}
@@ -83,7 +88,7 @@ export default function Home() {
               baby showers, IPL nights &amp; more. Fully decorated. Completely yours.
             </p>
             <div className="bb-hero-btns">
-              <a href="#contact" className="bb-btn-primary">Book Your Slot</a>
+              <button className="bb-btn-primary" onClick={() => navigate("/booknow")}>Book Your Slot</button>
               <a href="#services" className="bb-btn-ghost">See Packages</a>
             </div>
           </div>
@@ -97,9 +102,9 @@ export default function Home() {
                 <li>✔ HD Projector</li>
                 <li>✔ Flexible Slots</li>
               </ul>
-              <a href="#contact" className="bb-btn-primary" style={{ width: "100%", textAlign: "center", display: "block" }}>
+              <button className="bb-btn-primary" style={{ width: "100%", textAlign: "center", display: "block" }} onClick={() => navigate("/booknow")}>
                 Check Availability
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -161,9 +166,9 @@ export default function Home() {
             <div className="bb-perk"><span>🅿️</span> Dedicated Parking</div>
             <div className="bb-perk"><span>🕐</span> Flexible Booking Slots</div>
           </div>
-          <a href="#contact" className="bb-btn-primary" style={{ display: "inline-block", marginTop: "2rem" }}>
+          <button className="bb-btn-primary" style={{ display: "inline-block", marginTop: "2rem" }} onClick={() => navigate("/booknow")}>
             Book This Venue
-          </a>
+          </button>
         </div>
       </div>
       </section>

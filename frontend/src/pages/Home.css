@@ -146,6 +146,30 @@ body {
 
 .bb-nav-links a:hover { color: #e91e8c; }
 
+.bb-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bb-nav-booknow {
+  background: #fff;
+  color: #e91e8c;
+  border: 2px solid #e91e8c;
+  padding: 0.55rem 1.3rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.bb-nav-booknow:hover {
+  background: #e91e8c;
+  color: #fff;
+}
+
 .bb-nav-cta {
   background: linear-gradient(135deg, #e91e8c, #f05537);
   color: #fff;
