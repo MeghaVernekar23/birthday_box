@@ -10,32 +10,30 @@ import "../css/Dashboard.css";
 function Dashboard() {
   return (
     <div className="dashboard-wrapper">
-      <div className="container mt-4">
-        <div className="row">
-          <div className="col-md-4 mb-4">
-            <BookingSummary />
-          </div>
-          <div className="col-md-4 mb-4">
-            <NextBooking />
-          </div>
-          <div className="col-md-4 mb-4">
-            <UpcomingHolidaysCard />
-          </div>
+      <div className="dashboard-grid-top">
+        <div className="dashboard-card-col">
+          <BookingSummary />
         </div>
-        <div className="row align-items-start">
-          <div className="col-md-6 mb-4">
-            <PaymentStatus />
-          </div>
-          <div className="col-md-6 mb-4">
-            <CelebrationAndPackage />
-          </div>
-          
+        <div className="dashboard-card-col">
+          <NextBooking />
         </div>
+        <div className="dashboard-card-col">
+          <UpcomingHolidaysCard />
+        </div>
+      </div>
 
-        <div className="row align-items-start">
-          <div className="col-md-12">
-            <AvailableSlots />
-          </div>
+      <div className="dashboard-grid-mid">
+        <div className="dashboard-card-col">
+          <PaymentStatus />
+        </div>
+        <div className="dashboard-card-col">
+          <CelebrationAndPackage />
+        </div>
+      </div>
+
+      <div className="dashboard-grid-bottom">
+        <div className="dashboard-card-col">
+          <AvailableSlots />
         </div>
       </div>
     </div>

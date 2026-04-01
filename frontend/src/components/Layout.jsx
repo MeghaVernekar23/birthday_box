@@ -1,137 +1,133 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import React from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 import BirthdayLogo from "../images/logo.jpg";
+import "../css/Layout.css";
+
+const navItems = [
+  { label: "Dashboard", path: "/dashboard", icon: "bi bi-speedometer2" },
+  { label: "Customer Details", path: "/customers", icon: "bi bi-people" },
+  { label: "Add Booking", path: "/addbooking", icon: "bi bi-calendar-plus" },
+  {
+    label: "Booking Details",
+    icon: "bi bi-calendar2-week",
+    children: [
+      { label: "Today's Booking", path: "/bookings/today" },
+      { label: "Upcoming Booking", path: "/bookings/upcoming" },
+      { label: "Older Booking", path: "/bookings/older" },
+    ],
+  },
+];
 
 const Layout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleNav = (path) => {
+    navigate(path);
+    setSidebarOpen(false);
+  };
 
   return (
-    <div style={{ height: "100vh", width: "100vw", overflow: "auto" }}>
-      <div className="container-fluid h-100">
-        <div className="row">
-          <nav className="navbar navbar-expand-lg navbar-light">
-            <div className="container-fluid">
-              <img src={BirthdayLogo} alt="Logo" width="120" height="70" />
-              <button
-                className="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarNavDropdown"
-                aria-controls="navbarNavDropdown"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-              >
-                <span className="navbar-toggler-icon"></span>
-              </button>
-              <div className="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul className="navbar-nav" style={{ marginLeft: "30px" }}>
-                  <li className="nav-item">
-                    <a
-                      className="nav-link active"
-                      href="#"
-                      onClick={() => {
-                        navigate("/dashboard");
-                      }}
-                    >
-                      Dashboard
-                    </a>
-                  </li>
-                  <li className="nav-item" style={{ marginLeft: "10px" }}>
-                    <a
-                      className="nav-link"
-                      href="#"
-                      onClick={() => {
-                        navigate("/customers");
-                      }}
-                    >
-                      Customer Details
-                    </a>
-                  </li>
-                  <li className="nav-item" style={{ marginLeft: "10px" }}>
-                    <a
-                      className="nav-link"
-                      href="#"
-                      onClick={() => {
-                        navigate("/addbooking");
-                      }}
-                    >
-                      Add Booking
-                    </a>
-                  </li>
-                  <li
-                    className="nav-item dropdown"
-                    style={{ marginLeft: "10px" }}
-                  >
-                    <a
-                      className="nav-link dropdown-toggle"
-                      href="#"
-                      id="navbarDropdownMenuLink"
-                      role="button"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      Booking Details
-                    </a>
-                    <ul
-                      className="dropdown-menu"
-                      aria-labelledby="navbarDropdownMenuLink"
-                    >
-                      <li>
-                        <a
-                          className="dropdown-item"
-                          href="#"
-                          onClick={() => navigate("/bookings/today")}
-                        >
-                          Today's Booking
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          className="dropdown-item"
-                          href="#"
-                          onClick={() => navigate("/bookings/upcoming")}
-                        >
-                          Upcoming Booking
-                        </a>
-                      </li>
-                      <li>
-                        <a
-                          className="dropdown-item"
-                          href="#"
-                          onClick={() => navigate("/bookings/older")}
-                        >
-                          Older Booking
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
+    <div className="layout-root">
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-                  <li className="nav-item" style={{ marginLeft: "10px" }}>
-                    <a
-                      className="nav-link"
-                      href="#"
-                      onClick={() => {
-                        localStorage.clear();
-                        navigate("/");
-                      }}
-                    >
-                      Logout
-                    </a>
-                  </li>
-                </ul>
+      {/* Sidebar */}
+      <aside className={`sidebar${sidebarOpen ? " sidebar--open" : ""}`}>
+        <div className="sidebar-logo">
+          <img src={BirthdayLogo} alt="Logo" />
+        </div>
+
+        <nav className="sidebar-nav">
+          {navItems.map((item) =>
+            item.children ? (
+              <div key={item.label}>
+                <button
+                  className={`sidebar-nav-item sidebar-nav-item--parent${
+                    bookingOpen ? " sidebar-nav-item--expanded" : ""
+                  }`}
+                  onClick={() => setBookingOpen((o) => !o)}
+                >
+                  <i className={item.icon} />
+                  <span>{item.label}</span>
+                  <i
+                    className={`bi bi-chevron-${
+                      bookingOpen ? "up" : "down"
+                    } sidebar-nav-item__chevron`}
+                  />
+                </button>
+                {bookingOpen && (
+                  <div className="sidebar-submenu">
+                    {item.children.map((child) => (
+                      <button
+                        key={child.path}
+                        className={`sidebar-nav-item sidebar-nav-item--child${
+                          isActive(child.path) ? " sidebar-nav-item--active" : ""
+                        }`}
+                        onClick={() => handleNav(child.path)}
+                      >
+                        <i className="bi bi-dot" />
+                        <span>{child.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          </nav>
-        </div>
+            ) : (
+              <button
+                key={item.path}
+                className={`sidebar-nav-item${
+                  isActive(item.path) ? " sidebar-nav-item--active" : ""
+                }`}
+                onClick={() => handleNav(item.path)}
+              >
+                <i className={item.icon} />
+                <span>{item.label}</span>
+              </button>
+            )
+          )}
+        </nav>
 
-        <div className="row">
-          {/* Main Content */}
-          <div>
-            <main>
-              <Outlet />
-            </main>
-          </div>
+        <div className="sidebar-footer">
+          <button
+            className="sidebar-nav-item sidebar-logout"
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
+          >
+            <i className="bi bi-box-arrow-left" />
+            <span>Logout</span>
+          </button>
         </div>
+      </aside>
+
+      {/* Main area */}
+      <div className="layout-main">
+        {/* Top bar (mobile only) */}
+        <header className="layout-topbar">
+          <button
+            className="topbar-hamburger"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label="Toggle menu"
+          >
+            <i className="bi bi-list" />
+          </button>
+          <img src={BirthdayLogo} alt="Logo" className="topbar-logo" />
+        </header>
+
+        <main className="layout-content">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
