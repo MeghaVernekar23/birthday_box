@@ -1,59 +1,208 @@
-/* src/Login.css */
+/* Login Page Styles */
 
-.gradient-custom-2 {
-    /* fallback for old browsers */
-    background: #fccb90;
-  
-    /* Chrome 10-25, Safari 5.1-6 */
-    background: -webkit-linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
-  
-    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    background: linear-gradient(to right, #ee7724, #d8363a, #dd3675, #b44593);
-  }
-  
-  @media (min-width: 768px) {
-    .gradient-form {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #eee;
-    }
-  }
-  
-  @media (min-width: 769px) {
-    .gradient-custom-2 {
-      border-top-right-radius: 0.3rem;
-      border-bottom-right-radius: 0.3rem;
-    }
-  }
+.login-page {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 1rem;
+}
 
-  .card {
-    width: 100%;
-    max-width: 1000px; 
-    margin: auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.login-card {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 520px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Left panel (form) ── */
+.login-form-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 2.5rem;
+}
+
+.login-logo {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 1.5rem;
+}
+
+.login-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+}
+
+.login-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+}
+
+/* ── Form fields ── */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.15);
+  background: #fff;
+}
+
+/* ── Error message ── */
+.login-error {
+  font-size: 0.82rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Actions row ── */
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-login {
+  padding: 0.7rem 2rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-login:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+.forgot-link {
+  font-size: 0.85rem;
+  color: #764ba2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Right panel (image) ── */
+.login-banner {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.login-banner-overlay {
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(26, 26, 46, 0.85) 0%, transparent 100%);
+  color: #fff;
+}
+
+.login-banner-overlay h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.login-banner-overlay p {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    max-width: 440px;
   }
 
   .login-banner {
-    background-image: url('../assets/Birthdax_login_image.png'); /* Adjust name/path */
-    background-size: cover;
-    background-position: center;
-    border-top-right-radius: 0.3rem;
-    border-bottom-right-radius: 0.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100%; /* makes it fill the card height */
+    min-height: 180px;
+    order: -1;
+    border-radius: 0;
   }
-  
-  .login-banner-content {
-    color: white;
-    background: rgba(0, 0, 0, 0.4); /* optional dark overlay */
-    padding: 1rem 2rem;
-    border-radius: 0.5rem;
+
+  .login-form-panel {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-logo {
+    width: 90px;
+  }
+
+  .login-title {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .login-form-panel {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .login-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-login {
+    width: 100%;
     text-align: center;
-    font-size: 1.2rem;
   }
-  
-  
+}

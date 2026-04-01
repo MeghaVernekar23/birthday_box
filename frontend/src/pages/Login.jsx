@@ -17,7 +17,6 @@ function Login() {
     setErrorMessage("");
 
     try {
-      console.log("clicked login:");
       const formData = new URLSearchParams();
       formData.append("username", username);
       formData.append("password", password);
@@ -30,8 +29,6 @@ function Login() {
         },
         data: formData.toString(),
       });
-
-      console.log("Login successful:", data);
 
       const user_email = await apiRequest({
         url: `${BASE_URL}/users/me`,
@@ -46,7 +43,6 @@ function Login() {
       localStorage.setItem("role", data.role);
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error during login:", error);
       setErrorMessage(
         error.message || "Something went wrong. Please try again."
       );
@@ -54,95 +50,71 @@ function Login() {
   };
 
   return (
-    <section
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh", width: "100vw" }}
-    >
-      <div className="container py-5 h-100">
-        <div className="row d-flex justify-content-center align-items-center h-100">
-          <div className="col-xl-10">
-            <div className="card rounded-3 text-black">
-              <div className="row g-0">
-                <div className="col-lg-6">
-                  <div className="card-body p-md-5 mb-5 mx-md-4">
-                    <div className="text-center">
-                      <img
-                        src={BirthdayLogo}
-                        style={{
-                          width: "150px",
-                          maxWidth: "100%",
-                          objectFit: "contain",
-                        }}
-                        alt="logo"
-                      />
+    <div className="login-page">
+      <div className="login-card">
+        {/* Form panel */}
+        <div className="login-form-panel">
+          <img src={BirthdayLogo} alt="Birthday Box logo" className="login-logo" />
+          <h1 className="login-title">Welcome back</h1>
+          <p className="login-subtitle">Sign in to your Birthday Box account</p>
 
-                      <h4 className="mt-1 mb-5 pb-1"></h4>
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
-                      <p>Please login to your account</p>
-
-                      <div className="form-outline mb-4">
-                        <input
-                          type="text"
-                          id="form2Example11"
-                          className="form-control"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          required
-                        />
-                        <label className="form-label" htmlFor="form2Example11">
-                          Username
-                        </label>
-                      </div>
-
-                      <div className="form-outline mb-4">
-                        <input
-                          type="password"
-                          id="form2Example22"
-                          className="form-control"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                        <label className="form-label" htmlFor="form2Example22">
-                          Password
-                        </label>
-                        {errorMessage && (
-                          <div
-                            className="text-danger mt-1"
-                            style={{ fontSize: "0.9rem" }}
-                          >
-                            {errorMessage}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="text-center pt-1 mb-5 pb-1">
-                        <button
-                          className="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3 me-3"
-                          type="submit"
-                        >
-                          Log in
-                        </button>
-                        <a className="text-muted" href="#!">
-                          Forgot password?
-                        </a>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-
-                <div
-                  className="col-lg-6 login-banner"
-                  style={{ backgroundImage: `url(${BirthdayLoginImage})` }}
-                ></div>
-              </div>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoComplete="username"
+              />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            {errorMessage && (
+              <div className="login-error" role="alert">
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="login-actions">
+              <button className="btn-login" type="submit">
+                Sign In
+              </button>
+              <a className="forgot-link" href="#!">
+                Forgot password?
+              </a>
+            </div>
+          </form>
+        </div>
+
+        {/* Image panel */}
+        <div
+          className="login-banner"
+          style={{ backgroundImage: `url(${BirthdayLoginImage})` }}
+          aria-hidden="true"
+        >
+          <div className="login-banner-overlay">
+            <h2>Celebrate Every Moment</h2>
+            <p>The perfect gift, delivered with love.</p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
