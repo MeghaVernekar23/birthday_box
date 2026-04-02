@@ -9,6 +9,8 @@ from utils.db_utils import get_active_celebration_types, get_active_packages, ge
 from typing import List
 from sqlalchemy import func
 from sqlalchemy import and_
+import asyncio
+from services.telegram_service import notify_new_booking, schedule_reminders
 
 
 def get_celebration_type(db: Session) -> List[CelebrationType]:
@@ -211,6 +213,36 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         db.add(booking)
         db.commit()
         db.refresh(booking)
+
+        # Look up package and celebration names for the notification
+        package = db.get(Packages, bookingDetails.package_id)
+        celebration = db.get(CelebrationType, bookingDetails.celebration_id)
+
+        booking_data = {
+            "customer_name": bookingDetails.customer_name,
+            "phone_number": bookingDetails.phone_number,
+            "email": bookingDetails.email,
+            "address": bookingDetails.address,
+            "event_date": str(bookingDetails.event_date),
+            "time_slot": bookingDetails.time_slot,
+            "package_name": package.package_name if package else str(bookingDetails.package_id),
+            "celebration_name": celebration.celebration_name if celebration else str(bookingDetails.celebration_id),
+            "addons_note": bookingDetails.addons_note,
+            "payment_total": bookingDetails.payment_total,
+            "payment_paid": bookingDetails.payment_paid,
+            "payment_mode": bookingDetails.payment_mode,
+            "status": bookingDetails.status,
+        }
+
+        # Send immediate confirmation and schedule reminders
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(notify_new_booking(booking_data))
+
+            event_datetime = datetime.combine(bookingDetails.event_date, datetime.strptime(bookingDetails.time_slot, "%H:%M").time())
+            schedule_reminders(booking_data, event_datetime)
+        except Exception as telegram_err:
+            print(f"Telegram notification error (non-fatal): {telegram_err}")
 
         return {
             "message": "Booking created successfully",
