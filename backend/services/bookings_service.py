@@ -178,7 +178,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             db.commit()
             db.refresh(customer)
 
-        user = get_user_by_username(bookingDetails.created_by, db)
+        user = get_user_by_username(bookingDetails.created_by, db) if bookingDetails.created_by else None
 
         booking = Booking(
             customer_id=customer.customer_id,
@@ -192,7 +192,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             payment_total=bookingDetails.payment_total,
             payment_paid=bookingDetails.payment_paid,
             payment_notes=bookingDetails.payment_notes,
-            created_by=user.id,
+            created_by=user.id if user else None,
             created_at=datetime.now(timezone.utc),
             additional_items = [item.dict() for item in bookingDetails.additional_items]
         )

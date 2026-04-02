@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import "./BookNow.css";
+import { BASE_URL } from "../services/utils";
 
 const TIME_SLOTS = [
   "1 Hour (Quick)",
@@ -53,6 +54,21 @@ const ADDONS = [
   "Fog Entry - ₹750",
   "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000",
   "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)",
+];
+
+const TIME_OPTIONS = [
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "1:00 PM",
+  "2:00 PM",
+  "3:00 PM",
+  "4:00 PM",
+  "5:00 PM",
+  "6:00 PM",
+  "7:00 PM",
+  "8:00 PM",
+  "9:00 PM",
 ];
 
 const REFERRAL_SOURCES = [
@@ -110,6 +126,22 @@ export default function BookNow() {
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [celebrationTypes, setCelebrationTypes] = useState([]);
+  const [packages, setPackages] = useState([]);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/bookings/celebration-type`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setCelebrationTypes(data); })
+      .catch(() => {});
+
+    fetch(`${BASE_URL}/bookings/package`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPackages(data); })
+      .catch(() => {});
+  }, []);
 
   const set = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -139,7 +171,7 @@ export default function BookNow() {
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const e2 = validate();
     if (Object.keys(e2).length > 0) {
@@ -148,7 +180,104 @@ export default function BookNow() {
       document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    setSubmitted(true);
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      // Resolve celebration_id by matching name from API, fallback to 1
+      const celebMatch = Array.isArray(celebrationTypes)
+        ? celebrationTypes.find(
+            (c) => c.celebration_name.toLowerCase() === form.celebrationType.toLowerCase()
+          )
+        : null;
+      const celebration_id = celebMatch ? celebMatch.celebration_id : 1;
+
+      // Resolve package_id: pick first selected package by label match, fallback to 1
+      const allSelectedLabels = [
+        ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)?.label),
+        ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)?.label),
+      ].filter(Boolean);
+
+      let package_id = 1;
+      if (allSelectedLabels.length > 0 && packages.length > 0) {
+        const firstLabel = allSelectedLabels[0].split("=")[0].trim().toUpperCase();
+        const pkgMatch = packages.find(
+          (p) => p.package_name.toUpperCase().includes(firstLabel) || firstLabel.includes(p.package_name.toUpperCase())
+        );
+        if (pkgMatch) package_id = pkgMatch.package_id;
+      }
+
+      // Build addons note
+      const addonsList = [...form.addons];
+      if (form.needCake === "YES") addonsList.push("Cake required");
+      const addons_note = [
+        form.timeSlot ? `Time slot: ${form.timeSlot}` : "",
+        form.referral ? `Heard from: ${form.referral}` : "",
+        addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
+        allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
+        form.contactUs ? `Message: ${form.contactUs}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      const eventDate = form.preferredDate || new Date().toISOString().split("T")[0];
+
+      // Login as the customer service account to get a token
+      const loginForm = new URLSearchParams();
+      loginForm.append("username", "customer");
+      loginForm.append("password", "customer@birthdaybox");
+      const loginRes = await fetch(`${BASE_URL}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: loginForm.toString(),
+      });
+      if (!loginRes.ok) {
+        const loginErr = await loginRes.json().catch(() => ({}));
+        throw new Error(loginErr.detail || `Login failed (${loginRes.status}). Please try again.`);
+      }
+      const { access_token } = await loginRes.json();
+
+      const payload = {
+        customer_name: form.name,
+        phone_number: form.phone,
+        email: "",
+        address: "",
+        event_date: eventDate,
+        time_slot: form.preferredTime,
+        celebration_id,
+        package_id,
+        addons_note,
+        status: "pending",
+        payment_mode: "",
+        payment_total: 0,
+        payment_paid: 0,
+        payment_notes: "",
+        created_by: "customer",
+        updated_by: null,
+        additional_items: [],
+      };
+
+      const res = await fetch(`${BASE_URL}/bookings/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${access_token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "Submission failed. Please try again.");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -267,7 +396,10 @@ export default function BookNow() {
               type="date"
               value={form.preferredDate}
               min={new Date().toISOString().split("T")[0]}
-              onChange={(e) => set("preferredDate", e.target.value)}
+              onChange={(e) => {
+                set("preferredDate", e.target.value);
+                set("preferredTime", "");
+              }}
             />
           </div>
 
@@ -276,13 +408,16 @@ export default function BookNow() {
             <label className="bn-label">
               PREFERRED TIME SLOT <span className="bn-req">*</span>
             </label>
-            <input
-              className={`bn-input ${errors.preferredTime ? "bn-input-err" : ""}`}
-              type="text"
-              placeholder="TIME - (NO OF HRS) e.g. 5:00 PM - 2 Hrs"
+            <select
+              className={`bn-select ${errors.preferredTime ? "bn-input-err" : ""}`}
               value={form.preferredTime}
               onChange={(e) => set("preferredTime", e.target.value)}
-            />
+            >
+              <option value="">-- Select a time slot --</option>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
             {errors.preferredTime && <span className="bn-error">{errors.preferredTime}</span>}
           </div>
 
@@ -420,8 +555,12 @@ export default function BookNow() {
             />
           </div>
 
-          <button type="submit" className="bn-submit-btn">
-            Submit Booking Request
+          {submitError && (
+            <div className="bn-submit-error">{submitError}</div>
+          )}
+
+          <button type="submit" className="bn-submit-btn" disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit Booking Request"}
           </button>
         </div>
       </form>
