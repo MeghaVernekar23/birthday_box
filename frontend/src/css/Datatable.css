@@ -144,6 +144,40 @@
   border-radius: 4px;
 }
 
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  .table-body-scroll {
+    overflow-x: auto;
+  }
+
+  /* Remove fixed layout so columns don't force overlap */
+  .table-body-scroll thead,
+  .table-body-scroll tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .table {
+    font-size: 0.82rem;
+    min-width: 480px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+
+  .container {
+    padding: 0.5rem;
+  }
+}
+
 .past-payment-row {
   background-color: #ffe0e0 !important;
 }
