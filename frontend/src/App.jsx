@@ -9,6 +9,7 @@ import TodaysBookings from "./pages/TodaysBookings";
 import UpcomingBookings from "./pages/UpcomingBookings";
 import OlderBookings from "./pages/OlderBookings";
 import AddBookings from "./pages/AddBookings";
+import Packages from "./pages/Packages";
 
 import { Routes, Route } from "react-router-dom";
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/bookings/upcoming" element={<UpcomingBookings />} />
           <Route path="/bookings/older" element={<OlderBookings />} />
           <Route path="addbooking" element={<AddBookings />} />
+          <Route path="packages" element={<Packages />} />
         </Route>
       </Routes>
     </>

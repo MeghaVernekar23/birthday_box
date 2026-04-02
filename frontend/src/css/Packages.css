@@ -1,0 +1,10 @@
+.packages-page {
+  padding: 1.5rem;
+  min-height: 70vh;
+}
+
+@media (max-width: 768px) {
+  .packages-page {
+    padding: 1rem 0.75rem;
+  }
+}

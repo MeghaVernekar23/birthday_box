@@ -13,11 +13,13 @@ import {
   ChevronDown,
   ChevronUp,
   LogOut,
+  Package,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", Icon: LayoutDashboard },
   { label: "Customer details", path: "/customers", Icon: Users },
+  { label: "Packages", path: "/packages", Icon: Package },
   { label: "Add booking", path: "/addbooking", Icon: CalendarPlus },
   {
     label: "Booking details",
