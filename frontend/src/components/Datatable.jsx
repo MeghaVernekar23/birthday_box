@@ -111,66 +111,66 @@ const DataTable = ({
               )}
             </tbody>
           </table>
-          <div className="pagination-bar">
+        </div>
+        <div className="pagination-bar">
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => currentPage > 1 && setCurrentPage(1)}
+          >
+            {"<<"}
+          </span>
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (startPage > 1) setCurrentPage(startPage - 1);
+            }}
+          >
+            {"<"}
+          </span>
+          {pageNumbers.map((page) => (
             <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => currentPage > 1 && setCurrentPage(1)}
+              key={page}
+              className={`page-link ${
+                page === currentPage ? "custom-active" : ""
+              }`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setCurrentPage(page)}
             >
-              {"<<"}
+              {page}
             </span>
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (startPage > 1) setCurrentPage(startPage - 1);
-              }}
-            >
-              {"<"}
-            </span>
-            {pageNumbers.map((page) => (
-              <span
-                key={page}
-                className={`page-link ${
-                  page === currentPage ? "custom-active" : ""
-                }`}
-                style={{ cursor: "pointer" }}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </span>
-            ))}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (endPage < totalPages) setCurrentPage(endPage + 1);
-              }}
-            >
-              {">"}
-            </span>
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() =>
-                currentPage < totalPages && setCurrentPage(totalPages)
-              }
-            >
-              {">>"}
-            </span>
-          </div>
+          ))}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (endPage < totalPages) setCurrentPage(endPage + 1);
+            }}
+          >
+            {">"}
+          </span>
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() =>
+              currentPage < totalPages && setCurrentPage(totalPages)
+            }
+          >
+            {">>"}
+          </span>
         </div>
       </div>
     </div>
