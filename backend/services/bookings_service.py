@@ -165,7 +165,16 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         dict: Success message and booking ID.
     """
     try:
-        
+        existing = db.query(Booking).filter(
+            Booking.event_date == bookingDetails.event_date,
+            Booking.event_time == bookingDetails.time_slot,
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail=f"The time slot '{bookingDetails.time_slot}' on {bookingDetails.event_date} is already booked. Please choose a different time."
+            )
+
         customer = get_customer_by_phone(bookingDetails.phone_number, db)
         if not customer:
             customer = Customer(

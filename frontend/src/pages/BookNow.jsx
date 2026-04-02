@@ -185,24 +185,27 @@ export default function BookNow() {
     setSubmitError("");
 
     try {
-      // Resolve celebration_id by matching name from API, fallback to 1
-      const celebMatch = Array.isArray(celebrationTypes)
-        ? celebrationTypes.find(
-            (c) => c.celebration_name.toLowerCase() === form.celebrationType.toLowerCase()
-          )
-        : null;
-      const celebration_id = celebMatch ? celebMatch.celebration_id : 1;
+      // Resolve celebration_id by matching name from API, fallback to first available
+      const celebList = Array.isArray(celebrationTypes) ? celebrationTypes : [];
+      const celebMatch = celebList.find(
+        (c) => c.celebration_name.toLowerCase().includes(form.celebrationType.toLowerCase()) ||
+               form.celebrationType.toLowerCase().includes(c.celebration_name.toLowerCase())
+      );
+      const celebration_id = celebMatch ? celebMatch.celebration_id : celebList[0]?.celebration_id;
+      if (!celebration_id) throw new Error("Could not resolve celebration type. Please try again.");
 
-      // Resolve package_id: pick first selected package by label match, fallback to 1
+      // Resolve package_id: pick first selected package by label match, fallback to first available
+      const pkgList = Array.isArray(packages) ? packages : [];
       const allSelectedLabels = [
         ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)?.label),
         ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)?.label),
       ].filter(Boolean);
 
-      let package_id = 1;
-      if (allSelectedLabels.length > 0 && packages.length > 0) {
+      let package_id = pkgList[0]?.package_id;
+      if (!package_id) throw new Error("Could not resolve package. Please try again.");
+      if (allSelectedLabels.length > 0) {
         const firstLabel = allSelectedLabels[0].split("=")[0].trim().toUpperCase();
-        const pkgMatch = packages.find(
+        const pkgMatch = pkgList.find(
           (p) => p.package_name.toUpperCase().includes(firstLabel) || firstLabel.includes(p.package_name.toUpperCase())
         );
         if (pkgMatch) package_id = pkgMatch.package_id;
