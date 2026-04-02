@@ -50,7 +50,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=[
+        "https://birthday-box.org",
+        "https://www.birthday-box.org",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
