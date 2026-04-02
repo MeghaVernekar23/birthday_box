@@ -296,13 +296,7 @@ export default function BookNow() {
     setSubmitError("");
 
     try {
-      // Resolve celebration_id by matching name from API, fallback to first available
-      const celebList = Array.isArray(celebrationTypes) ? celebrationTypes : [];
-      const celebMatch = celebList.find(
-        (c) => c.celebration_name.toLowerCase().includes(form.celebrationType.toLowerCase()) ||
-               form.celebrationType.toLowerCase().includes(c.celebration_name.toLowerCase())
-      );
-      const celebration_id = celebMatch ? celebMatch.celebration_id : celebList[0]?.celebration_id;
+      const celebration_id = form.celebrationType ? parseInt(form.celebrationType, 10) : null;
       if (!celebration_id) throw new Error("Could not resolve celebration type. Please try again.");
 
       // Resolve package_id: pick first selected package by label match, fallback to first available
@@ -569,8 +563,8 @@ export default function BookNow() {
               onChange={(e) => set("celebrationType", e.target.value)}
             >
               <option value="">-- Select celebration type --</option>
-              {CELEBRATION_TYPES.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {celebrationTypes.map((t) => (
+                <option key={t.celebration_id} value={t.celebration_id}>{t.celebration_name}</option>
               ))}
             </select>
             {errors.celebrationType && <span className="bn-error">{errors.celebrationType}</span>}
