@@ -236,7 +236,15 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         # Send immediate confirmation and schedule reminders (non-blocking)
         try:
             import threading
-            event_datetime = datetime.combine(bookingDetails.event_date, datetime.strptime(bookingDetails.time_slot, "%H:%M").time())
+            for fmt in ("%H:%M", "%I:%M %p", "%I:%M%p"):
+                try:
+                    slot_time = datetime.strptime(bookingDetails.time_slot.strip(), fmt).time()
+                    break
+                except ValueError:
+                    continue
+            else:
+                slot_time = datetime.strptime("00:00", "%H:%M").time()
+            event_datetime = datetime.combine(bookingDetails.event_date, slot_time)
 
             def _fire_and_forget():
                 try:
