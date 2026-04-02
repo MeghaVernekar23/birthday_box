@@ -120,7 +120,7 @@ const Layout = () => {
             onClick={() => setSidebarOpen((o) => !o)}
             aria-label="Toggle menu"
           >
-            <i className="bi bi-list" />
+            &#9776;
           </button>
           <img src={BirthdayLogo} alt="Logo" className="topbar-logo" />
         </header>
