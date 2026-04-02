@@ -7,8 +7,6 @@ import { BASE_URL } from "../services/utils";
 const TIME_SLOTS = [
   "1 Hour (Quick)",
   "1.5 Hours (Classic)",
-  "2 Hours (Dynamic)",
-  "3 Hours (Full)",
   "Other",
 ];
 
@@ -130,6 +128,7 @@ export default function BookNow() {
   const [submitError, setSubmitError] = useState("");
   const [celebrationTypes, setCelebrationTypes] = useState([]);
   const [packages, setPackages] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
 
   useEffect(() => {
     fetch(`${BASE_URL}/bookings/celebration-type`)
@@ -142,6 +141,80 @@ export default function BookNow() {
       .then((data) => { if (Array.isArray(data)) setPackages(data); })
       .catch(() => {});
   }, []);
+
+  const fetchBookedTimesForDate = (date) => {
+    if (!date) { setBookedTimes([]); return; }
+    // Login as customer then fetch bookings for that date
+    const loginForm = new URLSearchParams();
+    loginForm.append("username", "customer");
+    loginForm.append("password", "customer@birthdaybox");
+    fetch(`${BASE_URL}/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: loginForm.toString(),
+    })
+      .then((r) => r.json())
+      .then(({ access_token }) =>
+        fetch(`${BASE_URL}/bookings/by-filter?filter=todayandfuture`, {
+          headers: { Authorization: `Bearer ${access_token}` },
+        })
+      )
+      .then((r) => r.json())
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+
+        // Parse duration in hours from the addons_note field
+        const getDuration = (note) => {
+          if (!note) return 1;
+          if (note.includes("1.5 Hours")) return 1.5;
+          if (note.includes("1 Hour")) return 1;
+          return 1;
+        };
+
+        // Convert a 12hr string like "5:00 PM" to total minutes from midnight
+        const toMinutes = (timeStr) => {
+          const match = timeStr && timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+          if (!match) return null;
+          let h = parseInt(match[1]);
+          const m = parseInt(match[2]);
+          const mer = match[3].toUpperCase();
+          if (mer === "PM" && h !== 12) h += 12;
+          if (mer === "AM" && h === 12) h = 0;
+          return h * 60 + m;
+        };
+
+        // Convert 24hr "HH:MM" to minutes
+        const to24Minutes = (timeStr) => {
+          const match = timeStr && timeStr.match(/(\d+):(\d+)/);
+          if (!match) return null;
+          return parseInt(match[1]) * 60 + parseInt(match[2]);
+        };
+
+        // Build set of blocked minutes ranges from existing bookings
+        const blockedRanges = data
+          .filter((b) => b.event_date === date && b.status !== "cancelled")
+          .map((b) => {
+            const startMin = to24Minutes(b.time_slot) ?? toMinutes(b.time_slot);
+            const durationMin = getDuration(b.addons_note) * 60;
+            return startMin != null ? { start: startMin, end: startMin + durationMin } : null;
+          })
+          .filter(Boolean);
+
+        // For each TIME_OPTION slot, mark it blocked if it overlaps any booked range
+        // Also need to consider the duration the current user is selecting — but we
+        // block any slot whose 1hr OR 1.5hr window overlaps a booked range
+        const blocked = TIME_OPTIONS.filter((t) => {
+          const slotMin = toMinutes(t);
+          if (slotMin == null) return false;
+          return blockedRanges.some(
+            (r) => slotMin < r.end && slotMin + 60 > r.start
+          );
+        });
+
+        setBookedTimes(blocked);
+      })
+      .catch(() => {});
+  };
 
   const set = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -363,7 +436,10 @@ export default function BookNow() {
                     name="timeSlot"
                     value={slot}
                     checked={form.timeSlot === slot}
-                    onChange={() => set("timeSlot", slot)}
+                    onChange={() => {
+                      set("timeSlot", slot);
+                      setForm((prev) => ({ ...prev, packages1hr: [], packages1hr30: [] }));
+                    }}
                   />
                   {slot}
                 </label>
@@ -402,6 +478,7 @@ export default function BookNow() {
               onChange={(e) => {
                 set("preferredDate", e.target.value);
                 set("preferredTime", "");
+                fetchBookedTimesForDate(e.target.value);
               }}
             />
           </div>
@@ -417,9 +494,14 @@ export default function BookNow() {
               onChange={(e) => set("preferredTime", e.target.value)}
             >
               <option value="">-- Select a time slot --</option>
-              {TIME_OPTIONS.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
+              {TIME_OPTIONS.map((t) => {
+                const isBooked = bookedTimes.includes(t);
+                return (
+                  <option key={t} value={t} disabled={isBooked}>
+                    {isBooked ? `${t} — Booked` : t}
+                  </option>
+                );
+              })}
             </select>
             {errors.preferredTime && <span className="bn-error">{errors.preferredTime}</span>}
           </div>
@@ -440,41 +522,45 @@ export default function BookNow() {
             {errors.celebrationType && <span className="bn-error">{errors.celebrationType}</span>}
           </div>
 
-          {/* PACKAGES 1 HR */}
-          <div className="bn-field">
-            <label className="bn-label">PACKAGES (1 HR)</label>
-            <div className="bn-checkbox-group">
-              {PACKAGES_1HR.map((pkg) => (
-                <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={form.packages1hr.includes(pkg.id)}
-                    onChange={() => toggleCheck("packages1hr", pkg.id)}
-                  />
-                  <span className="bn-pkg-label">{pkg.label}</span>
-                  <span className="bn-pkg-price">{pkg.price}</span>
-                </label>
-              ))}
+          {/* PACKAGES 1 HR — only when 1 Hour is selected */}
+          {form.timeSlot === "1 Hour (Quick)" && (
+            <div className="bn-field">
+              <label className="bn-label">PACKAGES (1 HR)</label>
+              <div className="bn-checkbox-group">
+                {PACKAGES_1HR.map((pkg) => (
+                  <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.packages1hr.includes(pkg.id)}
+                      onChange={() => toggleCheck("packages1hr", pkg.id)}
+                    />
+                    <span className="bn-pkg-label">{pkg.label}</span>
+                    <span className="bn-pkg-price">{pkg.price}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* PACKAGES 1 HR 30 MIN */}
-          <div className="bn-field">
-            <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
-            <div className="bn-checkbox-group">
-              {PACKAGES_1HR30.map((pkg) => (
-                <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
-                  <input
-                    type="checkbox"
-                    checked={form.packages1hr30.includes(pkg.id)}
-                    onChange={() => toggleCheck("packages1hr30", pkg.id)}
-                  />
-                  <span className="bn-pkg-label">{pkg.label}</span>
-                  <span className="bn-pkg-price">{pkg.price}</span>
-                </label>
-              ))}
+          {/* PACKAGES 1 HR 30 MIN — only when 1.5 Hours is selected */}
+          {form.timeSlot === "1.5 Hours (Classic)" && (
+            <div className="bn-field">
+              <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
+              <div className="bn-checkbox-group">
+                {PACKAGES_1HR30.map((pkg) => (
+                  <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.packages1hr30.includes(pkg.id)}
+                      onChange={() => toggleCheck("packages1hr30", pkg.id)}
+                    />
+                    <span className="bn-pkg-label">{pkg.label}</span>
+                    <span className="bn-pkg-price">{pkg.price}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ADD-ONS */}
           <div className="bn-field">
