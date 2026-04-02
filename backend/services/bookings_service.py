@@ -233,14 +233,21 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             "status": bookingDetails.status,
         }
 
-        # Send immediate confirmation and schedule reminders
+        # Send immediate confirmation and schedule reminders (non-blocking)
         try:
-            notify_new_booking(booking_data)
-
+            import threading
             event_datetime = datetime.combine(bookingDetails.event_date, datetime.strptime(bookingDetails.time_slot, "%H:%M").time())
-            schedule_reminders(booking_data, event_datetime)
+
+            def _fire_and_forget():
+                try:
+                    notify_new_booking(booking_data)
+                    schedule_reminders(booking_data, event_datetime)
+                except Exception as e:
+                    print(f"Telegram notification error: {e}")
+
+            threading.Thread(target=_fire_and_forget, daemon=True).start()
         except Exception as telegram_err:
-            print(f"Telegram notification error (non-fatal): {telegram_err}")
+            print(f"Telegram thread error (non-fatal): {telegram_err}")
 
         return {
             "message": "Booking created successfully",
