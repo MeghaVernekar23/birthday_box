@@ -2,18 +2,30 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
 import BirthdayLogo from "../images/logo.jpg";
 import "../css/Layout.css";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarPlus,
+  CalendarDays,
+  CalendarCheck,
+  CalendarClock,
+  History,
+  ChevronDown,
+  ChevronUp,
+  LogOut,
+} from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", path: "/dashboard", icon: "bi bi-speedometer2" },
-  { label: "Customer Details", path: "/customers", icon: "bi bi-people" },
-  { label: "Add Booking", path: "/addbooking", icon: "bi bi-calendar-plus" },
+  { label: "Dashboard", path: "/dashboard", Icon: LayoutDashboard },
+  { label: "Customer details", path: "/customers", Icon: Users },
+  { label: "Add booking", path: "/addbooking", Icon: CalendarPlus },
   {
-    label: "Booking Details",
-    icon: "bi bi-calendar2-week",
+    label: "Booking details",
+    Icon: CalendarDays,
     children: [
-      { label: "Today's Booking", path: "/bookings/today" },
-      { label: "Upcoming Booking", path: "/bookings/upcoming" },
-      { label: "Older Booking", path: "/bookings/older" },
+      { label: "Today's bookings", path: "/bookings/today", Icon: CalendarCheck },
+      { label: "Upcoming bookings", path: "/bookings/upcoming", Icon: CalendarClock },
+      { label: "Older bookings", path: "/bookings/older", Icon: History },
     ],
   },
 ];
@@ -57,13 +69,13 @@ const Layout = () => {
                   }`}
                   onClick={() => setBookingOpen((o) => !o)}
                 >
-                  <i className={item.icon} />
+                  <item.Icon size={17} />
                   <span>{item.label}</span>
-                  <i
-                    className={`bi bi-chevron-${
-                      bookingOpen ? "up" : "down"
-                    } sidebar-nav-item__chevron`}
-                  />
+                  {bookingOpen ? (
+                    <ChevronUp size={14} className="sidebar-nav-item__chevron" />
+                  ) : (
+                    <ChevronDown size={14} className="sidebar-nav-item__chevron" />
+                  )}
                 </button>
                 {bookingOpen && (
                   <div className="sidebar-submenu">
@@ -75,7 +87,7 @@ const Layout = () => {
                         }`}
                         onClick={() => handleNav(child.path)}
                       >
-                        <i className="bi bi-dot" />
+                        <child.Icon size={15} />
                         <span>{child.label}</span>
                       </button>
                     ))}
@@ -90,7 +102,7 @@ const Layout = () => {
                 }`}
                 onClick={() => handleNav(item.path)}
               >
-                <i className={item.icon} />
+                <item.Icon size={17} />
                 <span>{item.label}</span>
               </button>
             )
@@ -105,7 +117,7 @@ const Layout = () => {
               navigate("/");
             }}
           >
-            <i className="bi bi-box-arrow-left" />
+            <LogOut size={17} />
             <span>Logout</span>
           </button>
         </div>
