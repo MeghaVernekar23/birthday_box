@@ -129,6 +129,8 @@ export default function BookNow() {
   const [celebrationTypes, setCelebrationTypes] = useState([]);
   const [packages, setPackages] = useState([]);
   const [bookedTimes, setBookedTimes] = useState([]);
+  const [customerStatus, setCustomerStatus] = useState(null); // null | "existing" | "new"
+  const [lookingUpPhone, setLookingUpPhone] = useState(false);
 
   useEffect(() => {
     fetch(`${BASE_URL}/bookings/celebration-type`)
@@ -214,6 +216,42 @@ export default function BookNow() {
         setBookedTimes(blocked);
       })
       .catch(() => {});
+  };
+
+  const lookupCustomerByPhone = async (phone) => {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 10) {
+      setCustomerStatus(null);
+      return;
+    }
+    setLookingUpPhone(true);
+    try {
+      const loginForm = new URLSearchParams();
+      loginForm.append("username", "customer");
+      loginForm.append("password", "customer@birthdaybox");
+      const loginRes = await fetch(`${BASE_URL}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: loginForm.toString(),
+      });
+      if (!loginRes.ok) { setCustomerStatus("new"); return; }
+      const { access_token } = await loginRes.json();
+
+      const res = await fetch(`${BASE_URL}/customers/details/${encodeURIComponent(phone)}`, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+      if (res.ok) {
+        const customer = await res.json();
+        setCustomerStatus("existing");
+        setForm((prev) => ({ ...prev, name: customer.name }));
+      } else {
+        setCustomerStatus("new");
+      }
+    } catch {
+      setCustomerStatus("new");
+    } finally {
+      setLookingUpPhone(false);
+    }
   };
 
   const set = (field, value) => {
@@ -399,6 +437,30 @@ export default function BookNow() {
       <form className="bn-form" onSubmit={handleSubmit} noValidate>
         <div className="bn-card">
 
+          {/* PHONE */}
+          <div className="bn-field" id="field-phone">
+            <label className="bn-label">PHONE NUMBER <span className="bn-req">*</span></label>
+            <input
+              className={`bn-input ${errors.phone ? "bn-input-err" : ""}`}
+              type="tel"
+              placeholder="Your phone number"
+              value={form.phone}
+              onChange={(e) => {
+                set("phone", e.target.value);
+                setCustomerStatus(null);
+              }}
+              onBlur={(e) => lookupCustomerByPhone(e.target.value)}
+            />
+            {lookingUpPhone && <span className="bn-phone-lookup">Checking...</span>}
+            {!lookingUpPhone && customerStatus === "existing" && (
+              <span className="bn-customer-badge bn-customer-existing">Returning Customer</span>
+            )}
+            {!lookingUpPhone && customerStatus === "new" && (
+              <span className="bn-customer-badge bn-customer-new">New Customer</span>
+            )}
+            {errors.phone && <span className="bn-error">{errors.phone}</span>}
+          </div>
+
           {/* NAME */}
           <div className="bn-field" id="field-name">
             <label className="bn-label">NAME <span className="bn-req">*</span></label>
@@ -408,21 +470,13 @@ export default function BookNow() {
               placeholder="Your full name"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
+              readOnly={customerStatus === "existing"}
+              style={customerStatus === "existing" ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" } : {}}
             />
+            {customerStatus === "existing" && (
+              <span className="bn-field-hint">Name is prefilled from your existing profile.</span>
+            )}
             {errors.name && <span className="bn-error">{errors.name}</span>}
-          </div>
-
-          {/* PHONE */}
-          <div className="bn-field" id="field-phone">
-            <label className="bn-label">PHONE NUMBER <span className="bn-req">*</span></label>
-            <input
-              className={`bn-input ${errors.phone ? "bn-input-err" : ""}`}
-              type="tel"
-              placeholder="Your phone number"
-              value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-            />
-            {errors.phone && <span className="bn-error">{errors.phone}</span>}
           </div>
 
           {/* TIME SLOT */}

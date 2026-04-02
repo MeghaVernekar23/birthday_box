@@ -148,6 +148,42 @@
   border-color: #e53935 !important;
 }
 
+.bn-phone-lookup {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.bn-customer-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.bn-customer-existing {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.bn-customer-new {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.bn-field-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #2e7d32;
+}
+
 .bn-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231b1464' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
