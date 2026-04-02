@@ -1,13 +1,18 @@
 import os
 import json
-import httpx
+import urllib.request
 import asyncio
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env from the backend directory regardless of working directory
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+def _get_token() -> str:
+    return os.getenv("TELEGRAM_BOT_TOKEN", "")
+
 
 def _get_chat_ids() -> list[str]:
     raw = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -20,25 +25,38 @@ def _get_chat_ids() -> list[str]:
         return [raw] if raw else []
 
 
-def _telegram_api_url() -> str:
-    return f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+def send_telegram_message(message: str, chat_id: str, bot_token: str) -> dict:
+    """Send a single Telegram message via the Bot API."""
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = json.dumps({
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "HTML",
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return json.loads(resp.read())
 
 
-async def _send_message(text: str) -> None:
+def _send_message_sync(text: str) -> None:
     """Send a message to all configured Telegram chats."""
+    token = _get_token()
     chat_ids = _get_chat_ids()
-    if not TELEGRAM_BOT_TOKEN or not chat_ids:
+    if not token or not chat_ids:
         print("Telegram credentials not configured — skipping notification.")
         return
 
-    async with httpx.AsyncClient() as client:
-        for chat_id in chat_ids:
-            response = await client.post(
-                _telegram_api_url(),
-                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
-            )
-            if response.status_code != 200:
-                print(f"Telegram send failed for {chat_id}: {response.text}")
+    for chat_id in chat_ids:
+        try:
+            send_telegram_message(text, chat_id, token)
+        except Exception as e:
+            print(f"Telegram request error for {chat_id}: {e}")
+
+
+async def _send_message_async(text: str) -> None:
+    """Send a message to all configured Telegram chats (async via thread executor)."""
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _send_message_sync, text)
 
 
 def build_booking_message(booking_data: dict, label: str = "New Booking") -> str:
@@ -68,7 +86,7 @@ async def _schedule_reminder(booking_data: dict, send_at: datetime, label: str) 
         return  # reminder time already passed
     await asyncio.sleep(delay)
     message = build_booking_message(booking_data, label=label)
-    await _send_message(message)
+    await _send_message_async(message)
 
 
 def schedule_reminders(booking_data: dict, event_datetime: datetime) -> None:
@@ -88,7 +106,7 @@ def schedule_reminders(booking_data: dict, event_datetime: datetime) -> None:
     )
 
 
-async def notify_new_booking(booking_data: dict) -> None:
-    """Send the immediate new-booking notification."""
+def notify_new_booking(booking_data: dict) -> None:
+    """Send the immediate new-booking notification (synchronous)."""
     message = build_booking_message(booking_data, label="🎉 New Booking Confirmed")
-    await _send_message(message)
+    _send_message_sync(message)

@@ -9,7 +9,6 @@ from utils.db_utils import get_active_celebration_types, get_active_packages, ge
 from typing import List
 from sqlalchemy import func
 from sqlalchemy import and_
-import asyncio
 from services.telegram_service import notify_new_booking, schedule_reminders
 
 
@@ -236,8 +235,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
 
         # Send immediate confirmation and schedule reminders
         try:
-            loop = asyncio.get_event_loop()
-            loop.create_task(notify_new_booking(booking_data))
+            notify_new_booking(booking_data)
 
             event_datetime = datetime.combine(bookingDetails.event_date, datetime.strptime(bookingDetails.time_slot, "%H:%M").time())
             schedule_reminders(booking_data, event_datetime)
