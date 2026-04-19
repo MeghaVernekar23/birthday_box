@@ -176,6 +176,7 @@ export default function BookNow() {
         // Parse duration in hours from the addons_note field
         const getDuration = (note) => {
           if (!note) return 1;
+          if (note.includes("30 Minutes")) return 0.5;
           if (note.includes("1.5 Hours")) return 1.5;
           if (note.includes("1 Hour")) return 1;
           return 1;
