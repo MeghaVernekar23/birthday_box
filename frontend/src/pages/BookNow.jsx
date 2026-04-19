@@ -127,6 +127,8 @@ export default function BookNow() {
     confirmation: "",
     agreement: false,
     contactUs: "",
+    status: "pending",
+    paymentPaid: "",
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -204,9 +206,9 @@ export default function BookNow() {
         const blockedRanges = data
           .filter((b) => b.event_date === date && b.status !== "cancelled")
           .map((b) => {
-            const startMin = to24Minutes(b.time_slot) ?? toMinutes(b.time_slot);
+            const startMin = /AM|PM/i.test(b.time_slot) ? toMinutes(b.time_slot) : to24Minutes(b.time_slot);
             const durationMin = getDuration(b.addons_note) * 60;
-            return startMin != null ? { start: startMin, end: startMin + durationMin } : null;
+return startMin != null ? { start: startMin, end: startMin + durationMin } : null;
           })
           .filter(Boolean);
 
@@ -365,10 +367,10 @@ export default function BookNow() {
         celebration_id,
         package_id,
         addons_note,
-        status: "pending",
+        status: form.status,
         payment_mode: "",
         payment_total: 0,
-        payment_paid: 0,
+        payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
         payment_notes: "",
         created_by: "customer",
         updated_by: null,
@@ -554,7 +556,7 @@ export default function BookNow() {
               <option value="">-- Select a time slot --</option>
               {TIME_OPTIONS.map((t) => {
                 const isBooked = bookedTimes.includes(t);
-                const endLabel = (() => {
+                const rangeLabel = (() => {
                   const match = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
                   if (!match) return t;
                   let h = parseInt(match[1]);
@@ -571,7 +573,7 @@ export default function BookNow() {
                 })();
                 return (
                   <option key={t} value={t} disabled={isBooked}>
-                    {isBooked ? `${endLabel} — Booked` : endLabel}
+                    {isBooked ? `${t} — Booked` : rangeLabel}
                   </option>
                 );
               })}
@@ -714,6 +716,38 @@ export default function BookNow() {
               placeholder="Any message for us? (optional)"
               value={form.contactUs}
               onChange={(e) => set("contactUs", e.target.value)}
+            />
+          </div>
+
+          {/* STATUS */}
+          <div className="bn-field">
+            <label className="bn-label">BOOKING STATUS</label>
+            <div className="bn-radio-group">
+              {["pending", "confirmed"].map((s) => (
+                <label key={s} className={`bn-radio-option ${form.status === s ? "bn-radio-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="status"
+                    value={s}
+                    checked={form.status === s}
+                    onChange={() => set("status", s)}
+                  />
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* PAYMENT AMOUNT */}
+          <div className="bn-field">
+            <label className="bn-label">AMOUNT PAID (optional)</label>
+            <input
+              className="bn-input"
+              type="number"
+              min="0"
+              placeholder="₹ Enter amount (optional)"
+              value={form.paymentPaid}
+              onChange={(e) => set("paymentPaid", e.target.value)}
             />
           </div>
 

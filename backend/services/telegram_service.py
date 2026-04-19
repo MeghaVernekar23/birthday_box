@@ -68,6 +68,8 @@ async def _send_message_async(text: str) -> None:
 
 def build_booking_message(booking_data: dict, label: str = "New Booking") -> str:
     """Format a booking notification message."""
+    payment_paid = booking_data.get('payment_paid')
+    payment_line = f"\n<b>Amount Paid:</b> ₹{payment_paid}" if payment_paid else ""
     return (
         f"<b>{label}</b>\n\n"
         f"<b>Customer:</b> {booking_data['customer_name']}\n"
@@ -78,6 +80,7 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
         f"<b>Celebration:</b> {booking_data.get('celebration_name', '')}\n"
         f"<b>Notes:</b> {booking_data.get('addons_note', '')}\n"
         f"<b>Status:</b> {booking_data.get('status', '')}"
+        f"{payment_line}"
     )
 
 
