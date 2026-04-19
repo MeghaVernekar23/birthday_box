@@ -1,3 +1,4 @@
+import asyncio
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
@@ -246,10 +247,12 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
                 slot_time = datetime.strptime("00:00", "%H:%M").time()
             event_datetime = datetime.combine(bookingDetails.event_date, slot_time)
 
+            loop = asyncio.get_event_loop()
+
             def _fire_and_forget():
                 try:
                     notify_new_booking(booking_data)
-                    schedule_reminders(booking_data, event_datetime)
+                    schedule_reminders(booking_data, event_datetime, loop)
                 except Exception as e:
                     print(f"Telegram notification error: {e}")
 

@@ -94,20 +94,21 @@ async def _schedule_reminder(booking_data: dict, send_at: datetime, label: str) 
     await _send_message_async(message)
 
 
-def schedule_reminders(booking_data: dict, event_datetime: datetime) -> None:
+def schedule_reminders(booking_data: dict, event_datetime: datetime, loop: asyncio.AbstractEventLoop) -> None:
     """
-    Schedule the 24-hour and 5-hour reminders for a booking.
-    Fires-and-forgets two async tasks on the running event loop.
+    Schedule the 24-hour and 4-hour reminders for a booking.
+    Fires-and-forgets two async tasks on the provided event loop.
     """
     remind_24h = event_datetime - timedelta(hours=24)
-    remind_5h = event_datetime - timedelta(hours=5)
+    remind_4h = event_datetime - timedelta(hours=4)
 
-    loop = asyncio.get_event_loop()
-    loop.create_task(
-        _schedule_reminder(booking_data, remind_24h, "⏰ Reminder: Booking in 24 Hours")
+    asyncio.run_coroutine_threadsafe(
+        _schedule_reminder(booking_data, remind_24h, "⏰ Reminder: Booking in 24 Hours"),
+        loop
     )
-    loop.create_task(
-        _schedule_reminder(booking_data, remind_5h, "⏰ Reminder: Booking in 5 Hours")
+    asyncio.run_coroutine_threadsafe(
+        _schedule_reminder(booking_data, remind_4h, "⏰ Reminder: Booking in 4 Hours"),
+        loop
     )
 
 
