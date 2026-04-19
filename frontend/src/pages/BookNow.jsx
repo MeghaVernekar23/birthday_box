@@ -497,6 +497,7 @@ export default function BookNow() {
                     onChange={() => {
                       set("timeSlot", slot);
                       setForm((prev) => ({ ...prev, packages1hr: [], packages1hr30: [] }));
+                      if (form.preferredDate) fetchBookedTimesForDate(form.preferredDate, slot);
                     }}
                   />
                   {slot}
