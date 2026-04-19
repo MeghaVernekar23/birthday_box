@@ -5,6 +5,7 @@ import "./BookNow.css";
 import { BASE_URL } from "../services/utils";
 
 const TIME_SLOTS = [
+  "30 Minutes",
   "1 Hour (Quick)",
   "1.5 Hours (Classic)",
   "Other",
