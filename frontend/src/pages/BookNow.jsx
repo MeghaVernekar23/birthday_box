@@ -153,7 +153,7 @@ export default function BookNow() {
   }, []);
 
   const fetchBookedTimesForDate = (date, timeSlot) => {
-    if (!date) { setBookedTimes([]); return; }
+    if (!date || !timeSlot) { setBookedTimes([]); return; }
     // Login as customer then fetch bookings for that date
     const loginForm = new URLSearchParams();
     loginForm.append("username", "customer");
@@ -495,8 +495,8 @@ export default function BookNow() {
                     value={slot}
                     checked={form.timeSlot === slot}
                     onChange={() => {
-                      set("timeSlot", slot);
-                      setForm((prev) => ({ ...prev, packages1hr: [], packages1hr30: [] }));
+                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [] }));
+                      setErrors((prev) => ({ ...prev, timeSlot: "" }));
                       if (form.preferredDate) fetchBookedTimesForDate(form.preferredDate, slot);
                     }}
                   />
