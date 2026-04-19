@@ -582,7 +582,7 @@ export default function BookNow() {
           </div>
 
           {/* PACKAGES 1 HR — only when 1 Hour is selected */}
-          {form.timeSlot === "1 Hour (Quick)" && (
+          {(form.timeSlot === "30 Minutes" || form.timeSlot === "1 Hour (Quick)") && (
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR)</label>
               <div className="bn-checkbox-group">
