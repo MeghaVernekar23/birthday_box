@@ -62,20 +62,19 @@ const ADDONS = [
   "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)",
 ];
 
-const TIME_OPTIONS = [
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-  "8:00 PM",
-  "9:00 PM",
-];
+const TIME_OPTIONS = (() => {
+  const slots = [];
+  for (let h = 10; h <= 21; h++) {
+    for (const m of [0, 30]) {
+      if (h === 21 && m === 30) break;
+      const hour12 = h > 12 ? h - 12 : h;
+      const ampm = h < 12 ? "AM" : "PM";
+      const mm = m === 0 ? "00" : "30";
+      slots.push(`${hour12}:${mm} ${ampm}`);
+    }
+  }
+  return slots;
+})();
 
 const REFERRAL_SOURCES = [
   "Instagram",
@@ -555,9 +554,24 @@ export default function BookNow() {
               <option value="">-- Select a time slot --</option>
               {TIME_OPTIONS.map((t) => {
                 const isBooked = bookedTimes.includes(t);
+                const endLabel = (() => {
+                  const match = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                  if (!match) return t;
+                  let h = parseInt(match[1]);
+                  const m = parseInt(match[2]);
+                  const mer = match[3].toUpperCase();
+                  if (mer === "PM" && h !== 12) h += 12;
+                  if (mer === "AM" && h === 12) h = 0;
+                  const totalMin = h * 60 + m + slotDurationMinutes(form.timeSlot);
+                  const eh = Math.floor(totalMin / 60) % 24;
+                  const em = totalMin % 60;
+                  const eampm = eh < 12 ? "AM" : "PM";
+                  const eh12 = eh > 12 ? eh - 12 : eh === 0 ? 12 : eh;
+                  return `${t} – ${eh12}:${em === 0 ? "00" : em} ${eampm}`;
+                })();
                 return (
                   <option key={t} value={t} disabled={isBooked}>
-                    {isBooked ? `${t} — Booked` : t}
+                    {isBooked ? `${endLabel} — Booked` : endLabel}
                   </option>
                 );
               })}

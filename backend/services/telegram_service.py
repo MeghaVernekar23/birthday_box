@@ -38,8 +38,15 @@ def send_telegram_message(message: str, chat_id: str, bot_token: str) -> dict:
         return json.loads(resp.read())
 
 
+def _is_local_dev() -> bool:
+    return os.getenv("LOCAL_DEV", "false").lower() == "true"
+
+
 def _send_message_sync(text: str) -> None:
     """Send a message to all configured Telegram chats."""
+    if _is_local_dev():
+        print("LOCAL_DEV=true — skipping Telegram notification.")
+        return
     token = _get_token()
     chat_ids = _get_chat_ids()
     if not token or not chat_ids:
@@ -65,16 +72,11 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
         f"<b>{label}</b>\n\n"
         f"<b>Customer:</b> {booking_data['customer_name']}\n"
         f"<b>Phone:</b> {booking_data['phone_number']}\n"
-        f"<b>Email:</b> {booking_data['email']}\n"
-        f"<b>Address:</b> {booking_data['address']}\n"
         f"<b>Event Date:</b> {booking_data['event_date']}\n"
         f"<b>Time Slot:</b> {booking_data['time_slot']}\n"
         f"<b>Package:</b> {booking_data.get('package_name', '')}\n"
         f"<b>Celebration:</b> {booking_data.get('celebration_name', '')}\n"
         f"<b>Notes:</b> {booking_data.get('addons_note', '')}\n"
-        f"<b>Payment Total:</b> ₹{booking_data.get('payment_total', 0)}\n"
-        f"<b>Payment Paid:</b> ₹{booking_data.get('payment_paid', 0)}\n"
-        f"<b>Payment Mode:</b> {booking_data.get('payment_mode', '')}\n"
         f"<b>Status:</b> {booking_data.get('status', '')}"
     )
 
