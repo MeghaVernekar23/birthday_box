@@ -11,6 +11,13 @@ const TIME_SLOTS = [
   "Other",
 ];
 
+const slotDurationMinutes = (timeSlot) => {
+  if (timeSlot === "30 Minutes") return 30;
+  if (timeSlot === "1 Hour (Quick)") return 60;
+  if (timeSlot === "1.5 Hours (Classic)") return 90;
+  return 60;
+};
+
 const CELEBRATION_TYPES = [
   "Birthday Parties",
   "Teen Nights",
