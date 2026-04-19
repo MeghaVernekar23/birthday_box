@@ -152,7 +152,7 @@ export default function BookNow() {
       .catch(() => {});
   }, []);
 
-  const fetchBookedTimesForDate = (date) => {
+  const fetchBookedTimesForDate = (date, timeSlot) => {
     if (!date) { setBookedTimes([]); return; }
     // Login as customer then fetch bookings for that date
     const loginForm = new URLSearchParams();
@@ -214,11 +214,12 @@ export default function BookNow() {
         // For each TIME_OPTION slot, mark it blocked if it overlaps any booked range
         // Also need to consider the duration the current user is selecting — but we
         // block any slot whose 1hr OR 1.5hr window overlaps a booked range
+        const userDurationMin = slotDurationMinutes(timeSlot);
         const blocked = TIME_OPTIONS.filter((t) => {
           const slotMin = toMinutes(t);
           if (slotMin == null) return false;
           return blockedRanges.some(
-            (r) => slotMin < r.end && slotMin + 60 > r.start
+            (r) => slotMin < r.end && slotMin + userDurationMin > r.start
           );
         });
 
@@ -535,7 +536,7 @@ export default function BookNow() {
               onChange={(e) => {
                 set("preferredDate", e.target.value);
                 set("preferredTime", "");
-                fetchBookedTimesForDate(e.target.value);
+                fetchBookedTimesForDate(e.target.value, form.timeSlot);
               }}
             />
           </div>
