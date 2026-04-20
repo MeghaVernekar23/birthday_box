@@ -1,50 +1,117 @@
-.today-bookings-card {
+/* ===== Dashboard Layout ===== */
+.dashboard-wrapper {
   width: 100%;
-  height: 170px;
-  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== Dashboard Header ===== */
+.dashboard-header {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px 24px;
+  border-bottom: 2px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-header h4 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.dashboard-header p {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* ===== Grid Rows ===== */
+.dashboard-grid-top {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.dashboard-grid-mid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.dashboard-grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.dashboard-card-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ===== Base Card ===== */
+.dashboard-card {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e6f1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== Accent Variants ===== */
+.dashboard-card--blue  { border-left-color: #4f8ef7; }
+.dashboard-card--purple { border-left-color: #7c5cbf; }
+.dashboard-card--amber { border-left-color: #f5a623; }
+.dashboard-card--red   { border-left-color: #e8603c; }
+.dashboard-card--teal  { border-left-color: #2bba8f; }
+
+/* Icon box accent colors */
+.dashboard-card--blue  .icon-box { background-color: #4f8ef7; }
+.dashboard-card--purple .icon-box { background-color: #7c5cbf; }
+.dashboard-card--amber .icon-box { background-color: #f5a623; }
+.dashboard-card--red   .icon-box { background-color: #e8603c; }
+.dashboard-card--teal  .icon-box { background-color: #2bba8f; }
+
+/* ===== Mid-row cards taller ===== */
+.dashboard-grid-mid .dashboard-card {
+  min-height: 220px;
+}
+
+/* ===== Available Slots card ===== */
+.slot-availability-card {
+  width: 100%;
+  height: auto;
+  min-height: 450px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
 }
 
-.pending-payment-card {
-  width: 100%;
-  height: 200px;
-  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #e0e6f1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.slot-availability-card {
-  
-   height: auto; 
-  min-height: 450px;
-  background: linear-gradient(to right, #f0f4ff, #e6f0ff);
-  border-radius: 16px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e6f1;
-  margin: auto;
-  
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.align-left {
-  margin-left: -25px;
-}
-
-.today-bookings-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 24px rgba(0, 123, 255, 0.2);
-  border-color: #b3d7ff;
-  background: linear-gradient(to right, #e4efff, #d0e4ff);
-}
-
+/* ===== Card internals ===== */
 .card-content {
   display: flex;
   flex-direction: column;
@@ -55,12 +122,12 @@
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .label {
-  font-size: 1.10rem;
-  color: black;
+  font-size: 1.0rem;
+  color: #6c757d;
   margin-bottom: 6px;
   font-weight: 500;
 }
@@ -68,40 +135,39 @@
 .count {
   font-size: 2.5rem;
   font-weight: 700;
-  color: black;
+  color: #1a1a2e;
 }
 
 .text {
-  margin-top: 15px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: black;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a2e;
 }
 
 .icon-box {
-  background-color:  #b2c1f7;
   color: #fff;
   padding: 12px;
   border-radius: 50%;
   font-size: 1.5rem;
 }
 
-.bts-card-footer {
-  margin-top: 20px;
+/* ===== Card footers ===== */
+.bts-card-footer,
+.nb-card-footer,
+.holiday-card-footer {
+  margin-top: auto;
+  padding-top: 12px;
   text-align: right;
 }
 
-.nb-card-footer {
-  margin-top: 0px;
-  text-align: right;
-}
-
+/* ===== View all button ===== */
 .view-all-btn {
   background: transparent;
   border: none;
-  color: black;
+  color: #495057;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 0;
@@ -121,26 +187,31 @@
   transform: translateX(4px);
 }
 
+/* ===== Spinner ===== */
+.card-spinner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+}
+
+/* ===== Holiday list ===== */
 .holiday-list {
   list-style: none;
   padding-left: 0;
-  margin: 0;
+  margin: 8px 0;
 }
 
 .holiday-item {
   font-size: 0.9rem;
   padding: 4px 0;
   border-bottom: 1px solid #eee;
+  color: #333;
 }
 
-.holiday-card:hover {
-  transform: translateY(-2px);
-  transition: all 0.2s ease-in-out;
-  border-left: 4px solid #ffc107;
-  background-color: #fcfcfc;
-}
-
-.celebration-package-list{
+/* ===== Celebration/Package list ===== */
+.celebration-package-list {
   list-style: none;
   padding-left: 0;
   margin: 0;
@@ -166,7 +237,6 @@
 
 .celebration-package-list li:hover {
   background-color: #e7efff;
-  cursor: default;
 }
 
 .celebration-package-item {
@@ -175,146 +245,99 @@
   border-bottom: 1px solid #eee;
 }
 
-.holiday-card-footer {
-  margin-top: 0px;
-  text-align: right;
-}
-
-.uh-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.uh-modal-box {
-  position: relative;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  width: 90%;
-  height: auto;
-  max-width: 800px;
-  max-height: 90vh; 
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.add-upcoming-holiday-modal-box{
-   position: relative;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  width: 90%;
-  height: auto;
-  max-width: 600px;
-  max-height: 90vh; 
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-
+/* ===== Modals ===== */
+.uh-modal-overlay,
 .ps-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
 
-.ps-modal-box {
+.uh-modal-box,
+.ps-modal-box,
+.booking-taken-modal-box {
   position: relative;
   background-color: white;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   width: 90%;
-  height: auto;
   max-width: 800px;
-  max-height: 90vh; 
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   text-align: center;
 }
 
-.edit-payment-modal-box{
+.add-upcoming-holiday-modal-box,
+.edit-payment-modal-box {
   position: relative;
   background-color: white;
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
   width: 90%;
-  height: auto;
   max-width: 600px;
-  max-height: 90vh; 
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   text-align: center;
 }
 
+.booking-taken-modal-box table {
+  margin-bottom: 0 !important;
+}
 
+.booking-taken-modal-box .pagination-bar {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ===== Payment table rows ===== */
 .past-payment-row {
   background-color: #ffe0e0 !important;
 }
 
 .past-payment-row td {
-  color: #b30000 !important;;
-  font-weight: 5000 !important;
+  color: #b30000 !important;
+  font-weight: 700 !important;
 }
 
-.dashboard-wrapper {
+/* ===== Add holiday button ===== */
+.add-holiday-button {
+  background-color: #b2c1f7;
+  color: black;
+  border: 1px solid #b2c1f7;
+  padding: 5px 16px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* ===== Misc ===== */
+.modal-datatable {
+  max-height: 60vh !important;
+}
+
+.align-right {
+  display: flex;
+  justify-content: flex-end;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0;
-  background-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Top row: 3 equal columns */
-.dashboard-grid-top {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: stretch;
-}
-
-/* Mid row: 2 equal columns */
-.dashboard-grid-mid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  align-items: stretch;
-}
-
-/* Bottom row: full width */
-.dashboard-grid-bottom {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-.dashboard-card-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 /* ===== Responsive ===== */
@@ -330,64 +353,3 @@
     grid-template-columns: 1fr;
   }
 }
-
-.booking-taken-modal-box {
-  position: relative;
-  background-color: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  width: 90%;
-  height: auto;
-  max-width: 800px;
-  max-height: 90vh; 
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  
-}
-
-.booking-taken-modal-box table {
-  margin-bottom: 0 !important;
-}
-
-.booking-taken-modal-box .pagination-bar {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.add-holiday-button {
-  background-color: #b2c1f7;  
-  color: black;              
-  border: 1px solid #b2c1f7; 
-  padding: 5px 16px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease-in-out;
-  margin-bottom: 0px;
-  
-}
-
-
-.modal-datatable{
-  
-  max-height: 60vh !important;
-}
-
-
-.align-right {
-  display: flex;
-  justify-content: flex-end !important;
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-
-
