@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 import "../css/Booking.css";
 import "../css/TodaysBookings.css";
@@ -18,6 +18,45 @@ import {
   updateBooking,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
+
+const getPaymentStatus = (row) => {
+  const total = Number(row.payment_total) || 0;
+  const paid = Number(row.payment_paid) || 0;
+  if (total > 0 && paid >= total) return { key: "paid", label: "Paid" };
+  if (paid > 0 && paid < total) return { key: "partial", label: "Partial" };
+  return { key: "unpaid", label: "Unpaid" };
+};
+
+const formatEventDate = (dateStr) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const BookingCard = ({ row, onEdit, onView, onDelete }) => {
+  const ps = getPaymentStatus(row);
+  return (
+    <div className="booking-card booking-card--blue">
+      <div className="booking-card__header">
+        <span className="booking-card__name">{row.customer_name || "—"}</span>
+        <span className="booking-card__date-badge">{formatEventDate(row.event_date)}</span>
+      </div>
+      <div className="booking-card__body">
+        <div className="booking-card__field">🕐 {row.time_slot || "—"}</div>
+        <div className="booking-card__field">📦 {row.package_name || "—"}</div>
+        <div className="booking-card__field">🎉 {row.celebration_name || "—"}</div>
+        <div className="booking-card__field">👤 {row.updated_by || "—"}</div>
+        <span className={`booking-card__pill booking-card__pill--${ps.key}`}>{ps.label}</span>
+      </div>
+      <div className="booking-card__actions">
+        <button className="btn btn-sm btn-primary" onClick={() => onEdit(row)}>Edit</button>
+        <button className="btn btn-sm btn-secondary" onClick={() => onView(row)}>View</button>
+        <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
+      </div>
+    </div>
+  );
+};
 
 function Bookings() {
   const user = localStorage.getItem("current_user");
@@ -272,58 +311,30 @@ function Bookings() {
     }
   };
 
-  const getPaymentStatus = (row) => {
-    const total = Number(row.payment_total) || 0;
-    const paid = Number(row.payment_paid) || 0;
-    if (total > 0 && paid >= total) return { key: "paid", label: "Paid" };
-    if (paid > 0 && paid < total) return { key: "partial", label: "Partial" };
-    return { key: "unpaid", label: "Unpaid" };
-  };
-
-  const formatEventDate = (dateStr) => {
-    if (!dateStr) return "—";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
-
-  const getTodayStats = () => {
+  const stats = useMemo(() => {
     const total = todayBookingData.length;
     const confirmed = todayBookingData.filter(
       (b) => (b.status || "").toLowerCase() === "confirmed"
     ).length;
     const pendingPayment = todayBookingData.filter((b) => {
-      const total = Number(b.payment_total) || 0;
-      const paid = Number(b.payment_paid) || 0;
-      return total > 0 && paid < total;
+      const t = Number(b.payment_total) || 0;
+      const p = Number(b.payment_paid) || 0;
+      return t > 0 && p < t;
     }).length;
     return { total, confirmed, pendingPayment };
-  };
+  }, [todayBookingData]);
 
-  const BookingCard = ({ row }) => {
-    const ps = getPaymentStatus(row);
-    return (
-      <div className="booking-card booking-card--blue">
-        <div className="booking-card__header">
-          <span className="booking-card__name">{row.customer_name || "—"}</span>
-          <span className="booking-card__date-badge">{formatEventDate(row.event_date)}</span>
-        </div>
-        <div className="booking-card__body">
-          <div className="booking-card__field">🕐 {row.time_slot || "—"}</div>
-          <div className="booking-card__field">📦 {row.package_name || "—"}</div>
-          <div className="booking-card__field">🎉 {row.celebration_name || "—"}</div>
-          <div className="booking-card__field">👤 {row.updated_by || "—"}</div>
-          <span className={`booking-card__pill booking-card__pill--${ps.key}`}>{ps.label}</span>
-        </div>
-        <div className="booking-card__actions">
-          <button className="btn btn-sm btn-primary" onClick={() => handleEditBooking(row)}>Edit</button>
-          <button className="btn btn-sm btn-secondary" onClick={() => handleViewBooking(row)}>View</button>
-          <button className="btn btn-sm btn-danger" onClick={() => handleDeleteBooking(row)}>Delete</button>
-        </div>
-      </div>
-    );
-  };
-
-  const stats = getTodayStats();
+  const cardTemplate = useCallback(
+    (row) => (
+      <BookingCard
+        row={row}
+        onEdit={handleEditBooking}
+        onView={handleViewBooking}
+        onDelete={handleDeleteBooking}
+      />
+    ),
+    [handleEditBooking, handleViewBooking, handleDeleteBooking]
+  );
 
   return (
     <div className="bookings-page-wrapper">
@@ -362,7 +373,7 @@ function Bookings() {
           actions={[ActionButtons]}
           searchableFields={["customer_name", "phone_number"]}
           viewMode="card"
-          cardTemplate={(row) => <BookingCard row={row} />}
+          cardTemplate={cardTemplate}
         />
       )}
 
