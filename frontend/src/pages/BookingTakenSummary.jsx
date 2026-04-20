@@ -67,7 +67,7 @@ const TodayBookingsSummaryCard = () => {
       </div>
 
       {showBookingModal && (
-        <div className="modal-overlay">
+        <div className="ps-modal-overlay">
           <div className="booking-taken-modal-box">
             <h5>Bookings Taken Today</h5>
             <div

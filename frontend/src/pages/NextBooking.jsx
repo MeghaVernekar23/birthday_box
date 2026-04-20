@@ -79,8 +79,8 @@ const NextBookingCard = () => {
       </div>
 
       {showBookingModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
+        <div className="ps-modal-overlay">
+          <div className="ps-modal-box">
             <div className="modal-close-icon" onClick={() => setShowBookingModal(false)}>
               ×
             </div>

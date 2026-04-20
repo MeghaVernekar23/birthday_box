@@ -143,7 +143,7 @@ const PaymentStatus = () => {
               <h5>Balance Summary</h5>
               <p><strong>Total Amount:</strong> ₹{editFormData.payment_total || 0}</p>
               <p><strong>Amount Paid:</strong> ₹{editFormData.payment_paid || 0}</p>
-              <p><strong>Balance:</strong> ₹{editFormData.payment_total - editFormData.payment_paid || 0}</p>
+              <p><strong>Balance:</strong> ₹{(Number(editFormData.payment_total) - Number(editFormData.payment_paid)) || 0}</p>
             </div>
             <div className="modal-actions">
               <button
