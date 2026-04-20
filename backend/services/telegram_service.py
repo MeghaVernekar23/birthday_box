@@ -38,26 +38,20 @@ def send_telegram_message(message: str, chat_id: str, bot_token: str) -> dict:
         return json.loads(resp.read())
 
 
-def _is_local_dev() -> bool:
-    return os.getenv("LOCAL_DEV", "false").lower() == "true"
-
-
 def _send_message_sync(text: str) -> None:
-    """Send a message to all configured Telegram chats."""
-    if _is_local_dev():
-        print("LOCAL_DEV=true — skipping Telegram notification.")
-        return
     token = _get_token()
     chat_ids = _get_chat_ids()
+    print(f"[Telegram] token={'SET' if token else 'MISSING'}, chat_ids={chat_ids}")
     if not token or not chat_ids:
-        print("Telegram credentials not configured — skipping notification.")
+        print("[Telegram] Credentials not configured — skipping.")
         return
 
     for chat_id in chat_ids:
         try:
-            send_telegram_message(text, chat_id, token)
+            result = send_telegram_message(text, chat_id, token)
+            print(f"[Telegram] Sent to {chat_id}: {result}")
         except Exception as e:
-            print(f"Telegram request error for {chat_id}: {e}")
+            print(f"[Telegram] Error for {chat_id}: {e}")
 
 
 async def _send_message_async(text: str) -> None:
@@ -94,21 +88,13 @@ async def _schedule_reminder(booking_data: dict, send_at: datetime, label: str) 
     await _send_message_async(message)
 
 
-def schedule_reminders(booking_data: dict, event_datetime: datetime, loop: asyncio.AbstractEventLoop) -> None:
-    """
-    Schedule the 24-hour and 4-hour reminders for a booking.
-    Fires-and-forgets two async tasks on the provided event loop.
-    """
+async def schedule_reminders_async(booking_data: dict, event_datetime: datetime) -> None:
+    """Schedule the 24-hour and 4-hour reminders for a booking."""
     remind_24h = event_datetime - timedelta(hours=24)
     remind_4h = event_datetime - timedelta(hours=4)
-
-    asyncio.run_coroutine_threadsafe(
+    await asyncio.gather(
         _schedule_reminder(booking_data, remind_24h, "⏰ Reminder: Booking in 24 Hours"),
-        loop
-    )
-    asyncio.run_coroutine_threadsafe(
         _schedule_reminder(booking_data, remind_4h, "⏰ Reminder: Booking in 4 Hours"),
-        loop
     )
 
 

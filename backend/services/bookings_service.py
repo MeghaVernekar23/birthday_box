@@ -10,7 +10,7 @@ from utils.db_utils import get_active_celebration_types, get_active_packages, ge
 from typing import List
 from sqlalchemy import func
 from sqlalchemy import and_
-from services.telegram_service import notify_new_booking, schedule_reminders
+from services.telegram_service import notify_new_booking, schedule_reminders_async as _schedule_reminders_async
 
 
 def get_celebration_type(db: Session) -> List[CelebrationType]:
@@ -247,12 +247,10 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
                 slot_time = datetime.strptime("00:00", "%H:%M").time()
             event_datetime = datetime.combine(bookingDetails.event_date, slot_time)
 
-            loop = asyncio.get_event_loop()
-
             def _fire_and_forget():
                 try:
                     notify_new_booking(booking_data)
-                    schedule_reminders(booking_data, event_datetime, loop)
+                    asyncio.run(_schedule_reminders_async(booking_data, event_datetime))
                 except Exception as e:
                     print(f"Telegram notification error: {e}")
 
