@@ -107,6 +107,7 @@
   transform: translateY(0);
 }
 
+/* Intentionally overrides Bootstrap .btn-sm border-radius (0.25rem → 6px) */
 .booking-card__actions .btn {
   font-size: 0.78rem;
   padding: 4px 12px;
@@ -119,11 +120,16 @@
     grid-template-columns: 1fr;
   }
 
+  .booking-card__body {
+    padding-bottom: 10px; /* action bar flows normally on mobile; reserved space not needed */
+  }
+
   .booking-card__actions {
     transform: translateY(0); /* always visible on mobile (no hover) */
     position: static;
     border-top: 1px solid #f0f4ff;
     padding: 8px 14px;
+    transition: none; /* no slide animation on touch */
   }
 
   .booking-card {
