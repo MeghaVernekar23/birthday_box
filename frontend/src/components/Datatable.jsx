@@ -4,7 +4,7 @@ import "../css/Datatable.css";
 
 const DataTable = ({
   title,
-  columns,
+  columns = [],
   data,
   actions = [],
   searchableFields = [],
@@ -65,16 +65,18 @@ const DataTable = ({
 
       <div className="table-wrapper">
         {viewMode === "card" ? (
-          <div className="datatable-card-grid">
-            {paginatedData.length === 0 ? (
-              <p className="text-center text-muted py-4">No results found</p>
-            ) : (
-              paginatedData.map((row, index) => (
-                <div key={row.booking_id || row.id || index}>
-                  {cardTemplate(row)}
-                </div>
-              ))
-            )}
+          <div className="table-body-scroll">
+            <div className="datatable-card-grid">
+              {paginatedData.length === 0 ? (
+                <p className="text-center text-muted py-4">No results found</p>
+              ) : (
+                paginatedData.map((row, index) => (
+                  <div key={row.booking_id || row.id || index}>
+                    {typeof cardTemplate === "function" ? cardTemplate(row) : null}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         ) : (
           <div className="table-body-scroll">
