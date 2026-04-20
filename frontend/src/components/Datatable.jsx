@@ -10,6 +10,8 @@ const DataTable = ({
   searchableFields = [],
   rowClassName,
   actionButton,
+  viewMode = "table",
+  cardTemplate,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,56 +64,70 @@ const DataTable = ({
       )}
 
       <div className="table-wrapper">
-        <div className="table-body-scroll">
-          <table className="table table-bordered table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                {columns.map((col) => (
-                  <th key={col.key} className="text-center">
-                    {col.label}
-                  </th>
-                ))}
-                {actions.length > 0 && <th className="text-center">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.length === 0 ? (
+        {viewMode === "card" ? (
+          <div className="datatable-card-grid">
+            {paginatedData.length === 0 ? (
+              <p className="text-center text-muted py-4">No results found</p>
+            ) : (
+              paginatedData.map((row, index) => (
+                <div key={row.booking_id || row.id || index}>
+                  {cardTemplate(row)}
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="table-body-scroll">
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-light">
                 <tr>
-                  <td
-                    colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                    className="text-center"
-                  >
-                    No results found
-                  </td>
+                  {columns.map((col) => (
+                    <th key={col.key} className="text-center">
+                      {col.label}
+                    </th>
+                  ))}
+                  {actions.length > 0 && <th className="text-center">Actions</th>}
                 </tr>
-              ) : (
-                paginatedData.map((row, index) => (
-                  <tr
-                    key={row.id || index}
-                    className={
-                      typeof rowClassName === "function"
-                        ? rowClassName(row)
-                        : ""
-                    }
-                  >
-                    {columns.map((col) => (
-                      <td key={col.key}>
-                        {col.render ? col.render(row) : row[col.key] ?? "--"}
-                      </td>
-                    ))}
-                    {actions.length > 0 && (
-                      <td>
-                        {actions.map((ActionBtn, i) => (
-                          <ActionBtn key={i} row={row} />
-                        ))}
-                      </td>
-                    )}
+              </thead>
+              <tbody>
+                {filteredData.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                      className="text-center"
+                    >
+                      No results found
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  paginatedData.map((row, index) => (
+                    <tr
+                      key={row.id || index}
+                      className={
+                        typeof rowClassName === "function"
+                          ? rowClassName(row)
+                          : ""
+                      }
+                    >
+                      {columns.map((col) => (
+                        <td key={col.key}>
+                          {col.render ? col.render(row) : row[col.key] ?? "--"}
+                        </td>
+                      ))}
+                      {actions.length > 0 && (
+                        <td>
+                          {actions.map((ActionBtn, i) => (
+                            <ActionBtn key={i} row={row} />
+                          ))}
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
         <div className="pagination-bar">
           <span
             className="page-link"
