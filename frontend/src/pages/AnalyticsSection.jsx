@@ -75,11 +75,12 @@ function formatCurrency(val) {
 const AnalyticsSection = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchBookingsByFilter("all")
-      .then(setBookings)
-      .catch((err) => console.error("Analytics fetch error", err))
+      .then((data) => setBookings(Array.isArray(data) ? data : (data?.data ?? [])))
+      .catch((err) => { console.error("Analytics fetch error", err); setError("Failed to load analytics."); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -88,15 +89,18 @@ const AnalyticsSection = () => {
   const celebrationData = useMemo(() => getCelebrationData(bookings), [bookings]);
   const packageData = useMemo(() => getPackageData(bookings), [bookings]);
 
-  const totalBilled = useMemo(
-    () => bookings.reduce((sum, b) => sum + (b.payment_total || 0), 0),
+  const { totalBilled, totalCollected } = useMemo(
+    () =>
+      bookings.reduce(
+        (acc, b) => ({
+          totalBilled: acc.totalBilled + (b.payment_total || 0),
+          totalCollected: acc.totalCollected + (b.payment_paid || 0),
+        }),
+        { totalBilled: 0, totalCollected: 0 }
+      ),
     [bookings]
   );
-  const totalCollected = useMemo(
-    () => bookings.reduce((sum, b) => sum + (b.payment_paid || 0), 0),
-    [bookings]
-  );
-  const totalPending = totalBilled - totalCollected;
+  const totalPending = Math.max(0, totalBilled - totalCollected);
 
   if (loading) {
     return (
@@ -107,6 +111,16 @@ const AnalyticsSection = () => {
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-grid-analytics">
+        <div className="analytics-card">
+          <p style={{ color: "#e8603c", margin: 0 }}>{error}</p>
         </div>
       </div>
     );
@@ -198,8 +212,8 @@ const AnalyticsSection = () => {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={90} />
               <Tooltip />
               <Bar dataKey="count" name="Bookings" radius={[0, 4, 4, 0]}>
-                {celebrationData.map((_, i) => (
-                  <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                {celebrationData.map((entry, i) => (
+                  <Cell key={entry.name} fill={BAR_COLORS[i % BAR_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -220,8 +234,8 @@ const AnalyticsSection = () => {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={90} />
               <Tooltip />
               <Bar dataKey="count" name="Bookings" radius={[0, 4, 4, 0]}>
-                {packageData.map((_, i) => (
-                  <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                {packageData.map((entry, i) => (
+                  <Cell key={entry.name} fill={BAR_COLORS[i % BAR_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
