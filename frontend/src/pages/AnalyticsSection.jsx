@@ -26,8 +26,8 @@ function getMonthlyData(bookings) {
   }
   bookings.forEach((b) => {
     if (!b.event_date) return;
-    const d = new Date(b.event_date);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const [y, m] = b.event_date.split("-");
+    const key = `${y}-${m}`;
     if (counts[key]) counts[key].count += 1;
   });
   return Object.values(counts);

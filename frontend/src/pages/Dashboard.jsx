@@ -70,9 +70,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="dashboard-grid-analytics">
-        <AnalyticsSection />
-      </div>
+      <AnalyticsSection />
     </div>
   );
 }
