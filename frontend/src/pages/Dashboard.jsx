@@ -1,7 +1,6 @@
 import React from "react";
 import BookingSummary from "./BookingTakenSummary";
 import NextBooking from "./NextBooking";
-import UpcomingHolidaysCard from "./UpcomingHolidays";
 import CelebrationAndPackage from "./CelebrationAndPackage";
 import "../css/Dashboard.css";
 import AnalyticsSection from "./AnalyticsSection";
@@ -48,12 +47,6 @@ function Dashboard() {
         <div className="dashboard-card-col">
           <NextBooking />
         </div>
-        <div className="dashboard-card-col">
-          <UpcomingHolidaysCard />
-        </div>
-      </div>
-
-      <div className="dashboard-grid-mid">
         <div className="dashboard-card-col">
           <CelebrationAndPackage />
         </div>
