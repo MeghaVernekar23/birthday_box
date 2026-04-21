@@ -6,6 +6,7 @@ import AvailableSlots from "./AvailableSlots";
 import PaymentStatus from "./PaymentStatus";
 import CelebrationAndPackage from "./CelebrationAndPackage";
 import "../css/Dashboard.css";
+import AnalyticsSection from "./AnalyticsSection";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -67,6 +68,10 @@ function Dashboard() {
         <div className="dashboard-card-col">
           <AvailableSlots />
         </div>
+      </div>
+
+      <div className="dashboard-grid-analytics">
+        <AnalyticsSection />
       </div>
     </div>
   );
