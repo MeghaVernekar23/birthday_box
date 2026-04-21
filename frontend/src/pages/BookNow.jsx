@@ -556,6 +556,24 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               <option value="">-- Select a time slot --</option>
               {TIME_OPTIONS.map((t) => {
                 const isBooked = bookedTimes.includes(t);
+                const isPast = (() => {
+                  if (!form.preferredDate) return false;
+                  const today = new Date();
+                  const sel = new Date(form.preferredDate + "T00:00:00");
+                  if (sel.getFullYear() !== today.getFullYear() ||
+                      sel.getMonth() !== today.getMonth() ||
+                      sel.getDate() !== today.getDate()) return false;
+                  const match = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                  if (!match) return false;
+                  let h = parseInt(match[1]);
+                  const m = parseInt(match[2]);
+                  const mer = match[3].toUpperCase();
+                  if (mer === "PM" && h !== 12) h += 12;
+                  if (mer === "AM" && h === 12) h = 0;
+                  const slotMinutes = h * 60 + m;
+                  const nowMinutes = today.getHours() * 60 + today.getMinutes();
+                  return slotMinutes <= nowMinutes;
+                })();
                 const rangeLabel = (() => {
                   const match = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
                   if (!match) return t;
@@ -572,8 +590,8 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                   return `${t} – ${eh12}:${em === 0 ? "00" : em} ${eampm}`;
                 })();
                 return (
-                  <option key={t} value={t} disabled={isBooked}>
-                    {isBooked ? `${t} — Booked` : rangeLabel}
+                  <option key={t} value={t} disabled={isBooked || isPast}>
+                    {isBooked ? `${t} — Booked` : isPast ? `${t} — Passed` : rangeLabel}
                   </option>
                 );
               })}
