@@ -124,7 +124,6 @@ export default function BookNow() {
     packages1hr30: [],
     addons: [],
     referral: "",
-    confirmation: "",
     agreement: false,
     contactUs: "",
     status: "pending",
@@ -288,7 +287,6 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     if (!form.preferredTime.trim()) e.preferredTime = "Preferred time is required.";
     if (!form.celebrationType) e.celebrationType = "Please select a celebration type.";
     if (!form.referral) e.referral = "Please tell us how you heard about us.";
-    if (!form.confirmation.trim()) e.confirmation = "Please read and type to acknowledge the terms.";
     if (!form.agreement) e.agreement = "You must agree to the Customer Disclaimer.";
     return e;
   };
@@ -694,17 +692,6 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-terms-box">
               <pre className="bn-terms-text">{TERMS}</pre>
             </div>
-            <p className="bn-terms-prompt">
-              Type <strong>"I AGREE"</strong> below to acknowledge that you have read and understood the above terms:
-            </p>
-            <input
-              className={`bn-input ${errors.confirmation ? "bn-input-err" : ""}`}
-              type="text"
-              placeholder='Type "I AGREE" to acknowledge'
-              value={form.confirmation}
-              onChange={(e) => set("confirmation", e.target.value)}
-            />
-            {errors.confirmation && <span className="bn-error">{errors.confirmation}</span>}
           </div>
 
           {/* AGREEMENT CHECKBOX */}
