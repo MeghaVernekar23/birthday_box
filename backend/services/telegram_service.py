@@ -2,7 +2,9 @@ import os
 import json
 import urllib.request
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, time as dt_time
+
+IST = timezone(timedelta(hours=5, minutes=30))
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -80,7 +82,9 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
 
 async def _schedule_reminder(booking_data: dict, send_at: datetime, label: str) -> None:
     """Wait until send_at, then dispatch the reminder."""
-    delay = (send_at - datetime.now()).total_seconds()
+    now = datetime.now(IST)
+    send_at_aware = send_at if send_at.tzinfo else send_at.replace(tzinfo=IST)
+    delay = (send_at_aware - now).total_seconds()
     if delay <= 0:
         return  # reminder time already passed
     await asyncio.sleep(delay)

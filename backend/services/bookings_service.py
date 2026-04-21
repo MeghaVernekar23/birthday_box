@@ -6,6 +6,8 @@ from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails,
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 from fastapi import HTTPException
 from datetime import datetime, timezone
+from datetime import timezone as _tz, timedelta as _td
+_IST = _tz(_td(hours=5, minutes=30))
 from utils.db_utils import get_active_celebration_types, get_active_packages, get_booking_query, get_customer_by_phone, get_user_by_username, fetch_booking_by_customer_id
 from typing import List
 from sqlalchemy import func
@@ -245,7 +247,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
                     continue
             else:
                 slot_time = datetime.strptime("00:00", "%H:%M").time()
-            event_datetime = datetime.combine(bookingDetails.event_date, slot_time)
+            event_datetime = datetime.combine(bookingDetails.event_date, slot_time, tzinfo=_IST)
 
             def _fire_and_forget():
                 try:
