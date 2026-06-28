@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  PieChart, Pie, Cell, Legend, LineChart, Line
 } from "recharts";
-import { fetchBookingsByFilter } from "../services/bookingServices";
+import { fetchBookingsByFilter, fetchPackage } from "../services/bookingServices";
 import "../css/Dashboard.css";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -66,6 +66,89 @@ function getPackageData(bookings) {
     .slice(0, 6);
 }
 
+function getPackageRevenueData(bookings, packagePriceMap) {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
+  const counts = {};
+  bookings.forEach((b) => {
+    if (!b.event_date) return;
+    const [y, m] = b.event_date.split("-").map(Number);
+    if (y !== thisYear || m - 1 !== thisMonth) return;
+    const pkg = b.package_name || "Unknown";
+    counts[pkg] = (counts[pkg] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, revenue: count * (packagePriceMap[name] || 0), count }))
+    .sort((a, b) => b.revenue - a.revenue);
+}
+
+function getThisMonthRevenue(bookings, packagePriceMap) {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
+  let total = 0;
+  bookings.forEach((b) => {
+    if (!b.event_date) return;
+    const [y, m] = b.event_date.split("-").map(Number);
+    if (y !== thisYear || m - 1 !== thisMonth) return;
+    total += packagePriceMap[b.package_name] || 0;
+  });
+  return total;
+}
+
+function getMonthlyRevenueData(bookings, packagePriceMap) {
+  const now = new Date();
+  const revenue = {};
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    revenue[key] = { label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, revenue: 0 };
+  }
+  bookings.forEach((b) => {
+    if (!b.event_date) return;
+    const [y, m] = b.event_date.split("-");
+    const key = `${y}-${m}`;
+    if (revenue[key]) revenue[key].revenue += packagePriceMap[b.package_name] || 0;
+  });
+  return Object.values(revenue);
+}
+
+function getDailyComparisonData(bookings) {
+  const now = new Date();
+  const todayDay = now.getDate();
+
+  // Build list of months to compare: this month + 3 prior
+  const months = Array.from({ length: 4 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return { year: d.getFullYear(), month: d.getMonth(), label: MONTHS[d.getMonth()] };
+  });
+
+  // Per-day counts keyed by label
+  const counts = {};
+  months.forEach(({ label }) => {
+    counts[label] = {};
+    for (let d = 1; d <= todayDay; d++) counts[label][d] = 0;
+  });
+
+  bookings.forEach((b) => {
+    if (!b.created_at) return;
+    const date = new Date(b.created_at);
+    const y = date.getFullYear();
+    const mo = date.getMonth();
+    const day = date.getDate();
+    if (day > todayDay) return;
+    const match = months.find((m) => m.year === y && m.month === mo);
+    if (match) counts[match.label][day] = (counts[match.label][day] || 0) + 1;
+  });
+
+  return Array.from({ length: todayDay }, (_, i) => {
+    const row = { day: i + 1 };
+    months.forEach(({ label }) => { row[label] = counts[label][i + 1] || 0; });
+    return row;
+  });
+}
+
 function formatCurrency(val) {
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
   if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
@@ -74,12 +157,19 @@ function formatCurrency(val) {
 
 const AnalyticsSection = () => {
   const [bookings, setBookings] = useState([]);
+  const [packagePriceMap, setPackagePriceMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchBookingsByFilter("all")
-      .then((data) => setBookings(Array.isArray(data) ? data : (data?.data ?? [])))
+    Promise.all([fetchBookingsByFilter("all"), fetchPackage()])
+      .then(([bookingData, packageData]) => {
+        setBookings(Array.isArray(bookingData) ? bookingData : (bookingData?.data ?? []));
+        const pkgs = Array.isArray(packageData) ? packageData : (packageData?.data ?? []);
+        const map = {};
+        pkgs.forEach((p) => { map[p.package_name] = p.price; });
+        setPackagePriceMap(map);
+      })
       .catch((err) => { console.error("Analytics fetch error", err); setError("Failed to load analytics."); })
       .finally(() => setLoading(false));
   }, []);
@@ -88,6 +178,16 @@ const AnalyticsSection = () => {
   const statusData = useMemo(() => getStatusData(bookings), [bookings]);
   const celebrationData = useMemo(() => getCelebrationData(bookings), [bookings]);
   const packageData = useMemo(() => getPackageData(bookings), [bookings]);
+  const dailyComparisonData = useMemo(() => getDailyComparisonData(bookings), [bookings]);
+  const packageRevenueData = useMemo(() => getPackageRevenueData(bookings, packagePriceMap), [bookings, packagePriceMap]);
+  const thisMonthRevenue = useMemo(() => getThisMonthRevenue(bookings, packagePriceMap), [bookings, packagePriceMap]);
+  const monthlyRevenueData = useMemo(() => getMonthlyRevenueData(bookings, packagePriceMap), [bookings, packagePriceMap]);
+
+  const now = new Date();
+  const comparisonMonths = Array.from({ length: 4 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return MONTHS[d.getMonth()];
+  });
 
   const { totalBilled, totalCollected } = useMemo(
     () =>
@@ -164,7 +264,61 @@ const AnalyticsSection = () => {
             <div className="rev-label">Pending</div>
             <div className="rev-value">{formatCurrency(totalPending)}</div>
           </div>
+          <div className="analytics-revenue-card analytics-revenue-card--blue">
+            <div className="rev-label">{MONTHS[now.getMonth()]} Revenue</div>
+            <div className="rev-value">{formatCurrency(thisMonthRevenue)}</div>
+          </div>
         </div>
+      </div>
+
+      {/* Overall Monthly Revenue */}
+      <div className="analytics-card">
+        <h6>Overall Revenue — Last 12 Months</h6>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={monthlyRevenueData} margin={{ top: 4, right: 16, left: 8, bottom: 40 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
+            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(val) => [`₹${val.toLocaleString("en-IN")}`, "Revenue"]} />
+            <Bar dataKey="revenue" name="Revenue" fill="#2bba8f" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Month-over-Month Daily Comparison */}
+      <div className="analytics-card">
+        <h6>Daily Bookings — Last 4 Months</h6>
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={dailyComparisonData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} label={{ value: "Day of Month", position: "insideBottom", offset: -2, fontSize: 11 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+            <Tooltip />
+            <Legend verticalAlign="top" />
+            <Line type="monotone" dataKey={comparisonMonths[0]} stroke="#4f8ef7" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+            <Line type="monotone" dataKey={comparisonMonths[1]} stroke="#f5a623" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 5" />
+            <Line type="monotone" dataKey={comparisonMonths[2]} stroke="#2bba8f" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="4 4" />
+            <Line type="monotone" dataKey={comparisonMonths[3]} stroke="#7c5cbf" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="2 4" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Package Revenue This Month */}
+      <div className="analytics-card">
+        <h6>Package Revenue — {MONTHS[now.getMonth()]} {now.getFullYear()}</h6>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={packageRevenueData} margin={{ top: 4, right: 16, left: 8, bottom: 40 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" interval={0} />
+            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
+            <Tooltip formatter={(val, name, props) => [`₹${val.toLocaleString("en-IN")} (${props.payload.count} booking${props.payload.count !== 1 ? "s" : ""})`, "Revenue"]} />
+            <Bar dataKey="revenue" name="Revenue" radius={[4, 4, 0, 0]}>
+              {packageRevenueData.map((entry, i) => (
+                <Cell key={entry.name} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Bottom row: Status + Celebrations + Packages */}
