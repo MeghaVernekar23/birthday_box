@@ -1,0 +1,16 @@
+---- FRONTEND
+ cd frontend/
+ 1114  git pull
+ 1115  npm run build
+ 1116  sudo rm -rf /var/www/r1/*
+ 1117  sudo cp -r dist/* /var/www/r1/
+ 1118  sudo systemctl restart nignx
+ 1119  sudo systemctl restart nginx
+
+---- BACKEND
+  827  cd birthday_box/
+  828  cd backend/
+  829  cat .env
+  830  git branch
+  831  git pull
+  832  sudo systemctl restart fastapi
