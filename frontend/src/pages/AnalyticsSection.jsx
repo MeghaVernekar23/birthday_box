@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line
+  PieChart, Pie, Cell, Legend, LineChart, Line, LabelList
 } from "recharts";
 import { fetchBookingsByFilter, fetchPackage } from "../services/bookingServices";
 import "../css/Dashboard.css";
@@ -99,19 +99,23 @@ function getThisMonthRevenue(bookings, packagePriceMap) {
 
 function getMonthlyRevenueData(bookings, packagePriceMap) {
   const now = new Date();
-  const revenue = {};
+  const rows = {};
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    revenue[key] = { label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, revenue: 0 };
+    rows[key] = { label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}` };
   }
   bookings.forEach((b) => {
     if (!b.event_date) return;
     const [y, m] = b.event_date.split("-");
     const key = `${y}-${m}`;
-    if (revenue[key]) revenue[key].revenue += packagePriceMap[b.package_name] || 0;
+    if (!rows[key]) return;
+    const pkg = b.package_name || "Unknown";
+    const price = packagePriceMap[pkg] || 0;
+    rows[key][pkg] = (rows[key][pkg] || 0) + price;
+    rows[key]._total = (rows[key]._total || 0) + price;
   });
-  return Object.values(revenue);
+  return Object.values(rows);
 }
 
 function getDailyComparisonData(bookings) {
@@ -160,6 +164,7 @@ const AnalyticsSection = () => {
   const [packagePriceMap, setPackagePriceMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [revenueModal, setRevenueModal] = useState(null); // { label, bookings }
 
   useEffect(() => {
     Promise.all([fetchBookingsByFilter("all"), fetchPackage()])
@@ -273,21 +278,137 @@ const AnalyticsSection = () => {
 
       {/* Overall Monthly Revenue */}
       <div className="analytics-card">
-        <h6>Overall Revenue — Last 12 Months</h6>
+        <h6>Overall Revenue — Last 12 Months <span style={{ fontSize: 11, color: "#888", fontWeight: 400 }}>(click bar to see details)</span></h6>
         <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={monthlyRevenueData} margin={{ top: 4, right: 16, left: 8, bottom: 40 }}>
+          <BarChart
+            data={monthlyRevenueData}
+            margin={{ top: 4, right: 16, left: 8, bottom: 40 }}
+          >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
             <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(val) => [`₹${val.toLocaleString("en-IN")}`, "Revenue"]} />
-            <Bar dataKey="revenue" name="Revenue" fill="#2bba8f" radius={[4, 4, 0, 0]} />
+            <Tooltip
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const total = payload[0]?.payload?._total || 0;
+                return (
+                  <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 12 }}>
+                    <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{label}</p>
+                    {payload.map((p) => (
+                      <p key={p.name} style={{ margin: "2px 0", color: p.fill }}>
+                        {p.name}: ₹{p.value.toLocaleString("en-IN")}
+                      </p>
+                    ))}
+                    <p style={{ margin: "6px 0 0", fontWeight: 700, borderTop: "1px solid #e5e7eb", paddingTop: 6 }}>
+                      Total: ₹{total.toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                );
+              }}
+            />
+            <Legend verticalAlign="top" wrapperStyle={{ fontSize: 11 }} />
+            {Object.keys(packagePriceMap).map((pkg, i, arr) => (
+              <Bar
+                key={pkg}
+                dataKey={pkg}
+                name={pkg}
+                stackId="rev"
+                fill={BAR_COLORS[i % BAR_COLORS.length]}
+                radius={i === arr.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                cursor="pointer"
+                onClick={(data) => {
+                  const { label } = data;
+                  const [mon, yr] = label.split(" ");
+                  const monthIdx = MONTHS.indexOf(mon);
+                  const year = parseInt(yr, 10);
+                  const filtered = bookings.filter((b) => {
+                    if (!b.event_date) return false;
+                    const [y, m] = b.event_date.split("-").map(Number);
+                    return y === year && m - 1 === monthIdx;
+                  });
+                  setRevenueModal({ label, bookings: filtered });
+                }}
+              >
+                {i === arr.length - 1 && (
+                  <LabelList
+                    dataKey="_total"
+                    position="top"
+                    formatter={(v) => v > 0 ? formatCurrency(v) : ""}
+                    style={{ fontSize: 10, fill: "#555", fontWeight: 600 }}
+                  />
+                )}
+              </Bar>
+            ))}
           </BarChart>
         </ResponsiveContainer>
       </div>
 
+      {/* Revenue Drill-down Modal */}
+      {revenueModal && (
+        <div className="ps-modal-overlay" onClick={() => setRevenueModal(null)}>
+          <div className="booking-taken-modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700, width: "90%" }}>
+            <h5>Revenue Breakdown — {revenueModal.label}</h5>
+            <div className="modal-close-icon" onClick={() => setRevenueModal(null)}>×</div>
+            {revenueModal.bookings.length === 0 ? (
+              <p style={{ color: "#888" }}>No bookings found for this month.</p>
+            ) : (
+              <>
+                <p style={{ margin: "0 0 12px", fontSize: 13, color: "#555" }}>
+                  Total: <strong>{formatCurrency(revenueModal.bookings.reduce((s, b) => s + (packagePriceMap[b.package_name] || 0), 0))}</strong> across {revenueModal.bookings.length} booking{revenueModal.bookings.length !== 1 ? "s" : ""}
+                </p>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
+                        <th style={{ padding: "6px 10px" }}>Customer</th>
+                        <th style={{ padding: "6px 10px" }}>Package</th>
+                        <th style={{ padding: "6px 10px" }}>Event Date</th>
+                        <th style={{ padding: "6px 10px" }}>Status</th>
+                        <th style={{ padding: "6px 10px", textAlign: "right" }}>Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {revenueModal.bookings.map((b) => (
+                        <tr key={b.booking_id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "6px 10px" }}>{b.customer_name}</td>
+                          <td style={{ padding: "6px 10px" }}>{b.package_name}</td>
+                          <td style={{ padding: "6px 10px" }}>{b.event_date}</td>
+                          <td style={{ padding: "6px 10px" }}>
+                            <span style={{
+                              background: b.status === "confirmed" ? "#d1fae5" : b.status === "cancelled" ? "#fee2e2" : "#fef3c7",
+                              color: b.status === "confirmed" ? "#065f46" : b.status === "cancelled" ? "#991b1b" : "#92400e",
+                              padding: "2px 8px", borderRadius: 10, fontSize: 11
+                            }}>{b.status}</span>
+                          </td>
+                          <td style={{ padding: "6px 10px", textAlign: "right", fontWeight: 600 }}>
+                            {formatCurrency(packagePriceMap[b.package_name] || 0)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Month-over-Month Daily Comparison */}
       <div className="analytics-card">
         <h6>Daily Bookings — Last 4 Months</h6>
+        <div className="analytics-month-summary">
+          {comparisonMonths.map((mon, i) => {
+            const total = dailyComparisonData.reduce((s, row) => s + (row[mon] || 0), 0);
+            const colors = ["#4f8ef7", "#f5a623", "#2bba8f", "#7c5cbf"];
+            return (
+              <div key={mon} className="analytics-month-badge" style={{ borderLeft: `3px solid ${colors[i]}` }}>
+                <span style={{ color: "#666" }}>{mon} (till {now.getDate()}th): </span>
+                <strong style={{ color: colors[i] }}>{total} booking{total !== 1 ? "s" : ""}</strong>
+              </div>
+            );
+          })}
+        </div>
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={dailyComparisonData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
