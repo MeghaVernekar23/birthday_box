@@ -114,6 +114,8 @@ function getMonthlyRevenueData(bookings, packagePriceMap) {
     const price = packagePriceMap[pkg] || 0;
     rows[key][pkg] = (rows[key][pkg] || 0) + price;
     rows[key]._total = (rows[key]._total || 0) + price;
+    const countKey = `_count_${pkg}`;
+    rows[key][countKey] = (rows[key][countKey] || 0) + 1;
   });
   return Object.values(rows);
 }
@@ -294,11 +296,14 @@ const AnalyticsSection = () => {
                 return (
                   <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "10px 14px", fontSize: 12 }}>
                     <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{label}</p>
-                    {payload.map((p) => (
-                      <p key={p.name} style={{ margin: "2px 0", color: p.fill }}>
-                        {p.name}: ₹{p.value.toLocaleString("en-IN")}
-                      </p>
-                    ))}
+                    {payload.map((p) => {
+                      const count = p.payload[`_count_${p.name}`] || 0;
+                      return (
+                        <p key={p.name} style={{ margin: "2px 0", color: p.fill }}>
+                          {p.name} ({count}): ₹{p.value.toLocaleString("en-IN")}
+                        </p>
+                      );
+                    })}
                     <p style={{ margin: "6px 0 0", fontWeight: 700, borderTop: "1px solid #e5e7eb", paddingTop: 6 }}>
                       Total: ₹{total.toLocaleString("en-IN")}
                     </p>
