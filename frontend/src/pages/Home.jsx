@@ -63,9 +63,14 @@ export default function Home() {
           <a href="#testimonials">Reviews</a>
           <a href="#contact">Contact</a>
         </nav>
-        <button className="bb-nav-cta" onClick={() => navigate("/login")}>
-          Staff Login
-        </button>
+        <div className="bb-nav-actions">
+          <button className="bb-nav-booknow" onClick={() => navigate("/booknow")}>
+            Book Now
+          </button>
+          <button className="bb-nav-cta" onClick={() => navigate("/login")}>
+            Staff Login
+          </button>
+        </div>
       </header>
 
       {/* ── HERO ── */}
@@ -74,6 +79,7 @@ export default function Home() {
         <div className="bb-hero-inner">
           <div className="bb-hero-text">
             <span className="bb-pill">📍 Mysuru's Favourite Celebration Venue</span>
+            <span className="bb-pill bb-pill-price">🎉 Celebrations Starting at ₹999</span>
             <h1>
               Every Occasion <br />
               <span className="bb-gradient-text">Deserves a Box</span>
@@ -83,7 +89,7 @@ export default function Home() {
               baby showers, IPL nights &amp; more. Fully decorated. Completely yours.
             </p>
             <div className="bb-hero-btns">
-              <a href="#contact" className="bb-btn-primary">Book Your Slot</a>
+              <button className="bb-btn-primary" onClick={() => navigate("/booknow")}>Book Your Slot</button>
               <a href="#services" className="bb-btn-ghost">See Packages</a>
             </div>
           </div>
@@ -92,14 +98,15 @@ export default function Home() {
               <img src={logo} alt="Birthday Box" className="bb-hero-card-logo" />
               <p className="bb-hero-card-tag">Private Celebration Venue</p>
               <ul className="bb-hero-card-list">
-                <li>✔ Upto 30 Guests</li>
+                <li>✔ Upto 10 Guests (extra charges apply)</li>
                 <li>✔ Custom Décor</li>
                 <li>✔ HD Projector</li>
                 <li>✔ Flexible Slots</li>
               </ul>
-              <a href="#contact" className="bb-btn-primary" style={{ width: "100%", textAlign: "center", display: "block" }}>
+              <div className="bb-hero-card-price">Starting at <strong>₹999</strong> · up to 10 guests</div>
+              <button className="bb-btn-primary" style={{ width: "100%", textAlign: "center", display: "block" }} onClick={() => navigate("/booknow")}>
                 Check Availability
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -140,10 +147,22 @@ export default function Home() {
           <div className="bb-venue-img-mock">
             <div className="bb-venue-badge">🎈 Now Booking</div>
             <div className="bb-venue-tiles">
-              <div className="vt vt1">🎂<span>Birthday Setup</span></div>
-              <div className="vt vt2">🏏<span>IPL Night</span></div>
-              <div className="vt vt3">💐<span>Anniversary</span></div>
-              <div className="vt vt4">🎊<span>Baby Shower</span></div>
+              <div className="vt vt1">
+                <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80" alt="Birthday Setup" />
+                <span>Birthday Setup</span>
+              </div>
+              <div className="vt vt2">
+                <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=400&q=80" alt="IPL Night" />
+                <span>IPL Night</span>
+              </div>
+              <div className="vt vt3">
+                <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=80" alt="Anniversary" />
+                <span>Anniversary</span>
+              </div>
+              <div className="vt vt4">
+                <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&q=80" alt="Baby Shower" />
+                <span>Baby Shower</span>
+              </div>
             </div>
           </div>
         </div>
@@ -151,7 +170,7 @@ export default function Home() {
           <span className="bb-pill bb-pill-dark">Our Space</span>
           <h2>A Venue Built <span className="bb-gradient-text">for Joy</span></h2>
           <p className="bb-venue-desc">
-            Our thoughtfully designed space in Mysuru holds up to <strong>30 guests</strong> and transforms completely to match your event's theme. Whether it's a princess birthday, a cricket night, or a romantic dinner — Birthday Box becomes whatever you need it to be.
+            Our thoughtfully designed space in Mysuru holds up to <strong>10 guests</strong> in the base package, with additional guests welcome at an extra charge. It transforms completely to match your event's theme. Whether it's a princess birthday, a cricket night, or a romantic dinner — Birthday Box becomes whatever you need it to be.
           </p>
           <div className="bb-perks-grid">
             <div className="bb-perk"><span>🎬</span> HD Projector &amp; Big Screen</div>
@@ -161,11 +180,47 @@ export default function Home() {
             <div className="bb-perk"><span>🅿️</span> Dedicated Parking</div>
             <div className="bb-perk"><span>🕐</span> Flexible Booking Slots</div>
           </div>
-          <a href="#contact" className="bb-btn-primary" style={{ display: "inline-block", marginTop: "2rem" }}>
+          <button className="bb-btn-primary" style={{ display: "inline-block", marginTop: "2rem" }} onClick={() => navigate("/booknow")}>
             Book This Venue
-          </a>
+          </button>
         </div>
       </div>
+      </section>
+
+      {/* ── GALLERY ── */}
+      <section className="bb-gallery" id="gallery">
+        <div className="bb-section-head">
+          <span className="bb-pill bb-pill-dark">Real Celebrations</span>
+          <h2>Moments That <span className="bb-gradient-text">Last Forever</span></h2>
+          <p>Every event at Birthday Box is a memory in the making. Here's a peek inside.</p>
+        </div>
+        <div className="bb-gallery-grid">
+          <div className="bb-gallery-item bb-gallery-tall">
+            <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" alt="Birthday celebration" />
+            <div className="bb-gallery-overlay"><span>🎂 Birthday Setup</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&q=80" alt="Celebration decor" />
+            <div className="bb-gallery-overlay"><span>🎊 Party Décor</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80" alt="Anniversary dinner" />
+            <div className="bb-gallery-overlay"><span>💍 Anniversary</span></div>
+          </div>
+          <div className="bb-gallery-item bb-gallery-wide">
+            <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=80" alt="Cricket stadium IPL" />
+            <div className="bb-gallery-overlay"><span>🏏 IPL Night with the Crew</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80" alt="Party lights" />
+            <div className="bb-gallery-overlay"><span>✨ Ambience</span></div>
+          </div>
+        </div>
+        <div className="bb-gallery-cta">
+          <a href="https://www.instagram.com/birthdaybox2025/" target="_blank" rel="noreferrer" className="bb-btn-primary">
+            📸 See More on Instagram
+          </a>
+        </div>
       </section>
 
       {/* ── TESTIMONIALS ── */}

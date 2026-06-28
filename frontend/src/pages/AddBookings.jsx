@@ -11,6 +11,17 @@ import {
   submitBooking,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
+
+const STEPS = [
+  { label: "Customer",    title: "Customer Details",      subtitle: "Look up an existing customer or enter details manually" },
+  { label: "Date & Time", title: "Select Date & Time",    subtitle: "Choose an available date and time slot for the event" },
+  { label: "Celebration", title: "Celebration Type",      subtitle: "What are we celebrating?" },
+  { label: "Package",     title: "Choose a Package",      subtitle: "Select the package that fits the occasion" },
+  { label: "Add-ons",     title: "Add-ons & Notes",       subtitle: "Any special instructions or extra items?" },
+  { label: "Payment",     title: "Payment Details",       subtitle: "Record the payment information for this booking" },
+  { label: "Review",      title: "Review Booking",        subtitle: "Verify all details before submitting" },
+];
+
 function AddBookings() {
   const user = localStorage.getItem("current_user");
   const [step, setStep] = useState(1);
@@ -29,64 +40,45 @@ function AddBookings() {
   const [paymentNotes, setPaymentNotes] = useState("");
   const [holidayDates, setHolidayDates] = useState([]);
   const [formData, setFormData] = useState({
-    customer_name: "",
-    phone_number: "",
-    email: "",
-    address: "",
-    event_date: "",
-    time_slot: "",
-    celebration_id: "",
-    package_id: "",
-    addons_note: "",
-    updated_by: "",
-    created_by: "",
-    status: "",
-    created_at: "",
-    updated_at: "",
-    payment_mode: "",
-    payment_total: "",
-    payment_paid: "",
-    payment_notes: "",
-    additional_items: [],
+    customer_name: "", phone_number: "", email: "", address: "",
+    event_date: "", time_slot: "", celebration_id: "", package_id: "",
+    addons_note: "", updated_by: "", created_by: "", status: "pending",
+    created_at: "", updated_at: "", payment_mode: "", payment_total: "",
+    payment_paid: "", payment_notes: "", additional_items: [],
   });
 
   const emptyForm = {
-    customer_name: "",
-    phone_number: "",
-    email: "",
-    address: "",
-    event_date: "",
-    time_slot: "",
-    celebration_id: "",
-    package_id: "",
-    addons_note: "",
-    updated_by: "",
-    created_by: "",
-    status: "",
-    payment_mode: "",
-    payment_total: "",
-    payment_paid: "",
-    payment_notes: "",
+    customer_name: "", phone_number: "", email: "", address: "",
+    event_date: "", time_slot: "", celebration_id: "", package_id: "",
+    addons_note: "", updated_by: "", created_by: "", status: "pending",
+    payment_mode: "", payment_total: "", payment_paid: "", payment_notes: "",
     additional_items: [],
+  };
+
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setAdditionalItems([]);
+    setStep(1);
+    setBookingDate(null);
+    setSelectedTime(null);
+    setCustomerChecked(false);
+    setIsExistingCustomer(false);
+    setPaymentMode("");
+    setAmountPaid("");
+    setPaymentNotes("");
+    setCheckMessage("");
   };
 
   const checkCustomerByPhone = async () => {
     try {
       const data = await getCustomerByPhone(formData.phone_number);
-      console.log("data ", data);
       setIsExistingCustomer(true);
-      setFormData({
-        ...formData,
-        customer_name: data.name,
-        email: data.email,
-        address: data.address,
-      });
-      setCheckMessage("Customer details found");
-    } catch (error) {
-      console.log("error ", error);
+      setFormData({ ...formData, customer_name: data.name, email: data.email, address: data.address });
+      setCheckMessage("found");
+    } catch {
       setIsExistingCustomer(false);
       setFormData({ ...formData, customer_name: "", email: "", address: "" });
-      setCheckMessage("Customer details not found");
+      setCheckMessage("not-found");
     } finally {
       setCustomerChecked(true);
       setTimeout(() => setCheckMessage(""), 3000);
@@ -96,42 +88,39 @@ function AddBookings() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bookings = await fetchBookingsByFilter("todayandfuture");
-        const celebrationData = await fetchCelebrationType();
-        console.log("celebration type ", celebrationData);
-        const packageData = await fetchPackage();
+        const [bookings, celebrationData, packageData, holidays] = await Promise.all([
+          fetchBookingsByFilter("todayandfuture"),
+          fetchCelebrationType(),
+          fetchPackage(),
+          fetchUpcomingHoliday(),
+        ]);
         setcelebrationOptions(celebrationData);
         setpackageOptions(packageData);
         setBookedSlots(bookings);
-        const holidays = await fetchUpcomingHoliday();
-        const converted = holidays.map((h) => new Date(h.date));
-        setHolidayDates(converted);
+        setHolidayDates(holidays.map((h) => new Date(h.date)));
       } catch (err) {
-        console.error("Error fetching celebration and package data", err);
+        console.error("Error fetching data", err);
       }
     };
-
     fetchData();
   }, []);
+
+  const calcTotals = () => {
+    const packagePrice = packageOptions.find(
+      (pkg) => String(pkg.package_id) === formData.package_id
+    )?.price || 0;
+    const addOnPrice = additionalItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    const total = packagePrice + addOnPrice;
+    const paid = Number(amountPaid || formData.payment_paid || 0);
+    return { total, paid, balance: Math.max(0, total - paid) };
+  };
 
   const submitBookingDetails = async () => {
     try {
       const username = JSON.parse(user).username;
-      const updatedForm = {
-        ...formData,
-        updated_by: username,
-      };
-      updatedForm.created_by = username;
-      console.log("updated form:", updatedForm);
-      await submitBooking(updatedForm);
+      await submitBooking({ ...formData, updated_by: username, created_by: username });
       alert("Booking created successfully!");
-
-      setFormData(emptyForm);
-      setStep(1);
-      setBookingDate(null);
-      setSelectedTime(null);
-      setCustomerChecked(false);
-      setAdditionalItems([]);
+      resetForm();
       setPopup({ visible: false, booking: null });
     } catch (error) {
       alert("Something went wrong. Please try again.");
@@ -139,372 +128,291 @@ function AddBookings() {
     }
   };
 
-  const cancelDelete = () => {
-    setPopup({ visible: false, booking: null });
+  const handleNext = () => {
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (step === 1) {
+      if (!formData.customer_name.trim()) { alert("Customer name is required."); return; }
+      if (!nameRegex.test(formData.customer_name.trim())) { alert("Name should contain only letters and spaces."); return; }
+      if (formData.email.trim() && !emailRegex.test(formData.email)) { alert("Please enter a valid email address."); return; }
+    }
+    if (step === 2) {
+      if (!bookingDate || !selectedTime) { alert("Please select a date and time."); return; }
+      setFormData({ ...formData, event_date: bookingDate.toLocaleDateString("en-CA"), time_slot: selectedTime });
+    }
+    if (step === 3 && !formData.celebration_id) { alert("Please select a celebration type."); return; }
+    if (step === 4 && !formData.package_id) { alert("Please select a package."); return; }
+    if (step === 5) { setFormData({ ...formData, additional_items: additionalItems }); }
+    if (step === 6) {
+      const { total } = calcTotals();
+      if (!paymentMode) { alert("Please select a payment mode."); return; }
+      if (!amountPaid || Number(amountPaid) < 0) { alert("Amount paid must be a valid number."); return; }
+      if (Number(amountPaid) > total) { alert("Amount paid cannot exceed the total amount."); return; }
+      setFormData({ ...formData, payment_mode: paymentMode, payment_paid: amountPaid, payment_notes: paymentNotes, payment_total: total });
+    }
+    if (step === 7) { setPopup({ visible: true, booking: formData }); return; }
+    setStep(step + 1);
   };
 
-  const handleConfirmBooking = (booking) => {
-    setPopup({ visible: true, booking });
-  };
+  const selectedPackage = packageOptions.find((pkg) => String(pkg.package_id) === formData.package_id);
+  const { total, balance } = calcTotals();
+  const currentStep = STEPS[step - 1];
+
   return (
-    <div className="container">
-      <div className="stepper">
-        {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-          <div
-            key={num}
-            className={`step 
-        ${step === num ? "active" : ""} 
-        ${step > num ? "completed" : ""}`}
-          >
-            <div className="step-number">{num}</div>
-            {
-              [
-                "Customer Details",
-                "Date & Time",
-                "Celebration Type",
-                "Package",
-                "Add-ons",
-                "Payment",
-                "Review",
-              ][num - 1]
-            }
-            {num < 7 && <div className="step-line" />}
-          </div>
-        ))}
-      </div>
-      <div>
-        {popup.visible && (
-          <NotificationPopup
-            message={`Are you sure you want to save the booking for ${popup.booking.customer_name}?`}
-            onConfirm={submitBookingDetails}
-            onCancel={cancelDelete}
-          />
-        )}
-      </div>
-      <div className="add-booking-modal-box">
-        <div
-          className="modal-close-icon"
-          onClick={() => {
-            setFormData(emptyForm);
-            setAdditionalItems([]);
-            setStep(1);
-            setBookingDate(null);
-            setSelectedTime(null);
-            setCustomerChecked(false);
-          }}
-        >
-          ×
-        </div>
-        {step === 1 && (
-          <div className="text-center ">
-            <h5 className="mb-5">Add Customer</h5>
-            <div className="input-group-wrapper">
-              <input
-                className="form-control"
-                placeholder="Enter Phone Number"
-                value={formData.phone_number}
-                maxLength={11}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Allow only digits
-                  if (/^\d*$/.test(value)) {
-                    setFormData({ ...formData, phone_number: value });
-                  }
-                }}
-              />
+    <div className="add-booking-page">
 
-              <button
-                className="check-button"
-                onClick={checkCustomerByPhone}
-                disabled={
-                  !formData.phone_number || formData.phone_number.length < 7
-                }
-              >
-                Check
-              </button>
-              {checkMessage && (
-                <div className="form-label-text" style={{ fontSize: "1.0rem" }}>
-                  {checkMessage}
+      {/* ── Stepper ── */}
+      <div className="stepper">
+        {STEPS.map(({ label }, idx) => {
+          const num = idx + 1;
+          return (
+            <div key={num} className={`step ${step === num ? "active" : ""} ${step > num ? "completed" : ""}`}>
+              <div className="step-number">
+                {step > num ? (
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7l3.5 3.5L12 4" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : num}
+              </div>
+              <span className="step-label">{label}</span>
+              {num < STEPS.length && <div className="step-line" />}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Confirmation Popup ── */}
+      {popup.visible && (
+        <NotificationPopup
+          message={`Are you sure you want to save the booking for ${popup.booking?.customer_name}?`}
+          onConfirm={submitBookingDetails}
+          onCancel={() => setPopup({ visible: false, booking: null })}
+        />
+      )}
+
+      {/* ── Main Card ── */}
+      <div className="ab-card">
+
+        {/* Card Header */}
+        <div className="ab-card-header">
+          <div className="ab-card-header-text">
+            <h4>{currentStep.title}</h4>
+            <p>{currentStep.subtitle}</p>
+          </div>
+          <button className="ab-close-btn" onClick={resetForm} aria-label="Reset form">×</button>
+        </div>
+
+        {/* Card Content (scrollable) */}
+        <div className="ab-card-content">
+
+          {/* Step 1 – Customer */}
+          {step === 1 && (
+            <div className="field-group">
+              <div className="form-field">
+                <label>Phone Number</label>
+                <div className="phone-row">
+                  <input
+                    type="text"
+                    placeholder="e.g. 98765 43210"
+                    value={formData.phone_number}
+                    maxLength={11}
+                    onChange={(e) => {
+                      if (/^\d*$/.test(e.target.value))
+                        setFormData({ ...formData, phone_number: e.target.value });
+                    }}
+                  />
+                  <button
+                    className="check-button"
+                    onClick={checkCustomerByPhone}
+                    disabled={!formData.phone_number || formData.phone_number.length < 7}
+                  >
+                    Check
+                  </button>
                 </div>
-              )}
+                {checkMessage && (
+                  <div className={`check-message ${checkMessage}`}>
+                    {checkMessage === "found"
+                      ? "✓ Customer found — details pre-filled"
+                      : "✗ Not found — please enter details below"}
+                  </div>
+                )}
+              </div>
 
               {customerChecked && (
                 <>
-                  <div className="mb-1"></div>
-
-                  <input
-                    className="form-control mb-3"
-                    placeholder="Enter Customer Name"
-                    value={formData.customer_name}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        customer_name: e.target.value,
-                      })
-                    }
-                    disabled={isExistingCustomer}
-                  />
-
-                  <input
-                    className="form-control mb-3"
-                    placeholder="Enter Email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        email: e.target.value,
-                      })
-                    }
-                    disabled={isExistingCustomer}
-                  />
-
-                  <input
-                    className="form-control mb-3"
-                    placeholder="Enter Address"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        address: e.target.value,
-                      })
-                    }
-                    disabled={isExistingCustomer}
-                  />
+                  <div className="form-field">
+                    <label>Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Enter customer name"
+                      value={formData.customer_name}
+                      onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                      disabled={isExistingCustomer}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Email (optional)</label>
+                    <input
+                      type="email"
+                      placeholder="customer@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      disabled={isExistingCustomer}
+                    />
+                  </div>
+                  <div className="form-field">
+                    <label>Address (optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Enter address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      disabled={isExistingCustomer}
+                    />
+                  </div>
                 </>
               )}
             </div>
-          </div>
-        )}
-        {step === 2 && (
-          <div className="form-step-wrapper text-center">
-            <h5>Select Date</h5>
+          )}
 
-            <div className="d-flex justify-content-center mb-3">
+          {/* Step 2 – Date & Time */}
+          {step === 2 && (
+            <div className="date-time-wrapper">
               <DatePicker
                 selected={bookingDate}
-                onChange={(date) => {
-                  setBookingDate(date);
-                  setSelectedTime(null);
-                }}
+                onChange={(date) => { setBookingDate(date); setSelectedTime(null); }}
                 minDate={new Date()}
-                maxDate={
-                  new Date(new Date().setMonth(new Date().getMonth() + 2))
-                }
+                maxDate={new Date(new Date().setMonth(new Date().getMonth() + 2))}
                 excludeDates={holidayDates}
                 inline
                 calendarClassName="custom-datepicker"
                 filterDate={(date) => {
                   const formatted = date.toISOString().split("T")[0];
-
-                  const allSlots = Array.from({ length: 12 }, (_, i) =>
-                    `${10 + i}:00`.padStart(5, "0")
-                  );
-                  const bookedForDate = bookedSlots
-                    .filter((slot) => slot.event_date === formatted)
-                    .map((slot) => slot.time_slot);
-
-                  const freeSlots = allSlots.filter(
-                    (slot) => !bookedForDate.includes(slot)
-                  );
-                  return freeSlots.length > 0;
+                  const allSlots = Array.from({ length: 12 }, (_, i) => `${10 + i}:00`.padStart(5, "0"));
+                  const booked = bookedSlots.filter((s) => s.event_date === formatted).map((s) => s.time_slot);
+                  return allSlots.filter((s) => !booked.includes(s)).length > 0;
                 }}
               />
-            </div>
-
-            {bookingDate && (
-              <>
-                <h5>Available Time Slots</h5>
-                <div className="d-flex flex-wrap justify-content-center">
-                  {Array.from({ length: 12 }).map((_, i) => {
-                    const hour = 10 + i;
-                    const time = `${hour.toString().padStart(2, "0")}:00`;
-                    const selectedDate =
-                      bookingDate.toLocaleDateString("en-CA");
-
-                    const isBooked = bookedSlots.some(
-                      (slot) =>
-                        slot.event_date === selectedDate &&
-                        slot.time_slot?.trim().substring(0, 5) === time
-                    );
-
-                    const now = new Date();
-                    const isToday =
-                      bookingDate.toDateString() === now.toDateString();
-                    const slotTime = new Date(bookingDate);
-                    slotTime.setHours(hour, 0, 0, 0);
-                    const isPastTime = isToday && slotTime < now;
-
-                    const isDisabled = isBooked || isPastTime;
-
-                    return (
-                      <button
-                        key={time}
-                        className={`btn btn-sm m-1 ${
-                          selectedTime === time
-                            ? "btn-check-time"
-                            : "btn-outline-secondary"
-                        }`}
-                        disabled={isDisabled}
-                        style={{
-                          opacity: isDisabled ? 0.5 : 1,
-                          cursor: isDisabled ? "not-allowed" : "pointer",
-                        }}
-                        onClick={() => {
-                          if (!isDisabled) setSelectedTime(time);
-                        }}
-                      >
-                        {time}
-                      </button>
-                    );
-                  })}
+              {bookingDate && (
+                <div className="time-slots-section">
+                  <h6>Available Time Slots</h6>
+                  <div className="time-slots-grid">
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const hour = 10 + i;
+                      const time = `${hour.toString().padStart(2, "0")}:00`;
+                      const selectedDate = bookingDate.toLocaleDateString("en-CA");
+                      const isBooked = bookedSlots.some(
+                        (slot) => slot.event_date === selectedDate && slot.time_slot?.trim().substring(0, 5) === time
+                      );
+                      const now = new Date();
+                      const slotTime = new Date(bookingDate);
+                      slotTime.setHours(hour, 0, 0, 0);
+                      const isDisabled = isBooked || (bookingDate.toDateString() === now.toDateString() && slotTime < now);
+                      return (
+                        <button
+                          key={time}
+                          className={`time-slot-btn ${selectedTime === time ? "selected" : ""}`}
+                          disabled={isDisabled}
+                          onClick={() => { if (!isDisabled) setSelectedTime(time); }}
+                        >
+                          {time}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
-        )}
-        {step === 3 && (
-          <div className="form-step-wrapper text-center">
-            <h5 className="mb-4">Select Celebration Type</h5>
-            <div className="input-group-wrapper ">
-              {celebrationOptions.map((option, index) => (
-                <div className="form-check text-start mb-4 " key={index}>
+              )}
+            </div>
+          )}
+
+          {/* Step 3 – Celebration */}
+          {step === 3 && (
+            <div className="option-grid">
+              {celebrationOptions.map((option) => (
+                <label
+                  key={option.celebration_id}
+                  className={`option-card ${formData.celebration_id === String(option.celebration_id) ? "selected" : ""}`}
+                >
                   <input
-                    className="form-check-input "
                     type="radio"
                     name="celebration_id"
-                    id={`option-${option.celebration_id}`}
                     value={option.celebration_id}
-                    checked={
-                      formData.celebration_id === String(option.celebration_id)
-                    }
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        celebration_id: e.target.value,
-                      })
-                    }
+                    checked={formData.celebration_id === String(option.celebration_id)}
+                    onChange={(e) => setFormData({ ...formData, celebration_id: e.target.value })}
                   />
-                  <label
-                    className="form-check-label"
-                    htmlFor={`option-${option.id}`}
-                  >
-                    {option.celebration_name}
-                  </label>
-                </div>
+                  <div className="option-content">
+                    <div className="option-name">{option.celebration_name}</div>
+                  </div>
+                </label>
               ))}
             </div>
-          </div>
-        )}
-        {step === 4 && (
-          <div className="form-step-wrapper text-center">
-            <h5 className="mb-4">Choose a Package</h5>
-            <div className="input-group-wrapper text-start">
+          )}
+
+          {/* Step 4 – Package */}
+          {step === 4 && (
+            <div className="option-grid">
               {packageOptions.map((pkg) => (
-                <div className="form-check mb-4" key={pkg.package_id}>
+                <label
+                  key={pkg.package_id}
+                  className={`option-card ${formData.package_id === String(pkg.package_id) ? "selected" : ""}`}
+                >
                   <input
-                    className="form-check-input"
                     type="radio"
                     name="package"
-                    id={`package-${pkg.package_id}`}
                     value={pkg.package_id}
                     checked={formData.package_id === String(pkg.package_id)}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        package_id: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setFormData({ ...formData, package_id: e.target.value })}
                   />
-                  <label
-                    className="form-check-label"
-                    htmlFor={`package-${pkg.package_id}`}
-                  >
-                    <strong>{pkg.package_name}</strong>{" "}
-                    <span style={{ fontSize: "0.8rem", color: "#555" }}>
-                      ({pkg.description} – ₹{pkg.price})
-                    </span>
-                  </label>
-                </div>
+                  <div className="option-content">
+                    <div className="option-name">{pkg.package_name}</div>
+                    {pkg.description && <div className="option-desc">{pkg.description}</div>}
+                    <div className="option-price">₹{pkg.price}</div>
+                  </div>
+                </label>
               ))}
             </div>
-          </div>
-        )}
-        {step === 5 && (
-          <div className="form-step-wrapper text-center">
-            <h5 className="mb-3">Add-ons (Optional)</h5>
-            <div className="input-group-wrapper">
-              <textarea
-                className="form-control"
-                rows={5}
-                placeholder="Write any special instructions or additional requirements here..."
-                value={formData.addons_note}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    addons_note: e.target.value,
-                  })
-                }
-              ></textarea>
-            </div>
-            <div className="d-flex flex-column align-items-center mt-3">
-              <h5 className="mb-3">Booking Status</h5>
-              <select
-                className="form-select w-auto mb-4"
-                style={{ minWidth: "200px" }}
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-              >
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-            <div className="review-box mb-3">
-              <h5 className="review-title">Selected Package</h5>
-              {packageOptions.map(
-                (pkg) =>
-                  String(pkg.package_id) === formData.package_id && (
-                    <div key={pkg.package_id}>
-                      <p>
-                        <strong>🎁 {pkg.package_name}</strong>
-                      </p>
-                      <p>
-                        💵 <strong>Price:</strong> ₹{pkg.price}
-                      </p>
-                    </div>
-                  )
-              )}
-            </div>
-            <div className="review-box mb-3">
-              <h5 className="review-title mb-3">Additional Requirements</h5>
-              <button
-                className="btn btn-sm btn-outline-primary mb-3"
-                onClick={() =>
-                  setAdditionalItems([
-                    ...additionalItems,
-                    { description: "", price: "" },
-                  ])
-                }
-              >
-                ＋ Add Item
-              </button>
+          )}
 
-              {additionalItems.length === 0 && (
-                <p className="text-muted mb-3">No additional items added.</p>
+          {/* Step 5 – Add-ons */}
+          {step === 5 && (
+            <div className="addons-wrapper">
+              {selectedPackage && (
+                <div className="info-card">
+                  <div className="info-card-title">Selected Package</div>
+                  <p><strong>{selectedPackage.package_name}</strong> — ₹{selectedPackage.price}</p>
+                </div>
               )}
-              <div className="d-flex flex-column align-items-center">
+              <div className="form-field">
+                <label>Special Instructions (optional)</label>
+                <textarea
+                  placeholder="Write any special instructions or requirements..."
+                  value={formData.addons_note}
+                  onChange={(e) => setFormData({ ...formData, addons_note: e.target.value })}
+                />
+              </div>
+              <div className="form-field">
+                <label>Booking Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  style={{ maxWidth: "220px" }}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label className="section-label">Additional Items</label>
+                {additionalItems.length === 0 && (
+                  <div className="empty-state">No additional items added yet</div>
+                )}
                 {additionalItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-3 w-100"
-                    style={{ maxWidth: "600px" }}
-                  >
+                  <div key={index} className="additional-item-row">
                     <input
-                      className="form-control"
-                      style={{ maxWidth: "300px", flex: "1 1 auto" }}
-                      placeholder="Enter item name"
+                      className="ai-name"
+                      placeholder="Item name"
                       value={item.description}
                       onChange={(e) => {
                         const updated = [...additionalItems];
@@ -513,11 +421,10 @@ function AddBookings() {
                       }}
                     />
                     <input
-                      className="form-control"
-                      style={{ width: "120px", flex: "0 0 auto" }}
+                      className="ai-price"
                       type="number"
                       min="0"
-                      placeholder="₹"
+                      placeholder="₹ Price"
                       value={item.price}
                       onChange={(e) => {
                         const updated = [...additionalItems];
@@ -526,357 +433,153 @@ function AddBookings() {
                       }}
                     />
                     <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => {
-                        const updated = additionalItems.filter(
-                          (_, i) => i !== index
-                        );
-                        setAdditionalItems(updated);
-                      }}
-                    >
-                      🗑 Remove
-                    </button>
+                      className="ai-remove"
+                      onClick={() => setAdditionalItems(additionalItems.filter((_, i) => i !== index))}
+                    >✕</button>
                   </div>
                 ))}
+                <button
+                  className="add-item-btn"
+                  onClick={() => setAdditionalItems([...additionalItems, { description: "", price: "" }])}
+                >
+                  + Add Item
+                </button>
               </div>
             </div>
-          </div>
-        )}
-        {step === 6 && (
-          <div className="form-step-wrapper text-start px-3">
-            <h5 className="mb-3 text-center">Payment Details</h5>
-            <div className="review-box mb-3">
-              <label className="form-label">Payment Mode</label>
-              <select
-                className="form-select mb-3"
-                value={paymentMode}
-                onChange={(e) => setPaymentMode(e.target.value)}
-              >
-                <option value="">Select mode</option>
-                <option value="cash">Cash</option>
-                <option value="upi">UPI</option>
-                <option value="card">Card</option>
-                <option value="bank_transfer">Bank Transfer</option>
-              </select>
-            </div>
+          )}
 
-            <div className="review-box mb-3">
-              <label className="form-label">Amount Paid (₹)</label>
-              <input
-                type="number"
-                className="form-control mb-3"
-                min="0"
-                value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
-              />
+          {/* Step 6 – Payment */}
+          {step === 6 && (
+            <div className="payment-wrapper">
+              <div className="payment-grid">
+                <div className="form-field payment-full">
+                  <label>Payment Mode</label>
+                  <select value={paymentMode} onChange={(e) => setPaymentMode(e.target.value)}>
+                    <option value="">Select mode</option>
+                    <option value="cash">Cash</option>
+                    <option value="upi">UPI</option>
+                    <option value="card">Card</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                  </select>
+                </div>
+                <div className="form-field">
+                  <label>Amount Paid (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={amountPaid}
+                    onChange={(e) => setAmountPaid(e.target.value)}
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Transaction Note (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="UPI ref, card last 4…"
+                    value={paymentNotes}
+                    onChange={(e) => setPaymentNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="balance-summary">
+                <div className="balance-row">
+                  <span className="bal-label">Package + Add-ons</span>
+                  <span className="bal-value">₹{total}</span>
+                </div>
+                <div className="balance-row">
+                  <span className="bal-label">Amount Paid</span>
+                  <span className="bal-value">₹{amountPaid || 0}</span>
+                </div>
+                <hr className="balance-divider" />
+                <div className="balance-row balance-due">
+                  <span className="bal-label">Balance Due</span>
+                  <span className="bal-value">₹{Math.max(0, total - Number(amountPaid || 0))}</span>
+                </div>
+              </div>
             </div>
+          )}
 
-            <div className="review-box mb-3">
-              <label className="form-label">Transaction Note (optional)</label>
-              <textarea
-                className="form-control mb-3"
-                placeholder="e.g. UPI Ref No, Card Last 4 digits..."
-                value={paymentNotes}
-                onChange={(e) => setPaymentNotes(e.target.value)}
-              />
-            </div>
-
-            <div className="mt-4">
-              <h5>Balance Summary</h5>
-              <p>
-                <strong>Total Amount:</strong> ₹
-                {(() => {
-                  const packagePrice =
-                    packageOptions.find(
-                      (pkg) => String(pkg.package_id) === formData.package_id
-                    )?.price || 0;
-                  const addOnPrice = additionalItems.reduce(
-                    (sum, item) => sum + Number(item.price || 0),
-                    0
-                  );
-                  return packagePrice + addOnPrice;
-                })()}
-              </p>
-              <p>
-                <strong>Amount Paid:</strong> ₹{amountPaid || 0}
-              </p>
-              <p>
-                <strong>Balance:</strong> ₹
-                {(() => {
-                  const packagePrice =
-                    packageOptions.find(
-                      (pkg) => String(pkg.package_id) === formData.package_id
-                    )?.price || 0;
-                  const addOnPrice = additionalItems.reduce(
-                    (sum, item) => sum + Number(item.price || 0),
-                    0
-                  );
-                  const total = packagePrice + addOnPrice;
-                  return Math.max(0, total - Number(amountPaid || 0));
-                })()}
-              </p>
-            </div>
-          </div>
-        )}
-        {step === 7 && (
-          <div className="form-step-wrapper text-start px-3">
-            <h5 className="mb-3 text-center">Review Your Booking</h5>
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Customer Details</h5>
-              <p>
-                <strong>Name:</strong> {formData.customer_name}
-              </p>
-              <p>
-                <strong>Phone:</strong> {formData.phone_number}
-              </p>
-              {formData.email && (
-                <p>
-                  <strong>Email:</strong> {formData.email}
-                </p>
-              )}
-              {formData.address && (
-                <p>
-                  <strong>Address:</strong> {formData.address}
-                </p>
-              )}
-            </div>
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Date & Time</h5>
-              <p>
-                <strong>Date:</strong> {formData.event_date}
-              </p>
-              <p>
-                <strong>Time Slot:</strong> {formData.time_slot}
-              </p>
-            </div>
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Celebration Type</h5>
-              {celebrationOptions.map(
-                (celebration) =>
-                  String(celebration.celebration_id) ===
-                    formData.celebration_id && (
-                    <p key={celebration.celebration_id}>
-                      {celebration.celebration_name}
-                    </p>
+          {/* Step 7 – Review */}
+          {step === 7 && (
+            <div className="review-grid">
+              <div className="review-card">
+                <div className="review-card-title">Customer</div>
+                <p className="rv-main">{formData.customer_name}</p>
+                <p className="rv-sub">{formData.phone_number}</p>
+                {formData.email && <p className="rv-sub">{formData.email}</p>}
+                {formData.address && <p className="rv-sub">{formData.address}</p>}
+              </div>
+              <div className="review-card">
+                <div className="review-card-title">Date & Time</div>
+                <p className="rv-main">{formData.event_date}</p>
+                <p className="rv-sub">{formData.time_slot}</p>
+              </div>
+              <div className="review-card">
+                <div className="review-card-title">Celebration</div>
+                {celebrationOptions.map((c) =>
+                  String(c.celebration_id) === formData.celebration_id && (
+                    <p key={c.celebration_id} className="rv-main">{c.celebration_name}</p>
                   )
-              )}
-            </div>
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Package</h5>
-              {packageOptions.map(
-                (pkg) =>
-                  String(pkg.package_id) === formData.package_id && (
-                    <p key={pkg.package_id}>
-                      <strong>{pkg.package_name}</strong>
-                      <br />
-                      <span style={{ fontSize: "0.9rem" }}>
-                        {pkg.description}
-                      </span>
-                      <br />
-                      <span style={{ fontSize: "0.85rem" }}>
-                        Price: ₹{pkg.price}
-                      </span>
-                    </p>
-                  )
-              )}
-            </div>
-
-            {(formData.addons_note ||
-              (additionalItems && additionalItems.length > 0)) && (
-              <div className="review-box mb-3">
-                <h5 className="review-title">Add-ons / Notes</h5>
-                {formData.addons_note && <p>{formData.addons_note}</p>}
-
-                {additionalItems && additionalItems.length > 0 && (
+                )}
+              </div>
+              <div className="review-card">
+                <div className="review-card-title">Status</div>
+                <span className={`status-badge ${formData.status}`}>{formData.status}</span>
+              </div>
+              <div className="review-card review-full">
+                <div className="review-card-title">Package</div>
+                {selectedPackage && (
                   <>
-                    <p>
-                      <strong>Additional Requirements:</strong>
-                    </p>
-                    <ul className="mb-3">
-                      {additionalItems.map((item, index) => (
-                        <li key={index}>
-                          {item.description} – ₹{item.price}
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="rv-main">{selectedPackage.package_name}</p>
+                    {selectedPackage.description && <p className="rv-sub">{selectedPackage.description}</p>}
+                    <p className="rv-sub">₹{selectedPackage.price}</p>
                   </>
                 )}
               </div>
-            )}
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Booking Status</h5>
-              <p>{formData.status}</p>
-            </div>
-
-            <div className="review-box mb-3">
-              <h5 className="review-title">Payment Details</h5>
-              <p>
-                <strong>Payment Mode:</strong>{" "}
-                {formData.payment_mode
-                  ? formData.payment_mode.replace("_", " ").toUpperCase()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Total Amount:</strong> ₹{formData.payment_total || "0"}
-              </p>
-              <p>
-                <strong>Amount Paid:</strong> ₹{formData.payment_paid || "0"}
-              </p>
-              <p>
-                <strong>Balance:</strong> ₹
-                {Math.max(
-                  0,
-                  (Number(formData.payment_total) || 0) -
-                    (Number(formData.payment_paid) || 0)
-                )}
-              </p>
-              {formData.payment_notes && (
-                <p>
-                  <strong>Notes:</strong> {formData.payment_notes}
-                </p>
+              {(formData.addons_note || additionalItems.length > 0) && (
+                <div className="review-card review-full">
+                  <div className="review-card-title">Add-ons & Notes</div>
+                  {formData.addons_note && <p className="rv-sub">{formData.addons_note}</p>}
+                  {additionalItems.length > 0 && (
+                    <ul className="rv-list">
+                      {additionalItems.map((item, i) => (
+                        <li key={i}>{item.description} — ₹{item.price}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
+              <div className="review-card review-full">
+                <div className="review-card-title">Payment</div>
+                <div className="rv-payment-row">
+                  <span><span className="rv-sub">Mode </span><strong>{formData.payment_mode ? formData.payment_mode.replace("_", " ").toUpperCase() : "—"}</strong></span>
+                  <span><span className="rv-sub">Total </span><strong>₹{formData.payment_total || total}</strong></span>
+                  <span><span className="rv-sub">Paid </span><strong>₹{formData.payment_paid || 0}</strong></span>
+                  <span><span className="rv-sub">Balance </span><strong className="rv-balance">₹{Math.max(0, Number(formData.payment_total || total) - Number(formData.payment_paid || 0))}</strong></span>
+                </div>
+                {formData.payment_notes && <p className="rv-sub" style={{ marginTop: 6 }}>Note: {formData.payment_notes}</p>}
+              </div>
             </div>
+          )}
 
-            <div className="review-box mb-3">
-              <h5 className="review-title">Audit Trail</h5>
-              <p>
-                <strong>Created By:</strong> {formData.created_by}
-              </p>
-              <p>
-                <strong>Created At:</strong>{" "}
-                {formData.created_at
-                  ? new Date(formData.created_at).toLocaleString()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Updated By:</strong> {formData.updated_by || "N/A"}
-              </p>
-              <p>
-                <strong>Updated At:</strong>{" "}
-                {formData.updated_at
-                  ? new Date(formData.updated_at).toLocaleString()
-                  : "N/A"}
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="modal-footer">
+        </div>{/* end ab-card-content */}
+
+        {/* Card Footer */}
+        <div className="ab-card-footer">
           <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => {
-              if (step === 1) {
-                setFormData(emptyForm);
-                setStep(1);
-                setCustomerChecked(false);
-                setAdditionalItems([]);
-              } else {
-                setStep(step - 1);
-              }
-            }}
+            className="btn-nav btn-nav-secondary"
+            onClick={() => { if (step === 1) resetForm(); else setStep(step - 1); }}
           >
-            {step === 1 ? "Cancel" : "Previous"}
+            {step === 1 ? "Cancel" : "← Back"}
           </button>
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => {
-              if (step === 1) {
-                const nameRegex = /^[A-Za-z\s]+$/;
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (formData.customer_name.trim() === "") {
-                  alert("Customer details are required.");
-                  return;
-                }
-                if (!nameRegex.test(formData.customer_name.trim())) {
-                  alert(
-                    "Customer name should contain only alphabets and spaces."
-                  );
-                  return;
-                }
-                if (formData.email.trim() && !emailRegex.test(formData.email)) {
-                  alert("Please enter a valid email address.");
-                  return;
-                }
-              }
-              if (step === 2) {
-                if (!bookingDate || !selectedTime) {
-                  alert("Please select a date and time.");
-                  return;
-                }
-
-                setFormData({
-                  ...formData,
-                  event_date: bookingDate.toLocaleDateString("en-CA"),
-                  time_slot: selectedTime,
-                });
-              }
-              if (step === 3) {
-                if (!formData.celebration_id) {
-                  alert("Please select a celebration type.");
-                  return;
-                }
-              }
-              if (step === 4) {
-                if (!formData.package_id) {
-                  alert("Please select a package.");
-                  return;
-                }
-              }
-              if (step === 5) {
-                setFormData({
-                  ...formData,
-                  additional_items: additionalItems,
-                });
-              }
-
-              if (step === 6) {
-                const packagePrice =
-                  packageOptions.find(
-                    (pkg) => String(pkg.package_id) === formData.package_id
-                  )?.price || 0;
-                const addOnPrice = additionalItems.reduce(
-                  (sum, item) => sum + Number(item.price || 0),
-                  0
-                );
-                const total = packagePrice + addOnPrice;
-
-                if (!paymentMode) {
-                  alert("Please select a payment mode.");
-                  return;
-                }
-                if (!amountPaid || Number(amountPaid) < 0) {
-                  alert("Amount paid must be a valid number.");
-                  return;
-                }
-                if (Number(amountPaid) > total) {
-                  alert("Amount paid cannot exceed total amount.");
-                  return;
-                }
-
-                setFormData({
-                  ...formData,
-                  payment_mode: paymentMode,
-                  payment_paid: amountPaid,
-                  payment_notes: paymentNotes,
-                  payment_total: total,
-                });
-              }
-              if (step === 7) {
-                handleConfirmBooking(formData);
-                return;
-              }
-
-              setStep(step + 1);
-            }}
-          >
-            {step === 7 ? "Submit" : "Next"}
+          <span className="step-indicator">{step} / {STEPS.length}</span>
+          <button className="btn-nav btn-nav-primary" onClick={handleNext}>
+            {step === STEPS.length ? "Submit Booking" : "Next →"}
           </button>
         </div>
-      </div>
+
+      </div>{/* end ab-card */}
     </div>
   );
 }

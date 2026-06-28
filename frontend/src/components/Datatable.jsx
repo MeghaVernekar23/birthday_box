@@ -4,12 +4,14 @@ import "../css/Datatable.css";
 
 const DataTable = ({
   title,
-  columns,
+  columns = [],
   data,
   actions = [],
   searchableFields = [],
   rowClassName,
   actionButton,
+  viewMode = "table",
+  cardTemplate,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,115 +64,131 @@ const DataTable = ({
       )}
 
       <div className="table-wrapper">
-        <div className="table-body-scroll">
-          <table className="table table-bordered table-hover align-middle">
-            <thead className="table-light">
-              <tr>
-                {columns.map((col) => (
-                  <th key={col.key} className="text-center">
-                    {col.label}
-                  </th>
-                ))}
-                {actions.length > 0 && <th className="text-center">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                    className="text-center"
-                  >
-                    No results found
-                  </td>
-                </tr>
+        {viewMode === "card" ? (
+          <div className="table-body-scroll">
+            <div className="datatable-card-grid">
+              {paginatedData.length === 0 ? (
+                <p className="text-center text-muted py-4">No results found</p>
               ) : (
                 paginatedData.map((row, index) => (
-                  <tr
-                    key={row.id || index}
-                    className={
-                      typeof rowClassName === "function"
-                        ? rowClassName(row)
-                        : ""
-                    }
-                  >
-                    {columns.map((col) => (
-                      <td key={col.key}>
-                        {col.render ? col.render(row) : row[col.key] ?? "--"}
-                      </td>
-                    ))}
-                    {actions.length > 0 && (
-                      <td>
-                        {actions.map((ActionBtn, i) => (
-                          <ActionBtn key={i} row={row} />
-                        ))}
-                      </td>
-                    )}
-                  </tr>
+                  <div key={row.booking_id || row.id || index}>
+                    {typeof cardTemplate === "function" ? cardTemplate(row) : null}
+                  </div>
                 ))
               )}
-            </tbody>
-          </table>
-          <div className="pagination-bar">
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => currentPage > 1 && setCurrentPage(1)}
-            >
-              {"<<"}
-            </span>
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                opacity: currentPage === 1 ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (startPage > 1) setCurrentPage(startPage - 1);
-              }}
-            >
-              {"<"}
-            </span>
-            {pageNumbers.map((page) => (
-              <span
-                key={page}
-                className={`page-link ${
-                  page === currentPage ? "custom-active" : ""
-                }`}
-                style={{ cursor: "pointer" }}
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </span>
-            ))}
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (endPage < totalPages) setCurrentPage(endPage + 1);
-              }}
-            >
-              {">"}
-            </span>
-            <span
-              className="page-link"
-              style={{
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                opacity: currentPage === totalPages ? 0.5 : 1,
-              }}
-              onClick={() =>
-                currentPage < totalPages && setCurrentPage(totalPages)
-              }
-            >
-              {">>"}
-            </span>
+            </div>
           </div>
+        ) : (
+          <div className="table-body-scroll">
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-light">
+                <tr>
+                  {columns.map((col) => (
+                    <th key={col.key} className="text-center">
+                      {col.label}
+                    </th>
+                  ))}
+                  {actions.length > 0 && <th className="text-center">Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                      className="text-center"
+                    >
+                      No results found
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedData.map((row, index) => (
+                    <tr
+                      key={row.id || index}
+                      className={
+                        typeof rowClassName === "function"
+                          ? rowClassName(row)
+                          : ""
+                      }
+                    >
+                      {columns.map((col) => (
+                        <td key={col.key}>
+                          {col.render ? col.render(row) : row[col.key] ?? "--"}
+                        </td>
+                      ))}
+                      {actions.length > 0 && (
+                        <td>
+                          {actions.map((ActionBtn, i) => (
+                            <ActionBtn key={i} row={row} />
+                          ))}
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="pagination-bar">
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => currentPage > 1 && setCurrentPage(1)}
+          >
+            {"<<"}
+          </span>
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (startPage > 1) setCurrentPage(startPage - 1);
+            }}
+          >
+            {"<"}
+          </span>
+          {pageNumbers.map((page) => (
+            <span
+              key={page}
+              className={`page-link ${
+                page === currentPage ? "custom-active" : ""
+              }`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </span>
+          ))}
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() => {
+              if (endPage < totalPages) setCurrentPage(endPage + 1);
+            }}
+          >
+            {">"}
+          </span>
+          <span
+            className="page-link"
+            style={{
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+            onClick={() =>
+              currentPage < totalPages && setCurrentPage(totalPages)
+            }
+          >
+            {">>"}
+          </span>
         </div>
       </div>
     </div>

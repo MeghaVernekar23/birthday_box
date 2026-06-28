@@ -58,12 +58,12 @@ class AddBookingDetails(BaseModel):
     package_id: int
     addons_note: str
     status: Optional[str] = "pending"
-    payment_mode: str
-    payment_total: float
-    payment_paid: float
-    payment_notes: str
-    created_by: str
-    updated_by: Optional[str]
+    payment_mode: Optional[str] = ""
+    payment_total: Optional[float] = 0.0
+    payment_paid: Optional[float] = 0.0
+    payment_notes: Optional[str] = ""
+    created_by: Optional[str] = None
+    updated_by: Optional[str] = None
     additional_items: Optional[List[AdditionalItem]] = []
 
 

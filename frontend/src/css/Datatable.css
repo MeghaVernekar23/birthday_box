@@ -21,19 +21,25 @@
   border-top: 1px solid #b2c1f7;
   border-left: 1px solid #b2c1f7;
   border-right: 1px solid #b2c1f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Table Body */
 .table tbody td {
   padding: 10px;
-  vertical-align: left;
+  vertical-align: middle;
   border-bottom: 1px solid #b2c1f7;
   border-right: 1px solid #b2c1f7;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 200px;
 }
 
 /* Hover Effect */
 .table tbody tr:hover {
-  background-color: #520a6c;
+  background-color: #eef2ff;
   transition: background-color 0.2s ease-in-out;
 }
 
@@ -42,25 +48,18 @@
 
 .table-body-scroll {
   flex: 1 1 auto;
-  overflow-y: auto;
+  overflow: auto;
 }
 
 /* Required to align thead and tbody properly */
 .table-body-scroll table {
   border-collapse: collapse;
   width: 100%;
-}
-
-/* Make thead behave like a block so it can stick */
-.table-body-scroll thead,
-.table-body-scroll tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
+  min-width: 600px;
 }
 
 /* Sticky header magic */
-.table-body-scroll thead {
+.table-body-scroll thead th {
   position: sticky;
   top: 0;
   z-index: 2;
@@ -104,6 +103,7 @@
   border: 1px solid #b2c1f7;
   border-radius: 8px;
   overflow: hidden;
+  width: 100%;
 }
 
 .page-link {
@@ -142,6 +142,44 @@
 .table-responsive-wrapper::-webkit-scrollbar-thumb {
   background-color:#b2c1f7;
   border-radius: 4px;
+}
+
+/* Card grid layout (used when viewMode="card") */
+.datatable-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 4px 0 8px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .table-wrapper {
+    max-height: 70vh;
+  }
+
+  .table-body-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  .table {
+    font-size: 0.82rem;
+    min-width: 480px;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 8px 6px;
+  }
+
+  .table tbody td {
+    max-width: 140px;
+  }
+
+  .container {
+    padding: 0.5rem;
+  }
 }
 
 .past-payment-row {

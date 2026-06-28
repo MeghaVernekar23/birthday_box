@@ -10,7 +10,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import DataTable from "../components/Datatable";
 import { Trash2 } from "lucide-react";
-import "../css/Dashboard.css";
 import NotificationPopup from "../components/NotificationPopup";
 
 const UpcomingHolidaysCard = () => {
@@ -20,10 +19,8 @@ const UpcomingHolidaysCard = () => {
   const [showCalenderModal, setShowCalenderModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [holidayTitle, setHolidayTitle] = useState("");
-  const [deletePopup, setDeletePopup] = useState({
-    visible: false,
-    holiday: null,
-  });
+  const [loading, setLoading] = useState(true);
+  const [deletePopup, setDeletePopup] = useState({ visible: false, holiday: null });
 
   const columns = [
     { key: "title", label: "Title" },
@@ -36,20 +33,13 @@ const UpcomingHolidaysCard = () => {
         const upcomingHolidays = await fetchUpcomingHoliday();
         setHolidays(upcomingHolidays);
       } catch (error) {
-        console.error("Error fetching today's bookings", error);
+        console.error("Error fetching upcoming holidays", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchHolidays();
   }, []);
-
-  const handleCalender = async () => {
-    try {
-      setshowHolidayModal(true);
-    } catch (err) {
-      console.error("Error fetching bookings", err);
-      alert("Failed to load bookings");
-    }
-  };
 
   const ActionDelete = ({ row }) => (
     <Trash2
@@ -76,7 +66,6 @@ const UpcomingHolidaysCard = () => {
       setHolidayTitle("");
       setSelectedDate(null);
       const updated = await fetchUpcomingHoliday();
-
       setHolidays(updated);
       navigate("/dashboard", { state: { refetch: true } });
     } catch (error) {
@@ -108,43 +97,44 @@ const UpcomingHolidaysCard = () => {
     setDeletePopup({ visible: false, holiday: null });
   };
 
-  const handleAddHoliday = () => {
-    setShowCalenderModal(true);
-  };
-
   return (
     <div>
-      <div className="today-bookings-card shadow-sm">
-        <div className="card-content">
-          <div className="card-header">
-            <h6 className="label">Upcoming Holidays</h6>
+      <div className="dashboard-card dashboard-card--amber shadow-sm">
+        {loading ? (
+          <div className="card-spinner-wrapper">
+            <div className="spinner-border" style={{ color: "#f5a623" }} role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
           </div>
-
-          <ul className="holiday-list">
-            {holidays.slice(0, 2).map((holiday, index) => (
-              <li key={index} className="holiday-item">
-                <strong>{holiday.date}</strong> : {holiday.title}
-              </li>
-            ))}
-          </ul>
-
-          <div className="holiday-card-footer">
-            <button className="view-all-btn" onClick={() => handleCalender()}>
-              View Calender <i className="bi bi-arrow-right" />
-            </button>
+        ) : (
+          <div className="card-content">
+            <div className="card-header">
+              <h6 className="label">Upcoming Holidays</h6>
+            </div>
+            <ul className="holiday-list">
+              {holidays.slice(0, 2).map((holiday, index) => (
+                <li key={index} className="holiday-item">
+                  <strong>{holiday.date}</strong>: {holiday.title}
+                </li>
+              ))}
+              {holidays.length === 0 && (
+                <li className="holiday-item text-muted">No upcoming holidays</li>
+              )}
+            </ul>
+            <div className="holiday-card-footer">
+              <button className="view-all-btn" onClick={() => setshowHolidayModal(true)}>
+                View Calendar <i className="bi bi-arrow-right" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
       {showHolidayModal && (
         <div className="uh-modal-overlay">
           <div className="uh-modal-box">
             <h5 className="mb-5">Upcoming Holidays</h5>
-            <div
-              className="modal-close-icon"
-              onClick={() => {
-                setshowHolidayModal(false);
-              }}
-            >
+            <div className="modal-close-icon" onClick={() => setshowHolidayModal(false)}>
               ×
             </div>
             <div className="modal-datatable">
@@ -155,25 +145,20 @@ const UpcomingHolidaysCard = () => {
                 actions={[ActionDelete]}
                 actionButton={
                   <div className="align-right">
-                    <button
-                      className="add-holiday-button"
-                      onClick={handleAddHoliday}
-                    >
+                    <button className="add-holiday-button" onClick={() => setShowCalenderModal(true)}>
                       Add Holiday
                     </button>
                   </div>
                 }
               />
             </div>
-
             {deletePopup.visible && (
               <NotificationPopup
-                message={`Are you sure you want to delete the holiday?`}
+                message="Are you sure you want to delete the holiday?"
                 onConfirm={confirmDelete}
                 onCancel={cancelDelete}
               />
             )}
-
             {showCalenderModal && (
               <div className="uh-modal-overlay">
                 <div className="add-upcoming-holiday-modal-box">
@@ -189,30 +174,20 @@ const UpcomingHolidaysCard = () => {
                     >
                       ×
                     </div>
-                    <label htmlFor="holiday-title" className="form-label">
-                      Select Date
-                    </label>
+                    <label htmlFor="holiday-title" className="form-label">Select Date</label>
                     <div className="d-flex justify-content-center mb-3">
                       <DatePicker
                         selected={selectedDate}
-                        onChange={(date) => {
-                          setSelectedDate(date);
-                        }}
+                        onChange={(date) => setSelectedDate(date)}
                         minDate={new Date()}
-                        maxDate={
-                          new Date(
-                            new Date().setMonth(new Date().getMonth() + 2)
-                          )
-                        }
+                        maxDate={new Date(new Date().setMonth(new Date().getMonth() + 2))}
                         excludeDates={holidays}
                         inline
                         calendarClassName="custom-datepicker"
                         dateFormat="yyyy-MM-dd"
                       />
                     </div>
-                    <label htmlFor="holiday-title" className="form-label">
-                      Holiday Title
-                    </label>
+                    <label htmlFor="holiday-title" className="form-label">Holiday Title</label>
                     <input
                       type="text"
                       id="holiday-title"
@@ -221,12 +196,7 @@ const UpcomingHolidaysCard = () => {
                       onChange={(e) => setHolidayTitle(e.target.value)}
                     />
                     <div className="d-flex justify-content-end">
-                      <button
-                        className="btn btn-primary"
-                        onClick={handleSaveHoliday}
-                      >
-                        Save
-                      </button>
+                      <button className="btn btn-primary" onClick={handleSaveHoliday}>Save</button>
                       <button
                         className="btn btn-outline-secondary ms-2"
                         onClick={() => {
