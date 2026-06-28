@@ -2,8 +2,9 @@
 cd frontend/
 git pull
 npm run build
-sudo rm -rf /var/www/r1/*
-sudo cp -r dist/* /var/www/r1/
+sudo rm -rf /var/www/frontend/*
+sudo cp -r dist/* /var/www/frontend/
+
 sudo systemctl restart nginx
 
 ---- BACKEND
