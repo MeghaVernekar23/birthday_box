@@ -38,7 +38,6 @@ bookings_router = APIRouter(
 @bookings_router.get(
     "/celebration-type",
     response_model=List[CelebrationDetails],
-    dependencies=[Depends(get_current_user)],
     description="Get all available celebration types.",
 )
 def get_celebration_type_details(db: Session = Depends(get_db)) -> List[CelebrationDetails]:
@@ -60,7 +59,6 @@ def get_celebration_type_details(db: Session = Depends(get_db)) -> List[Celebrat
 @bookings_router.get(
     "/package",
     response_model=List[PackageDetails],
-    dependencies=[Depends(get_current_user)],
     description="Get all available packages.",
 )
 def get_package_details(db: Session = Depends(get_db)) -> List[PackageDetails]:

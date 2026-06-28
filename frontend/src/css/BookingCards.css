@@ -1,0 +1,138 @@
+/* ===== Booking Card Base ===== */
+.booking-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  border-left-width: 4px;
+  border-left-color: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  min-height: 180px;
+}
+
+.booking-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== Accent Variants ===== */
+.booking-card--blue  { border-left-color: #4f8ef7; }
+.booking-card--purple { border-left-color: #7c5cbf; }
+.booking-card--gray  { border-left-color: #8a9bb0; }
+
+/* ===== Card Header ===== */
+.booking-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f0f4ff;
+}
+
+.booking-card__name {
+  font-weight: 600;
+  font-size: 0.97rem;
+  color: #213547;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.booking-card__date-badge {
+  background: #eef2ff;
+  color: #3b5bdb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== Card Body ===== */
+.booking-card__body {
+  padding: 10px 16px 48px; /* bottom padding reserves space for action bar */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  flex: 1;
+}
+
+.booking-card__field {
+  font-size: 0.84rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== Payment Status Pill ===== */
+.booking-card__pill {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-self: start;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.booking-card__pill--paid    { background: #2bba8f; color: #fff; }
+.booking-card__pill--partial { background: #f5a623; color: #fff; }
+.booking-card__pill--unpaid  { background: #e8603c; color: #fff; }
+
+/* ===== Hover Action Bar ===== */
+.booking-card__actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid #f0f4ff;
+  transform: translateY(100%);
+  transition: transform 0.2s ease;
+}
+
+.booking-card:hover .booking-card__actions {
+  transform: translateY(0);
+}
+
+/* Intentionally overrides Bootstrap .btn-sm border-radius (0.25rem → 6px) */
+.booking-card__actions .btn {
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .booking-card__body {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-card__body {
+    padding-bottom: 10px; /* action bar flows normally on mobile; reserved space not needed */
+  }
+
+  .booking-card__actions {
+    transform: translateY(0); /* always visible on mobile (no hover) */
+    position: static;
+    border-top: 1px solid #f0f4ff;
+    padding: 8px 14px;
+    transition: none; /* no slide animation on touch */
+  }
+
+  .booking-card {
+    min-height: unset;
+  }
+}

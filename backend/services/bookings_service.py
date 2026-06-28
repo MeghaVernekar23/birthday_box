@@ -1,3 +1,4 @@
+import asyncio
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
@@ -5,10 +6,13 @@ from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails,
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 from fastapi import HTTPException
 from datetime import datetime, timezone
+from datetime import timezone as _tz, timedelta as _td
+_IST = _tz(_td(hours=5, minutes=30))
 from utils.db_utils import get_active_celebration_types, get_active_packages, get_booking_query, get_customer_by_phone, get_user_by_username, fetch_booking_by_customer_id
 from typing import List
 from sqlalchemy import func
 from sqlalchemy import and_
+from services.telegram_service import notify_new_booking, schedule_reminders_async as _schedule_reminders_async
 
 
 def get_celebration_type(db: Session) -> List[CelebrationType]:
@@ -165,7 +169,16 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         dict: Success message and booking ID.
     """
     try:
-        
+        existing = db.query(Booking).filter(
+            Booking.event_date == bookingDetails.event_date,
+            Booking.event_time == bookingDetails.time_slot,
+        ).first()
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail=f"The time slot '{bookingDetails.time_slot}' on {bookingDetails.event_date} is already booked. Please choose a different time."
+            )
+
         customer = get_customer_by_phone(bookingDetails.phone_number, db)
         if not customer:
             customer = Customer(
@@ -178,7 +191,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             db.commit()
             db.refresh(customer)
 
-        user = get_user_by_username(bookingDetails.created_by, db)
+        user = get_user_by_username(bookingDetails.created_by, db) if bookingDetails.created_by else None
 
         booking = Booking(
             customer_id=customer.customer_id,
@@ -192,7 +205,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             payment_total=bookingDetails.payment_total,
             payment_paid=bookingDetails.payment_paid,
             payment_notes=bookingDetails.payment_notes,
-            created_by=user.id,
+            created_by=user.id if user else None,
             created_at=datetime.now(timezone.utc),
             additional_items = [item.dict() for item in bookingDetails.additional_items]
         )
@@ -202,6 +215,50 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         db.add(booking)
         db.commit()
         db.refresh(booking)
+
+        # Look up package and celebration names for the notification
+        package = db.get(Packages, bookingDetails.package_id)
+        celebration = db.get(CelebrationType, bookingDetails.celebration_id)
+
+        booking_data = {
+            "customer_name": bookingDetails.customer_name,
+            "phone_number": bookingDetails.phone_number,
+            "email": bookingDetails.email,
+            "address": bookingDetails.address,
+            "event_date": str(bookingDetails.event_date),
+            "time_slot": bookingDetails.time_slot,
+            "package_name": package.package_name if package else str(bookingDetails.package_id),
+            "celebration_name": celebration.celebration_name if celebration else str(bookingDetails.celebration_id),
+            "addons_note": bookingDetails.addons_note,
+            "payment_total": bookingDetails.payment_total,
+            "payment_paid": bookingDetails.payment_paid,
+            "payment_mode": bookingDetails.payment_mode,
+            "status": bookingDetails.status,
+        }
+
+        # Send immediate confirmation and schedule reminders (non-blocking)
+        try:
+            import threading
+            for fmt in ("%H:%M", "%I:%M %p", "%I:%M%p"):
+                try:
+                    slot_time = datetime.strptime(bookingDetails.time_slot.strip(), fmt).time()
+                    break
+                except ValueError:
+                    continue
+            else:
+                slot_time = datetime.strptime("00:00", "%H:%M").time()
+            event_datetime = datetime.combine(bookingDetails.event_date, slot_time, tzinfo=_IST)
+
+            def _fire_and_forget():
+                try:
+                    notify_new_booking(booking_data)
+                    asyncio.run(_schedule_reminders_async(booking_data, event_datetime))
+                except Exception as e:
+                    print(f"Telegram notification error: {e}")
+
+            threading.Thread(target=_fire_and_forget, daemon=True).start()
+        except Exception as telegram_err:
+            print(f"Telegram thread error (non-fatal): {telegram_err}")
 
         return {
             "message": "Booking created successfully",

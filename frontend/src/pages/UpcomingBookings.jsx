@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 import "../css/Booking.css";
+import "../css/UpcomingBookings.css";
+import "../css/BookingCards.css";
 import { Edit, Trash2, Eye } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
@@ -16,6 +18,45 @@ import {
   updateBooking,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
+
+const getPaymentStatus = (row) => {
+  const total = Number(row.payment_total) || 0;
+  const paid = Number(row.payment_paid) || 0;
+  if (total > 0 && paid >= total) return { key: "paid", label: "Paid" };
+  if (paid > 0 && paid < total) return { key: "partial", label: "Partial" };
+  return { key: "unpaid", label: "Unpaid" };
+};
+
+const formatEventDate = (dateStr) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const UpcomingBookingCard = ({ row, onEdit, onView, onDelete }) => {
+  const ps = getPaymentStatus(row);
+  return (
+    <div className="booking-card booking-card--purple">
+      <div className="booking-card__header">
+        <span className="booking-card__name">{row.customer_name || "—"}</span>
+        <span className="booking-card__date-badge">{formatEventDate(row.event_date)}</span>
+      </div>
+      <div className="booking-card__body">
+        <div className="booking-card__field">🕐 {row.time_slot || "—"}</div>
+        <div className="booking-card__field">📦 {row.package_name || "—"}</div>
+        <div className="booking-card__field">🎉 {row.celebration_name || "—"}</div>
+        <div className="booking-card__field">👤 {row.updated_by || "—"}</div>
+        <span className={`booking-card__pill booking-card__pill--${ps.key}`}>{ps.label}</span>
+      </div>
+      <div className="booking-card__actions">
+        <button className="btn btn-sm btn-primary" onClick={() => onEdit(row)}>Edit</button>
+        <button className="btn btn-sm btn-secondary" onClick={() => onView(row)}>View</button>
+        <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
+      </div>
+    </div>
+  );
+};
 
 function Bookings() {
   const user = localStorage.getItem("current_user");
@@ -46,6 +87,7 @@ function Bookings() {
   const [popupView, setPopupView] = useState({ visible: false, booking: null });
 
   const [holidayDates, setHolidayDates] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -131,8 +173,13 @@ function Bookings() {
   }, []);
 
   const fetchUpcomingBookings = async () => {
-    const data = await fetchBookingsByFilter("future");
-    setUpcomingBookings(data);
+    setLoading(true);
+    try {
+      const data = await fetchBookingsByFilter("future");
+      setUpcomingBookings(data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -264,17 +311,76 @@ function Bookings() {
     }
   };
 
-  return (
-    <div className="container">
-      <DataTable
-        title="Upcoming Bookings"
-        columns={columns}
-        data={upcomingBookingData}
-        actions={[ActionButtons]}
-        searchableFields={["customer_name", "phone_number"]}
-      />
+  const stats = useMemo(() => {
+    const total = upcomingBookingData.length;
+    const now = new Date();
+    const weekEnd = new Date(now);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const thisWeek = upcomingBookingData.filter((b) => {
+      if (!b.event_date) return false;
+      const d = new Date(b.event_date);
+      return d >= now && d <= weekEnd;
+    }).length;
+    const thisMonth = upcomingBookingData.filter((b) => {
+      if (!b.event_date) return false;
+      const d = new Date(b.event_date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    return { total, thisWeek, thisMonth };
+  }, [upcomingBookingData]);
 
-      <div className="mb-5"></div>
+  const cardTemplate = useCallback(
+    (row) => (
+      <UpcomingBookingCard
+        row={row}
+        onEdit={handleEditBooking}
+        onView={handleViewBooking}
+        onDelete={handleDeleteBooking}
+      />
+    ),
+    [handleEditBooking, handleViewBooking, handleDeleteBooking]
+  );
+
+  return (
+    <div className="bookings-page-wrapper">
+      <div className="bookings-page-header">
+        <h4>Upcoming Bookings</h4>
+        <p className="page-date">
+          {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
+        <div className="bookings-stat-chips">
+          <span className="stat-chip">
+            <span className="stat-chip__dot stat-chip__dot--purple" />
+            Total Upcoming: {stats.total}
+          </span>
+          <span className="stat-chip">
+            <span className="stat-chip__dot stat-chip__dot--blue" />
+            This Week: {stats.thisWeek}
+          </span>
+          <span className="stat-chip">
+            <span className="stat-chip__dot stat-chip__dot--amber" />
+            This Month: {stats.thisMonth}
+          </span>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="bookings-spinner-wrapper">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : (
+        <DataTable
+          title=""
+          columns={columns}
+          data={upcomingBookingData}
+          actions={[ActionButtons]}
+          searchableFields={["customer_name", "phone_number"]}
+          viewMode="card"
+          cardTemplate={cardTemplate}
+        />
+      )}
 
       {popupDelete.visible && (
         <NotificationPopup

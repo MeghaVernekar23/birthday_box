@@ -1,0 +1,516 @@
+/* ============================================================
+   Birthday Box — Book Now Page
+   Brand: pink #e91e8c → coral #f05537 → orange #f7941d
+   Navy: #1b1464  |  White: #ffffff  |  Light BG: #fdf6f9
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+.bn-root {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #1b1464;
+  background: #fdf6f9;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.bn-root * {
+  box-sizing: border-box;
+}
+
+/* ── NAVBAR ── */
+.bn-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 32px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(233, 30, 140, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.bn-logo {
+  height: 48px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.bn-nav-title {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1b1464;
+}
+
+.bn-nav-back {
+  background: none;
+  border: 2px solid #e91e8c;
+  color: #e91e8c;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bn-nav-back:hover {
+  background: #e91e8c;
+  color: #fff;
+}
+
+/* ── HERO ── */
+.bn-hero {
+  text-align: center;
+  padding: 48px 24px 32px;
+  background: linear-gradient(135deg, #e91e8c 0%, #f05537 60%, #f7941d 100%);
+  color: #fff;
+}
+
+.bn-hero-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+
+.bn-hero-sub {
+  font-size: 1.05rem;
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+/* ── FORM WRAPPER ── */
+.bn-form {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px 48px;
+}
+
+/* ── CARD ── */
+.bn-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  box-shadow: 0 4px 32px rgba(233, 30, 140, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── FIELD ── */
+.bn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bn-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1b1464;
+  text-transform: uppercase;
+}
+
+.bn-req {
+  color: #e91e8c;
+}
+
+/* ── INPUTS ── */
+.bn-input,
+.bn-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e8d5ed;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #1b1464;
+  background: #fdf6f9;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.bn-input:focus,
+.bn-select:focus {
+  border-color: #e91e8c;
+  box-shadow: 0 0 0 3px rgba(233, 30, 140, 0.12);
+  background: #fff;
+}
+
+.bn-input-err {
+  border-color: #e53935 !important;
+}
+
+.bn-phone-lookup {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.bn-customer-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.bn-customer-existing {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.bn-customer-new {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.bn-field-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #2e7d32;
+}
+
+.bn-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231b1464' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 42px;
+}
+
+/* ── RADIO OPTIONS ── */
+.bn-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bn-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 2px solid #e8d5ed;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1b1464;
+  background: #fdf6f9;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.bn-radio-option input[type="radio"] {
+  accent-color: #e91e8c;
+  width: 16px;
+  height: 16px;
+}
+
+.bn-radio-option:hover {
+  border-color: #e91e8c;
+  background: #fff0f7;
+}
+
+.bn-radio-selected {
+  border-color: #e91e8c !important;
+  background: #fff0f7 !important;
+  color: #e91e8c !important;
+}
+
+/* ── CHECKBOX OPTIONS ── */
+.bn-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bn-addons-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bn-checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 2px solid #e8d5ed;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #1b1464;
+  background: #fdf6f9;
+  transition: all 0.2s;
+  user-select: none;
+  line-height: 1.4;
+}
+
+.bn-checkbox-option input[type="checkbox"] {
+  accent-color: #e91e8c;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.bn-checkbox-option:hover {
+  border-color: #e91e8c;
+  background: #fff0f7;
+}
+
+.bn-checkbox-selected {
+  border-color: #e91e8c !important;
+  background: #fff0f7 !important;
+}
+
+/* Package labels */
+.bn-pkg-label {
+  flex: 1;
+}
+
+.bn-pkg-price {
+  font-weight: 700;
+  color: #e91e8c;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+/* ── TERMS ── */
+.bn-terms-box {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bn-terms-text {
+  font-family: inherit;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #444;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.bn-terms-prompt {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* ── AGREEMENT ── */
+.bn-agreement-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 2px solid #e8d5ed;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #fdf6f9;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.bn-agreement-label input[type="checkbox"] {
+  accent-color: #e91e8c;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.bn-agreement-label:hover {
+  border-color: #e91e8c;
+  background: #fff0f7;
+}
+
+.bn-error-border {
+  border-color: #e53935 !important;
+}
+
+/* ── CONTACT ── */
+.bn-contact-info {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1b1464;
+}
+
+.bn-contact-info a {
+  color: #e91e8c;
+  text-decoration: none;
+}
+
+.bn-contact-info a:hover {
+  text-decoration: underline;
+}
+
+/* ── ERROR ── */
+.bn-error {
+  font-size: 0.82rem;
+  color: #e53935;
+  font-weight: 500;
+}
+
+/* ── SUBMIT ── */
+.bn-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 8px;
+}
+
+.bn-submit-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.bn-submit-btn:active {
+  transform: translateY(0);
+}
+
+.bn-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bn-submit-error {
+  background: #fff0f0;
+  border: 1px solid #f05537;
+  color: #c0392b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* ── SUCCESS PAGE ── */
+.bn-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 72px);
+  padding: 32px 16px;
+}
+
+.bn-success-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 40px;
+  box-shadow: 0 4px 32px rgba(233, 30, 140, 0.12);
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+.bn-success-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.bn-success-card h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1b1464;
+  margin-bottom: 10px;
+}
+
+.bn-success-card p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.bn-success-note {
+  background: #fff0f7;
+  border: 1px solid #f5b8d8;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: #1b1464;
+  margin: 16px 0 24px;
+}
+
+.bn-btn-primary {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.bn-btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* ── FOOTER ── */
+.bn-footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.85rem;
+  color: #999;
+  background: #fff;
+  border-top: 1px solid #f0e0e9;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .bn-card {
+    padding: 28px 20px;
+  }
+
+  .bn-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .bn-radio-group {
+    flex-direction: column;
+  }
+
+  .bn-addons-group {
+    grid-template-columns: 1fr;
+  }
+
+  .bn-nav {
+    padding: 12px 16px;
+  }
+
+  .bn-nav-title {
+    font-size: 0.9rem;
+  }
+}
