@@ -79,76 +79,144 @@ const NextBookingCard = () => {
       </div>
 
       {showBookingModal && (
-        <div className="ps-modal-overlay">
-          <div className="ps-modal-box">
-            <div className="modal-close-icon" onClick={() => setShowBookingModal(false)}>
-              ×
+        <div className="ps-modal-overlay" onClick={() => setShowBookingModal(false)}>
+          <div className="nb-modal" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="nb-modal-header">
+              <div>
+                <span className="nb-modal-eyebrow">Next Booking</span>
+                <h4 className="nb-modal-title">{nextBooking.customer_name}</h4>
+              </div>
+              <button className="nb-modal-close" onClick={() => setShowBookingModal(false)}>×</button>
             </div>
-            <div className="form-step-wrapper text-start px-3">
-              <h5 className="mb-3 text-center">Upcoming Booking</h5>
-              <div className="review-box mb-3">
-                <h5 className="review-title">Customer Details</h5>
-                <p><strong>Name:</strong> {nextBooking.customer_name}</p>
-                <p><strong>Phone:</strong> {nextBooking.phone_number}</p>
-                {nextBooking.email && <p><strong>Email:</strong> {nextBooking.email}</p>}
-                {nextBooking.address && <p><strong>Address:</strong> {nextBooking.address}</p>}
+
+            <div className="nb-modal-body">
+              {/* Status + Date row */}
+              <div className="nb-info-row">
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Date</span>
+                  <span className="nb-chip-value">{nextBooking.event_date}</span>
+                </div>
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Time Slot</span>
+                  <span className="nb-chip-value">{nextBooking.time_slot}</span>
+                </div>
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Status</span>
+                  <span className={`nb-status-badge nb-status--${nextBooking.status?.toLowerCase()}`}>
+                    {nextBooking.status}
+                  </span>
+                </div>
               </div>
-              <div className="review-box mb-3">
-                <h5 className="review-title">Date & Time</h5>
-                <p><strong>Date:</strong> {nextBooking.event_date}</p>
-                <p><strong>Time Slot:</strong> {nextBooking.time_slot}</p>
+
+              {/* Customer + Celebration */}
+              <div className="nb-section-grid">
+                <div className="nb-section">
+                  <p className="nb-section-label">Customer Details</p>
+                  <div className="nb-field-list">
+                    <div className="nb-field">
+                      <span className="nb-field-key">Phone</span>
+                      <span className="nb-field-val">{nextBooking.phone_number}</span>
+                    </div>
+                    {nextBooking.email && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Email</span>
+                        <span className="nb-field-val">{nextBooking.email}</span>
+                      </div>
+                    )}
+                    {nextBooking.address && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Address</span>
+                        <span className="nb-field-val">{nextBooking.address}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="nb-section">
+                  <p className="nb-section-label">Celebration</p>
+                  <div className="nb-field-list">
+                    {celebrationOptions.map(
+                      (c) =>
+                        Number(c.celebration_id) === Number(nextBooking.celebration_id) && (
+                          <div className="nb-field" key={c.celebration_id}>
+                            <span className="nb-field-key">Type</span>
+                            <span className="nb-field-val">{c.celebration_name}</span>
+                          </div>
+                        )
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="review-box mb-3">
-                <h5 className="review-title">Celebration Type</h5>
-                {celebrationOptions.map(
-                  (celebration) =>
-                    Number(celebration.celebration_id) === Number(nextBooking.celebration_id) && (
-                      <p key={celebration.celebration_id}>{celebration.celebration_name}</p>
-                    )
-                )}
-              </div>
-              <div className="review-box mb-3">
-                <h5 className="review-title">Package</h5>
-                {packageOptions.map(
-                  (pkg) =>
-                    Number(pkg.package_id) === Number(nextBooking.package_id) && (
-                      <p key={pkg.package_id}>
-                        <strong>{pkg.package_name}</strong>
-                        <br />
-                        <span style={{ fontSize: "0.9rem" }}>{pkg.description}</span>
-                        <br />
-                        <span style={{ fontSize: "0.85rem" }}>Price: ₹{pkg.price}</span>
-                      </p>
-                    )
-                )}
-              </div>
-              {(nextBooking.addons_note || (nextBooking.additional_items && nextBooking.additional_items.length > 0)) && (
-                <div className="review-box mb-3">
-                  <h5 className="review-title">Add-ons / Notes</h5>
-                  {nextBooking.addons_note && <p>{nextBooking.addons_note}</p>}
-                  {nextBooking.additional_items && nextBooking.additional_items.length > 0 && (
-                    <>
-                      <p><strong>Additional Requirements:</strong></p>
-                      <ul className="mb-3">
-                        {nextBooking.additional_items.map((item, index) => (
-                          <li key={index}>{item.description} – ₹{item.price}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
+
+              {/* Package */}
+              {packageOptions.map(
+                (pkg) =>
+                  Number(pkg.package_id) === Number(nextBooking.package_id) && (
+                    <div className="nb-section nb-package-section" key={pkg.package_id}>
+                      <p className="nb-section-label">Package</p>
+                      <div className="nb-package-card">
+                        <div className="nb-package-top">
+                          <span className="nb-package-name">{pkg.package_name}</span>
+                          <span className="nb-package-price">₹{pkg.price}</span>
+                        </div>
+                        {pkg.description && (
+                          <p className="nb-package-desc">{pkg.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+              )}
+
+              {/* Add-ons */}
+              {(nextBooking.addons_note || nextBooking.additional_items?.length > 0) && (
+                <div className="nb-section">
+                  <p className="nb-section-label">Add-ons & Notes</p>
+                  <div className="nb-field-list">
+                    {nextBooking.addons_note && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Note</span>
+                        <span className="nb-field-val">{nextBooking.addons_note}</span>
+                      </div>
+                    )}
+                    {nextBooking.additional_items?.map((item, i) => (
+                      <div className="nb-field" key={i}>
+                        <span className="nb-field-key">{item.description}</span>
+                        <span className="nb-field-val">₹{item.price}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-              <div className="review-box mb-3">
-                <h5 className="review-title">Booking Status</h5>
-                <p>{nextBooking.status}</p>
-              </div>
-              <div className="review-box mb-3">
-                <h5 className="review-title">Payment Details</h5>
-                <p><strong>Payment Mode:</strong> {nextBooking.payment_mode ? nextBooking.payment_mode.replace("_", " ").toUpperCase() : "N/A"}</p>
-                <p><strong>Total Amount:</strong> ₹{nextBooking.payment_total || "0"}</p>
-                <p><strong>Amount Paid:</strong> ₹{nextBooking.payment_paid || "0"}</p>
-                <p><strong>Balance:</strong> ₹{Math.max(0, (Number(nextBooking.payment_total) || 0) - (Number(nextBooking.payment_paid) || 0))}</p>
-                {nextBooking.payment_notes && <p><strong>Notes:</strong> {nextBooking.payment_notes}</p>}
+
+              {/* Payment */}
+              <div className="nb-section">
+                <p className="nb-section-label">Payment</p>
+                <div className="nb-payment-grid">
+                  <div className="nb-payment-cell nb-payment-cell--total">
+                    <span className="nb-payment-key">Total</span>
+                    <span className="nb-payment-val">₹{nextBooking.payment_total || 0}</span>
+                  </div>
+                  <div className="nb-payment-cell nb-payment-cell--paid">
+                    <span className="nb-payment-key">Paid</span>
+                    <span className="nb-payment-val">₹{nextBooking.payment_paid || 0}</span>
+                  </div>
+                  <div className="nb-payment-cell nb-payment-cell--balance">
+                    <span className="nb-payment-key">Balance</span>
+                    <span className="nb-payment-val">
+                      ₹{Math.max(0, (Number(nextBooking.payment_total) || 0) - (Number(nextBooking.payment_paid) || 0))}
+                    </span>
+                  </div>
+                </div>
+                {nextBooking.payment_mode && (
+                  <p className="nb-payment-mode">
+                    Mode: <strong>{nextBooking.payment_mode.replace("_", " ").toUpperCase()}</strong>
+                  </p>
+                )}
+                {nextBooking.payment_notes && (
+                  <p className="nb-payment-mode">Notes: {nextBooking.payment_notes}</p>
+                )}
               </div>
             </div>
           </div>

@@ -162,6 +162,13 @@ function formatCurrency(val) {
 }
 
 const AnalyticsSection = () => {
+  const [windowWidth, setWindowWidth] = React.useState(window.innerWidth);
+  React.useEffect(() => {
+    const handler = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  const isMobile = windowWidth <= 480;
   const [bookings, setBookings] = useState([]);
   const [packagePriceMap, setPackagePriceMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -284,11 +291,17 @@ const AnalyticsSection = () => {
         <ResponsiveContainer width="100%" height={260}>
           <BarChart
             data={monthlyRevenueData}
-            margin={{ top: 4, right: 16, left: 8, bottom: 40 }}
+            margin={{ top: 4, right: 16, left: isMobile ? 42 : 8, bottom: isMobile ? 50 : 40 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" interval={0} />
-            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: isMobile ? 9 : 11 }}
+              angle={-45}
+              textAnchor="end"
+              interval={isMobile ? 1 : 0}
+            />
+            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} width={isMobile ? 52 : 60} />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
@@ -311,7 +324,7 @@ const AnalyticsSection = () => {
                 );
               }}
             />
-            <Legend verticalAlign="top" wrapperStyle={{ fontSize: 11 }} />
+            {!isMobile && <Legend verticalAlign="top" wrapperStyle={{ fontSize: 11 }} />}
             {Object.keys(packagePriceMap).map((pkg, i, arr) => (
               <Bar
                 key={pkg}

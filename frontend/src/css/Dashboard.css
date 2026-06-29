@@ -550,6 +550,10 @@
 }
 
 @media (max-width: 480px) {
+  .dashboard-grid-analytics {
+    margin: 0 8px;
+  }
+
   .analytics-card {
     padding: 12px;
     border-radius: 10px;
@@ -558,6 +562,12 @@
   .analytics-card h6 {
     font-size: 0.82rem;
     margin-bottom: 10px;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .analytics-card h6 span {
+    display: none;
   }
 
   .analytics-revenue-card {
@@ -583,5 +593,331 @@
     width: 98%;
     padding: 14px;
     border-radius: 8px;
+  }
+}
+
+/* ── Next Booking Modal ── */
+.nb-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  width: min(560px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.nb-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #f5f0ff 0%, #faf8ff 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+.nb-modal-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #7c5cbf;
+  margin-bottom: 4px;
+}
+
+.nb-modal-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+
+.nb-modal-close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(124, 92, 191, 0.1);
+  color: #7c5cbf;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+}
+
+.nb-modal-close:hover {
+  background: rgba(124, 92, 191, 0.2);
+}
+
+.nb-modal-body {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Status/date chips row */
+.nb-info-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nb-info-chip {
+  flex: 1 1 auto;
+  min-width: 100px;
+  background: #f8f9ff;
+  border: 1px solid #ececf8;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nb-chip-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9b8fc0;
+}
+
+.nb-chip-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+/* Status badge */
+.nb-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  margin-top: 2px;
+}
+
+.nb-status--confirmed  { background: #d1fae5; color: #065f46; }
+.nb-status--pending    { background: #fef3c7; color: #92400e; }
+.nb-status--cancelled  { background: #fee2e2; color: #991b1b; }
+.nb-status--completed  { background: #dbeafe; color: #1e3a8a; }
+
+/* Sections */
+.nb-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.nb-section {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.nb-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #7c5cbf;
+  margin: 0 0 12px;
+}
+
+.nb-field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nb-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nb-field-key {
+  font-size: 0.8rem;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.nb-field-val {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-align: right;
+}
+
+/* Package card */
+.nb-package-section {
+  grid-column: span 2;
+}
+
+.nb-package-card {
+  background: linear-gradient(135deg, #f0ebff, #f8f5ff);
+  border: 1px solid #ddd4f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.nb-package-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.nb-package-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #4a2d9c;
+}
+
+.nb-package-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #7c5cbf;
+}
+
+.nb-package-desc {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Payment grid */
+.nb-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.nb-payment-cell {
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nb-payment-cell--total  { background: #f0f4ff; border: 1px solid #dde5ff; }
+.nb-payment-cell--paid   { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.nb-payment-cell--balance { background: #fff7ed; border: 1px solid #fed7aa; }
+
+.nb-payment-key {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.nb-payment-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.nb-payment-mode {
+  font-size: 0.82rem;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+/* Mobile — 480px */
+@media (max-width: 480px) {
+  .nb-modal {
+    width: 96vw;
+    border-radius: 16px;
+    max-height: 92vh;
+  }
+
+  .nb-modal-header {
+    padding: 16px 14px 14px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .nb-modal-title {
+    font-size: 1.1rem;
+  }
+
+  .nb-modal-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  /* Chips: stack to 2-per-row */
+  .nb-info-row {
+    gap: 8px;
+  }
+
+  .nb-info-chip {
+    min-width: calc(50% - 4px);
+    padding: 8px 12px;
+  }
+
+  /* Sections: always single col */
+  .nb-section-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .nb-package-section {
+    grid-column: span 1;
+  }
+
+  .nb-section {
+    padding: 12px;
+  }
+
+  /* Fields: stack key above value on very narrow */
+  .nb-field {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nb-field-val {
+    text-align: left;
+    font-size: 0.85rem;
+  }
+
+  /* Payment: keep 3-col but tighter */
+  .nb-payment-grid {
+    gap: 8px;
+  }
+
+  .nb-payment-cell {
+    padding: 10px 10px;
+  }
+
+  .nb-payment-key {
+    font-size: 0.65rem;
+  }
+
+  .nb-payment-val {
+    font-size: 0.88rem;
+  }
+
+  .nb-package-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
