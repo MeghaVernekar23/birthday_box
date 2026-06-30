@@ -366,6 +366,7 @@ def update_payment_detail(booking_id: int, booking_details: EditBookingDetails, 
 
         user = get_user_by_username(booking_details.updated_by, db)
         booking.payment_paid=booking_details.payment_paid
+        booking.payment_total=booking_details.payment_total
         booking.updated_at = datetime.now(timezone.utc)
         booking.updated_by = user.id
         

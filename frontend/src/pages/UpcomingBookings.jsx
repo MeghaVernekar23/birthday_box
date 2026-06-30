@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/UpcomingBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, CheckCircle } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -16,6 +16,7 @@ import {
   deleteBooking,
   fetchBookingById,
   updateBooking,
+  updatePayment,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
 
@@ -34,7 +35,7 @@ const formatEventDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const UpcomingBookingCard = ({ row, onEdit, onView, onDelete }) => {
+const UpcomingBookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid }) => {
   const ps = getPaymentStatus(row);
   return (
     <div className="booking-card booking-card--purple">
@@ -53,6 +54,9 @@ const UpcomingBookingCard = ({ row, onEdit, onView, onDelete }) => {
         <button className="btn btn-sm btn-primary" onClick={() => onEdit(row)}>Edit</button>
         <button className="btn btn-sm btn-secondary" onClick={() => onView(row)}>View</button>
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
+        {ps.key !== "paid" && (
+          <button className="btn btn-sm btn-success" onClick={() => onMarkPaid(row)}>Paid</button>
+        )}
       </div>
     </div>
   );
@@ -142,31 +146,43 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
-  const ActionButtons = ({ row }) => (
-    <div className="d-flex justify-content-center gap-3">
-      <span title="Edit Customer">
-        <Edit
-          className="action-icon text-primary"
-          size={18}
-          onClick={() => handleEditBooking(row)}
-        />
-      </span>
-      <span title="Delete Customer">
-        <Trash2
-          className="action-icon text-danger"
-          size={18}
-          onClick={() => handleDeleteBooking(row)}
-        />
-      </span>
-      <span title="View Bookings">
-        <Eye
-          className="action-icon text-info"
-          size={18}
-          onClick={() => handleViewBooking(row)}
-        />
-      </span>
-    </div>
-  );
+  const ActionButtons = ({ row }) => {
+    const alreadyPaid = getPaymentStatus(row).key === "paid";
+    return (
+      <div className="d-flex justify-content-center gap-3">
+        <span title="Edit Booking">
+          <Edit
+            className="action-icon text-primary"
+            size={18}
+            onClick={() => handleEditBooking(row)}
+          />
+        </span>
+        <span title="Delete Booking">
+          <Trash2
+            className="action-icon text-danger"
+            size={18}
+            onClick={() => handleDeleteBooking(row)}
+          />
+        </span>
+        <span title="View Details">
+          <Eye
+            className="action-icon text-info"
+            size={18}
+            onClick={() => handleViewBooking(row)}
+          />
+        </span>
+        {!alreadyPaid && (
+          <span title="Mark as Paid">
+            <CheckCircle
+              className="action-icon text-success"
+              size={18}
+              onClick={() => handleMarkPaid(row)}
+            />
+          </span>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchUpcomingBookings();
@@ -311,6 +327,35 @@ function Bookings() {
     }
   };
 
+  const handleMarkPaid = async (booking) => {
+    if (!window.confirm(`Mark "${booking.customer_name}" as fully paid?`)) return;
+    try {
+      const username = JSON.parse(user).username;
+      const [fullBooking, packages] = await Promise.all([
+        fetchBookingById(booking.booking_id),
+        fetchPackage(),
+      ]);
+      const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+      const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+      await updatePayment(booking.booking_id, {
+        ...fullBooking,
+        email: fullBooking.email ?? "",
+        address: fullBooking.address ?? "",
+        addons_note: fullBooking.addons_note ?? "",
+        payment_mode: fullBooking.payment_mode ?? "",
+        payment_notes: fullBooking.payment_notes ?? "",
+        created_by: fullBooking.created_by ?? "",
+        payment_total: fullAmount,
+        payment_paid: fullAmount,
+        updated_by: username,
+      });
+      fetchUpcomingBookings();
+    } catch (error) {
+      alert("Failed to mark as paid.");
+      console.error("Mark paid error:", error);
+    }
+  };
+
   const stats = useMemo(() => {
     const total = upcomingBookingData.length;
     const now = new Date();
@@ -336,9 +381,10 @@ function Bookings() {
         onEdit={handleEditBooking}
         onView={handleViewBooking}
         onDelete={handleDeleteBooking}
+        onMarkPaid={handleMarkPaid}
       />
     ),
-    [handleEditBooking, handleViewBooking, handleDeleteBooking]
+    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid]
   );
 
   return (
