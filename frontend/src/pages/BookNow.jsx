@@ -466,7 +466,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
 
           {/* NAME */}
           <div className="bn-field" id="field-name">
-            <label className="bn-label">NAME <span className="bn-req">*</span></label>
+            <label className="bn-label">CELEBRATING PERSON NAME <span className="bn-req">*</span></label>
             <input
               className={`bn-input ${errors.name ? "bn-input-err" : ""}`}
               type="text"
