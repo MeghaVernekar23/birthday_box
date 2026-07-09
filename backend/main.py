@@ -9,14 +9,21 @@ from api.customers import customer_router
 from api.holidays import holidays_router
 from api.health import health_router
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from db.sessions import create_tables
+from services.telegram_service import run_daily_birthday_reminders
+from services.scheduler_service import start_scheduler, stop_scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     create_tables()
+    start_scheduler()
+    reminder_task = asyncio.create_task(run_daily_birthday_reminders())
     yield
+    reminder_task.cancel()
+    stop_scheduler()
 
 app = FastAPI(
     title="Birthday Box API",

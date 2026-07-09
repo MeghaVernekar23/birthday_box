@@ -1,4 +1,3 @@
-import asyncio
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
@@ -12,7 +11,8 @@ from utils.db_utils import get_active_celebration_types, get_active_packages, ge
 from typing import List
 from sqlalchemy import func
 from sqlalchemy import and_
-from services.telegram_service import notify_new_booking, schedule_reminders_async as _schedule_reminders_async
+from services.telegram_service import notify_new_booking
+from services.scheduler_service import schedule_booking_reminders
 
 
 def get_celebration_type(db: Session) -> List[CelebrationType]:
@@ -236,7 +236,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             "status": bookingDetails.status,
         }
 
-        # Send immediate confirmation and schedule reminders (non-blocking)
+        # Send immediate confirmation and schedule persistent reminders via APScheduler
         try:
             import threading
             for fmt in ("%H:%M", "%I:%M %p", "%I:%M%p"):
@@ -248,17 +248,14 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             else:
                 slot_time = datetime.strptime("00:00", "%H:%M").time()
             event_datetime = datetime.combine(bookingDetails.event_date, slot_time, tzinfo=_IST)
+            booking_data["booking_id"] = booking.booking_id
 
-            def _fire_and_forget():
-                try:
-                    notify_new_booking(booking_data)
-                    asyncio.run(_schedule_reminders_async(booking_data, event_datetime))
-                except Exception as e:
-                    print(f"Telegram notification error: {e}")
-
-            threading.Thread(target=_fire_and_forget, daemon=True).start()
+            threading.Thread(
+                target=notify_new_booking, args=(booking_data,), daemon=True
+            ).start()
+            schedule_booking_reminders(booking_data, event_datetime)
         except Exception as telegram_err:
-            print(f"Telegram thread error (non-fatal): {telegram_err}")
+            print(f"Telegram/scheduler error (non-fatal): {telegram_err}")
 
         return {
             "message": "Booking created successfully",
