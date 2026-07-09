@@ -70,17 +70,17 @@ function getPackageRevenueData(bookings, packagePriceMap) {
   const now = new Date();
   const thisYear = now.getFullYear();
   const thisMonth = now.getMonth();
-  const counts = {};
+  const data = {};
   bookings.forEach((b) => {
     if (!b.event_date) return;
     const [y, m] = b.event_date.split("-").map(Number);
     if (y !== thisYear || m - 1 !== thisMonth) return;
     const pkg = b.package_name || "Unknown";
-    counts[pkg] = (counts[pkg] || 0) + 1;
+    if (!data[pkg]) data[pkg] = { name: pkg, revenue: 0, count: 0 };
+    data[pkg].revenue += packagePriceMap[pkg] || 0;
+    data[pkg].count += 1;
   });
-  return Object.entries(counts)
-    .map(([name, count]) => ({ name, revenue: count * (packagePriceMap[name] || 0), count }))
-    .sort((a, b) => b.revenue - a.revenue);
+  return Object.values(data).sort((a, b) => b.revenue - a.revenue);
 }
 
 function getThisMonthRevenue(bookings, packagePriceMap) {
@@ -139,6 +139,11 @@ function getDailyComparisonData(bookings) {
 
   bookings.forEach((b) => {
     if (!b.created_at) return;
+    // Exclude migrated historical bookings where event already passed before booking was entered.
+    if (b.event_date && b.created_at) {
+      const createdDay = b.created_at.split("T")[0];
+      if (b.event_date < createdDay) return;
+    }
     const date = new Date(b.created_at);
     const y = date.getFullYear();
     const mo = date.getMonth();
@@ -207,12 +212,12 @@ const AnalyticsSection = () => {
     () =>
       bookings.reduce(
         (acc, b) => ({
-          totalBilled: acc.totalBilled + (b.payment_total || 0),
-          totalCollected: acc.totalCollected + (b.payment_paid || 0),
+          totalBilled: acc.totalBilled + (packagePriceMap[b.package_name] || 0),
+          totalCollected: acc.totalCollected + (packagePriceMap[b.package_name] || 0),
         }),
         { totalBilled: 0, totalCollected: 0 }
       ),
-    [bookings]
+    [bookings, packagePriceMap]
   );
   const totalPending = Math.max(0, totalBilled - totalCollected);
 
