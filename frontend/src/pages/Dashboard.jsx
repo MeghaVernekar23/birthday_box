@@ -1,9 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import BookingSummary from "./BookingTakenSummary";
 import NextBooking from "./NextBooking";
 import CelebrationAndPackage from "./CelebrationAndPackage";
 import "../css/Dashboard.css";
 import AnalyticsSection from "./AnalyticsSection";
+import { fetchBookingsByFilter } from "../services/bookingServices";
+
+function TotalBookingsCard() {
+  const [total, setTotal] = useState(null);
+
+  useEffect(() => {
+    fetchBookingsByFilter("all")
+      .then((data) => setTotal(Array.isArray(data) ? data.length : 0))
+      .catch(() => setTotal(0));
+  }, []);
+
+  return (
+    <div className="dashboard-card dashboard-card--blue shadow-sm">
+      {total === null ? (
+        <div className="card-spinner-wrapper">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      ) : (
+        <div className="card-content">
+          <div className="card-header">
+            <div>
+              <h6 className="label">Total Bookings</h6>
+              <h2 className="count">{total}</h2>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -49,6 +81,9 @@ function Dashboard() {
         </div>
         <div className="dashboard-card-col">
           <CelebrationAndPackage />
+        </div>
+        <div className="dashboard-card-col">
+          <TotalBookingsCard />
         </div>
       </div>
 
