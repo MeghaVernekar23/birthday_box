@@ -19,7 +19,7 @@ const BAR_COLORS = ["#4f8ef7","#7c5cbf","#2bba8f","#f5a623","#e8603c","#a0c4ff"]
 function getMonthlyData(bookings) {
   const now = new Date();
   const counts = {};
-  for (let i = 11; i >= 0; i--) {
+  for (let i = 12; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     counts[key] = { label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, count: 0 };
@@ -100,7 +100,7 @@ function getThisMonthRevenue(bookings, packagePriceMap) {
 function getMonthlyRevenueData(bookings, packagePriceMap) {
   const now = new Date();
   const rows = {};
-  for (let i = 11; i >= 0; i--) {
+  for (let i = 12; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     rows[key] = { label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}` };
