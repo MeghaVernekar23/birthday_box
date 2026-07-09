@@ -7,26 +7,26 @@ class AdditionalItem(BaseModel):
     price: float
 class BookingDetails(BaseModel):
     booking_id: int
-    customer_name: str
-    phone_number: str
-    email: str
-    address: str
+    customer_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
     event_date: date
-    time_slot: str
+    time_slot: Optional[str] = None
     celebration_id: int
     package_id: int
-    celebration_name: str
-    package_name: str
-    addons_note: str
-    status: str
-    payment_mode: str
-    payment_total: float
-    payment_paid: float
-    payment_notes: str
-    created_by: str
-    updated_by: Optional[str]  
-    created_at: datetime 
-    updated_at: Optional[datetime] 
+    celebration_name: Optional[str] = None
+    package_name: Optional[str] = None
+    addons_note: Optional[str] = None
+    status: Optional[str] = None
+    payment_mode: Optional[str] = None
+    payment_total: Optional[float] = 0.0
+    payment_paid: Optional[float] = 0.0
+    payment_notes: Optional[str] = None
+    created_by: Optional[str] = None
+    updated_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     additional_items: Optional[List[AdditionalItem]] = []
 
     class Config:
