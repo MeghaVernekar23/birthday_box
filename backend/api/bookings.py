@@ -6,6 +6,7 @@ from db.models.booking_pydantic_model import (
     BookingDetails,
     CelebrationDetails,
     PackageDetails,
+    EditPackageDetails,
     AddBookingDetails,
     EditBookingDetails,
     CustomerBookingSummary
@@ -15,6 +16,7 @@ from services.bookings_service import (
     get_bookings_details,
     get_celebration_type,
     get_package,
+    update_package,
     add_booking_details,
     delete_booking_detail,
     get_booking_details_by_id,
@@ -158,6 +160,23 @@ def get_next_booking(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception:
         raise HTTPException(status_code=500, detail=str(e))    
+
+
+@bookings_router.put(
+    "/package/{package_id}",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Update a package by ID.",
+)
+def update_package_details(
+    package_id: int,
+    package_details: EditPackageDetails,
+    db: Session = Depends(get_db),
+) -> dict:
+    try:
+        return update_package(package_id=package_id, package_details=package_details, db=db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @bookings_router.get(

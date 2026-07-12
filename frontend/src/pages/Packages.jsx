@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../components/Datatable";
-import { fetchPackage } from "../services/bookingServices";
+import { fetchPackage, updatePackage } from "../services/bookingServices";
 import "../css/Packages.css";
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
+  const [editingPkg, setEditingPkg] = useState(null);
+  const [form, setForm] = useState({ package_name: "", description: "", price: "" });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchPackageData();
@@ -20,11 +23,44 @@ const Packages = () => {
     }
   };
 
+  const openEdit = (pkg) => {
+    setEditingPkg(pkg);
+    setForm({
+      package_name: pkg.package_name,
+      description: pkg.description || "",
+      price: pkg.price,
+    });
+  };
+
+  const closeEdit = () => {
+    setEditingPkg(null);
+    setForm({ package_name: "", description: "", price: "" });
+  };
+
+  const handleSave = async () => {
+    if (!form.package_name.trim()) return alert("Package name required.");
+    if (form.price === "" || isNaN(Number(form.price))) return alert("Valid price required.");
+    setSaving(true);
+    try {
+      await updatePackage(editingPkg.package_id, {
+        package_name: form.package_name.trim(),
+        description: form.description.trim(),
+        price: Number(form.price),
+      });
+      closeEdit();
+      fetchPackageData();
+    } catch (err) {
+      alert("Failed to update package.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const columns = [
     { key: "package_id", label: "ID" },
     { key: "package_name", label: "Package Name" },
     { key: "description", label: "Description" },
-    { key: "price", label: "Price" },
+    { key: "price", label: "Price (₹)" },
   ];
 
   return (
@@ -33,9 +69,51 @@ const Packages = () => {
         title="Packages"
         columns={columns}
         data={packages}
-        actions={[]}
+        actions={[({ row }) => (
+          <button className="pkg-btn-edit-row" onClick={() => openEdit(row)}>
+            Edit
+          </button>
+        )]}
         searchableFields={["package_name", "description"]}
       />
+
+      {editingPkg && (
+        <div className="pkg-modal-overlay" onClick={closeEdit}>
+          <div className="pkg-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Edit Package</h3>
+            <label>
+              Package Name
+              <input
+                value={form.package_name}
+                onChange={(e) => setForm({ ...form, package_name: e.target.value })}
+              />
+            </label>
+            <label>
+              Description
+              <textarea
+                rows={3}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </label>
+            <label>
+              Price (₹)
+              <input
+                type="number"
+                min="0"
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+              />
+            </label>
+            <div className="pkg-modal-actions">
+              <button className="pkg-btn-cancel" onClick={closeEdit}>Cancel</button>
+              <button className="pkg-btn-save" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

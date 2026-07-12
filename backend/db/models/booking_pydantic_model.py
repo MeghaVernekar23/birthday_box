@@ -44,7 +44,13 @@ class PackageDetails(BaseModel):
     package_name: str
     description: str
     price: int
-    is_active: int    
+    is_active: int
+
+
+class EditPackageDetails(BaseModel):
+    package_name: str
+    description: Optional[str] = ""
+    price: int
     
 
 class AddBookingDetails(BaseModel):

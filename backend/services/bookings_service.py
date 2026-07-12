@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, aliased
 from datetime import date
 from db.models.sqlalchemy_models import Booking, Customer, Packages, Users, CelebrationType
-from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails, AddBookingDetails, CustomerBookingSummary
+from db.models.booking_pydantic_model import BookingDetails, EditBookingDetails, AddBookingDetails, CustomerBookingSummary, EditPackageDetails
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 from fastapi import HTTPException
 from datetime import datetime, timezone
@@ -44,7 +44,19 @@ def get_package(db: Session) -> List[Packages]:
     try:
         return get_active_packages(db)
     except Exception as e:
-        raise Exception(f"An error occurred while fetching package details: {e}")    
+        raise Exception(f"An error occurred while fetching package details: {e}")
+
+
+def update_package(package_id: int, package_details: EditPackageDetails, db: Session) -> dict:
+    pkg = db.query(Packages).filter(Packages.package_id == package_id).first()
+    if not pkg:
+        raise Exception(f"Package {package_id} not found")
+    pkg.package_name = package_details.package_name
+    pkg.description = package_details.description or ""
+    pkg.price = package_details.price
+    db.commit()
+    db.refresh(pkg)
+    return {"message": "Package updated successfully"}    
 
 
 def get_bookings_details(filter: str,  db: Session) -> List[BookingDetails]:

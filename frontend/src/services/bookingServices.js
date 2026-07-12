@@ -72,6 +72,14 @@ export const fetchPackage = () => {
     });
 };
 
+export const updatePackage = (packageId, formData) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/package/${packageId}`,
+        method: "PUT",
+        data: formData,
+    });
+};
+
 export const fetchNextBooking = () => {
     return apiRequest({
         url: `${BASE_URL}/bookings/next-booking`,

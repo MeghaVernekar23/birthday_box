@@ -8,3 +8,100 @@
     padding: 1rem 0.75rem;
   }
 }
+
+.pkg-btn-edit-row {
+  padding: 0.3rem 0.9rem;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── EDIT MODAL ── */
+.pkg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pkg-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.pkg-modal h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.pkg-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.pkg-modal input,
+.pkg-modal textarea {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pkg-modal input:focus,
+.pkg-modal textarea:focus {
+  border-color: #e91e8c;
+}
+
+.pkg-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.pkg-btn-cancel {
+  padding: 0.55rem 1.2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pkg-btn-save {
+  padding: 0.55rem 1.4rem;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pkg-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
