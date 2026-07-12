@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
+import logoPng from "../images/logo.png";
 import imgScreen from "../images/screen.jpeg";
 import imgDoll from "../images/doll.jpeg";
 import imgDeco from "../images/deco.JPG";
@@ -379,7 +380,7 @@ export default function Home() {
 
       {/* ── FOOTER ── */}
       <footer className="bb-footer">
-        <img src={logo} alt="Birthday Box" className="bb-footer-logo" />
+        <img src={logoPng} alt="Birthday Box" className="bb-footer-logo" />
         <div className="bb-footer-center">
           <p>📍 MIG5, Nrupatunga Road, Near Bus Depo Circle, Kuvempunagar, Mysuru – 570 023</p>
           <p>📞 <a href="tel:+918971543330">+91 89715 43330</a></p>
