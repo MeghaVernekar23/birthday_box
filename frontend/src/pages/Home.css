@@ -1065,6 +1065,14 @@ body {
 
   .bb-stats { grid-template-columns: repeat(2, 1fr); }
 
+  .bb-packages {
+    padding: 4rem 5%;
+  }
+
+  .bb-packages-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .bb-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
   .bb-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.2); }
   .bb-stat:nth-last-child(-n+2) { border-bottom: none; }
@@ -1125,6 +1133,18 @@ body {
   .bb-services-grid,
   .bb-testi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .bb-packages {
+    padding: 3.5rem 1.2rem;
+  }
+
+  .bb-packages-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bb-pkg-img-wrap {
+    height: 200px;
   }
 
   .bb-venue-section {
