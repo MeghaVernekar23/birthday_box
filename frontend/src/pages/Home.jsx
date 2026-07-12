@@ -1,7 +1,86 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
+import imgScreen from "../images/screen.jpeg";
+import imgDoll from "../images/doll.jpeg";
+import imgDeco from "../images/deco.JPG";
+import imgHall from "../images/hall.JPG";
+import imgHallOther from "../images/hall_other.JPG";
+import imgSitting from "../images/sitting.JPG";
 import "./Home.css";
+import { fetchPackage } from "../services/bookingServices";
+
+// Parse "BASIC = BALLOON DECORATION + MUSIC = 999/-" into { name, features, price }
+function parsePackageName(raw) {
+  const parts = raw.split(" = ").map((s) => s.trim());
+  if (parts.length >= 3) {
+    const name = parts[0];
+    const featureStr = parts.slice(1, -1).join(" ");
+    const priceStr = parts[parts.length - 1];
+    const price = priceStr.replace(/[^\d]/g, "");
+    const features = featureStr.split("+").map((f) => f.trim()).filter(Boolean);
+    return { name, features, price };
+  }
+  return { name: raw, features: [], price: "" };
+}
+
+const EXCLUDED_PKG_IDS = [9, 13, 16];
+
+const PKG_DESC = {
+  1:  "Perfect for intimate get-togethers — a cosy setup to kick off your celebration.",
+  2:  "Our most popular starter — balloons, big screen, and great music all in one.",
+  3:  "Step it up with fun games and a surprise gift for the guest of honour.",
+  4:  "Add a dramatic fog entry to your Classic Package for an unforgettable entrance.",
+  5:  "Everything in Dynamic plus a delicious half-kg pastry to sweeten the moment.",
+  6:  "A dazzling fire entry crowns this premium package — pure golden vibes.",
+  7:  "Our ultimate package — drinks, a full photoshoot, and every luxury included.",
+  8:  "Catch every boundary live on our big screen with your squad — pure match-day magic.",
+  11: "An upgraded Dynamic experience with enhanced décor and added perks.",
+  14: "Pair our BASIC package with a professionally edited Instagram Reel — memories made shareable.",
+};
+
+function PackageCard({ pkg, desc, images, startIdx, onBook }) {
+  const [imgIdx, setImgIdx] = useState(startIdx % images.length);
+  const { name, features } = parsePackageName(pkg.package_name);
+  const price = pkg.price;
+
+  const prev = (e) => { e.stopPropagation(); setImgIdx((i) => (i - 1 + images.length) % images.length); };
+  const next = (e) => { e.stopPropagation(); setImgIdx((i) => (i + 1) % images.length); };
+
+  return (
+    <div className="bb-pkg-card">
+      <div className="bb-pkg-img-wrap">
+        <img src={images[imgIdx]} alt={name} className="bb-pkg-img" />
+        <button className="bb-pkg-arrow bb-pkg-arrow-left" onClick={prev}>‹</button>
+        <button className="bb-pkg-arrow bb-pkg-arrow-right" onClick={next}>›</button>
+        <div className="bb-pkg-dots">
+          {images.map((_, i) => (
+            <span key={i} className={`bb-pkg-dot${i === imgIdx ? " active" : ""}`} onClick={(e) => { e.stopPropagation(); setImgIdx(i); }} />
+          ))}
+        </div>
+        <div className="bb-pkg-rating">⭐ 4.9</div>
+      </div>
+      <div className="bb-pkg-body">
+        <h3 className="bb-pkg-name">{name}</h3>
+        {desc && <p className="bb-pkg-desc">{desc}</p>}
+        {price > 0 && (
+          <div className="bb-pkg-price">
+            <span className="bb-pkg-currency">₹</span>
+            <span className="bb-pkg-amount">{price.toLocaleString("en-IN")}</span>
+          </div>
+        )}
+        {features.length > 0 && (
+          <ul className="bb-pkg-features">
+            {features.map((f, i) => (
+              <li key={i}><span className="bb-pkg-check">✓</span>{f}</li>
+            ))}
+          </ul>
+        )}
+        <button className="bb-pkg-btn" onClick={onBook}>Book This Package</button>
+      </div>
+    </div>
+  );
+}
 
 const services = [
   {
@@ -48,8 +127,17 @@ const testimonials = [
   },
 ];
 
+const venueImages = [imgScreen, imgDeco, imgSitting, imgHall, imgHallOther, imgDoll];
+
 export default function Home() {
   const navigate = useNavigate();
+  const [packages, setPackages] = useState([]);
+
+  useEffect(() => {
+    fetchPackage()
+      .then((res) => setPackages(Array.isArray(res) ? res : []))
+      .catch((err) => console.error("Failed to load packages:", err));
+  }, []);
 
   return (
     <div className="bb-root">
@@ -90,7 +178,7 @@ export default function Home() {
             </p>
             <div className="bb-hero-btns">
               <button className="bb-btn-primary" onClick={() => navigate("/booknow")}>Book Your Slot</button>
-              <a href="#services" className="bb-btn-ghost">See Packages</a>
+              <a href="#packages" className="bb-btn-ghost">See Packages</a>
             </div>
           </div>
           <div className="bb-hero-card-wrap">
@@ -140,6 +228,34 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── PACKAGES ── */}
+      <section className="bb-packages" id="packages">
+        <div className="bb-section-head">
+          <span className="bb-pill bb-pill-dark">Our Packages</span>
+          <h2>Choose Your <span className="bb-gradient-text">Celebration Package</span></h2>
+          <p>Simple, transparent pricing. Pick the package that fits your occasion.</p>
+        </div>
+        {packages.length === 0 ? (
+          <p className="bb-packages-empty">Loading packages…</p>
+        ) : (
+          <div className="bb-packages-grid">
+            {[...packages]
+              .filter((pkg) => !EXCLUDED_PKG_IDS.includes(pkg.package_id))
+              .sort((a, b) => a.price - b.price)
+              .map((pkg, idx) => (
+                <PackageCard
+                  key={pkg.package_id}
+                  pkg={pkg}
+                  desc={PKG_DESC[pkg.package_id] || ""}
+                  images={venueImages}
+                  startIdx={idx}
+                  onBook={() => navigate("/booknow")}
+                />
+              ))}
+          </div>
+        )}
+      </section>
+
       {/* ── VENUE ── */}
       <section className="bb-venue-section" id="venue">
       <div className="bb-venue">
@@ -148,20 +264,20 @@ export default function Home() {
             <div className="bb-venue-badge">🎈 Now Booking</div>
             <div className="bb-venue-tiles">
               <div className="vt vt1">
-                <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80" alt="Birthday Setup" />
+                <img src={imgScreen} alt="Birthday Setup" />
                 <span>Birthday Setup</span>
               </div>
               <div className="vt vt2">
-                <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=400&q=80" alt="IPL Night" />
-                <span>IPL Night</span>
+                <img src={imgDeco} alt="Balloon Décor" />
+                <span>Balloon Décor</span>
               </div>
               <div className="vt vt3">
-                <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=80" alt="Anniversary" />
-                <span>Anniversary</span>
+                <img src={imgSitting} alt="Seating Area" />
+                <span>Seating Area</span>
               </div>
               <div className="vt vt4">
-                <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&q=80" alt="Baby Shower" />
-                <span>Baby Shower</span>
+                <img src={imgHall} alt="Toy Corner" />
+                <span>Toy Corner</span>
               </div>
             </div>
           </div>
@@ -196,24 +312,20 @@ export default function Home() {
         </div>
         <div className="bb-gallery-grid">
           <div className="bb-gallery-item bb-gallery-tall">
-            <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" alt="Birthday celebration" />
-            <div className="bb-gallery-overlay"><span>🎂 Birthday Setup</span></div>
+            <img src={imgDeco} alt="Balloon Décor" />
+            <div className="bb-gallery-overlay"><span>🎂 Balloon Décor</span></div>
           </div>
           <div className="bb-gallery-item">
-            <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&q=80" alt="Celebration decor" />
-            <div className="bb-gallery-overlay"><span>🎊 Party Décor</span></div>
+            <img src={imgScreen} alt="Birthday + IPL Night" />
+            <div className="bb-gallery-overlay"><span>🏏 IPL Night</span></div>
           </div>
           <div className="bb-gallery-item">
-            <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80" alt="Anniversary dinner" />
-            <div className="bb-gallery-overlay"><span>💍 Anniversary</span></div>
+            <img src={imgSitting} alt="Seating Area" />
+            <div className="bb-gallery-overlay"><span>✨ Seating Ambience</span></div>
           </div>
           <div className="bb-gallery-item bb-gallery-wide">
-            <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=800&q=80" alt="Cricket stadium IPL" />
-            <div className="bb-gallery-overlay"><span>🏏 IPL Night with the Crew</span></div>
-          </div>
-          <div className="bb-gallery-item">
-            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&q=80" alt="Party lights" />
-            <div className="bb-gallery-overlay"><span>✨ Ambience</span></div>
+            <img src={imgHallOther} alt="Venue Hall" />
+            <div className="bb-gallery-overlay"><span>🎊 The Venue</span></div>
           </div>
         </div>
         <div className="bb-gallery-cta">
