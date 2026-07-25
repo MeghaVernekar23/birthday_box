@@ -145,7 +145,7 @@ export default function Home() {
 
       {/* ── NAVBAR ── */}
       <header className="bb-nav">
-        <img src={logo} alt="Birthday Box" className="bb-nav-logo" />
+        <img src={logoPng} alt="Birthday Box" className="bb-nav-logo" />
         <nav className="bb-nav-links">
           <a href="#services">Services</a>
           <a href="#venue">Venue</a>
