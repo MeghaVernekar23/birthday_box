@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/OlderBookings.css";
 import "../css/BookingCards.css";
-import { Eye, Trash2, X } from "lucide-react";
+import { Eye, Trash2, X, CheckCircle } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 
@@ -11,6 +11,8 @@ import {
   fetchBookingsByFilter,
   fetchBookingById,
   deleteBooking,
+  updatePayment,
+  fetchPackage,
 } from "../services/bookingServices";
 
 const MONTHS = [
@@ -33,7 +35,7 @@ const formatEventDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
-const OlderBookingCard = ({ row, onView, onDelete }) => {
+const OlderBookingCard = ({ row, onView, onDelete, onMarkPaid }) => {
   const ps = getPaymentStatus(row);
   return (
     <div className="booking-card booking-card--gray">
@@ -50,6 +52,9 @@ const OlderBookingCard = ({ row, onView, onDelete }) => {
       </div>
       <div className="booking-card__actions">
         <button className="btn btn-sm btn-secondary" onClick={() => onView(row)}>View</button>
+        {ps.key !== "paid" && (
+          <button className="btn btn-sm btn-success" onClick={() => onMarkPaid(row)}>Paid</button>
+        )}
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
       </div>
     </div>
@@ -59,6 +64,9 @@ const OlderBookingCard = ({ row, onView, onDelete }) => {
 function Bookings() {
   const [popupView, setPopupView] = useState({ visible: false, booking: null });
   const [popupDelete, setPopupDelete] = useState({ visible: false, booking: null });
+  const [popupMarkPaid, setPopupMarkPaid] = useState({ visible: false, booking: null });
+  const [bulkPaidLoading, setBulkPaidLoading] = useState(false);
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const [olderBookingData, setOlderBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,20 +86,30 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
-  const ActionView = ({ row }) => (
-    <div className="d-flex justify-content-center gap-3">
-      <Eye
-        className="action-icon text-info"
-        size={18}
-        onClick={() => handleViewBooking(row)}
-      />
-      <Trash2
-        className="action-icon text-danger"
-        size={18}
-        onClick={() => handleDeleteBooking(row)}
-      />
-    </div>
-  );
+  const ActionView = ({ row }) => {
+    const ps = getPaymentStatus(row);
+    return (
+      <div className="d-flex justify-content-center gap-3">
+        <Eye
+          className="action-icon text-info"
+          size={18}
+          onClick={() => handleViewBooking(row)}
+        />
+        {ps.key !== "paid" && (
+          <CheckCircle
+            className="action-icon text-success"
+            size={18}
+            onClick={() => handleMarkPaid(row)}
+          />
+        )}
+        <Trash2
+          className="action-icon text-danger"
+          size={18}
+          onClick={() => handleDeleteBooking(row)}
+        />
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchOlderBookings();
@@ -133,6 +151,77 @@ function Bookings() {
 
   const cancelDelete = () => {
     setPopupDelete({ visible: false, booking: null });
+  };
+
+  const handleMarkPaid = (booking) => {
+    setPopupMarkPaid({ visible: true, booking });
+  };
+
+  const confirmMarkPaid = async () => {
+    try {
+      const user = localStorage.getItem("current_user");
+      const username = user ? JSON.parse(user).username : null;
+      const [fullBooking, packages] = await Promise.all([
+        fetchBookingById(popupMarkPaid.booking.booking_id),
+        fetchPackage(),
+      ]);
+      const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+      const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+      await updatePayment(popupMarkPaid.booking.booking_id, {
+        ...fullBooking,
+        email: fullBooking.email ?? "",
+        address: fullBooking.address ?? "",
+        addons_note: fullBooking.addons_note ?? "",
+        payment_mode: fullBooking.payment_mode ?? "cash",
+        payment_notes: fullBooking.payment_notes ?? "",
+        created_by: fullBooking.created_by ?? "",
+        payment_total: fullAmount,
+        payment_paid: fullAmount,
+        updated_by: username,
+      });
+      setPopupMarkPaid({ visible: false, booking: null });
+      fetchOlderBookings();
+    } catch (error) {
+      console.error("Mark paid failed:", error);
+      alert("Failed to update payment. Please try again.");
+      setPopupMarkPaid({ visible: false, booking: null });
+    }
+  };
+
+  const cancelMarkPaid = () => {
+    setPopupMarkPaid({ visible: false, booking: null });
+  };
+
+  const confirmBulkMarkPaid = async () => {
+    setShowBulkConfirm(false);
+    setBulkPaidLoading(true);
+    const user = localStorage.getItem("current_user");
+    const username = user ? JSON.parse(user).username : null;
+    const unpaid = filteredData.filter((b) => getPaymentStatus(b).key !== "paid");
+    const packages = await fetchPackage();
+    for (const booking of unpaid) {
+      try {
+        const fullBooking = await fetchBookingById(booking.booking_id);
+        const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+        const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+        await updatePayment(fullBooking.booking_id, {
+          ...fullBooking,
+          email: fullBooking.email ?? "",
+          address: fullBooking.address ?? "",
+          addons_note: fullBooking.addons_note ?? "",
+          payment_mode: fullBooking.payment_mode ?? "cash",
+          payment_notes: fullBooking.payment_notes ?? "",
+          created_by: fullBooking.created_by ?? "",
+          payment_total: fullAmount,
+          payment_paid: fullAmount,
+          updated_by: username,
+        });
+      } catch (e) {
+        console.error(`Failed for booking ${booking.booking_id}:`, e);
+      }
+    }
+    setBulkPaidLoading(false);
+    fetchOlderBookings();
   };
 
   // Unique years from data for year dropdown
@@ -185,6 +274,7 @@ function Bookings() {
         row={row}
         onView={handleViewBooking}
         onDelete={handleDeleteBooking}
+        onMarkPaid={handleMarkPaid}
       />
     ),
     [handleViewBooking, handleDeleteBooking]
@@ -197,19 +287,31 @@ function Bookings() {
         <p className="page-date">
           {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
-        <div className="bookings-stat-chips">
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--gray" />
-            {hasFilter ? "Filtered" : "Total"}: {stats.total}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--green" />
-            Paid: {stats.paid}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--amber" />
-            Outstanding: {stats.unpaid}
-          </span>
+        <div className="bookings-header-row">
+          <div className="bookings-stat-chips">
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--gray" />
+              {hasFilter ? "Filtered" : "Total"}: {stats.total}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--green" />
+              Paid: {stats.paid}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--amber" />
+              Outstanding: {stats.unpaid}
+            </span>
+          </div>
+          {stats.unpaid > 0 && (
+            <button
+              className="bk-bulk-paid-btn"
+              onClick={() => setShowBulkConfirm(true)}
+              disabled={bulkPaidLoading}
+            >
+              <CheckCircle size={14} />
+              {bulkPaidLoading ? "Updating..." : `Mark All as Paid (${stats.unpaid})`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -294,6 +396,22 @@ function Bookings() {
           message={`Are you sure you want to delete the booking for ${popupDelete.booking.customer_name}?`}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      )}
+
+      {popupMarkPaid.visible && (
+        <NotificationPopup
+          message={`Mark booking for ${popupMarkPaid.booking.customer_name} as fully paid?`}
+          onConfirm={confirmMarkPaid}
+          onCancel={cancelMarkPaid}
+        />
+      )}
+
+      {showBulkConfirm && (
+        <NotificationPopup
+          message={`Mark all ${stats.unpaid} outstanding booking${stats.unpaid > 1 ? "s" : ""} as fully paid?`}
+          onConfirm={confirmBulkMarkPaid}
+          onCancel={() => setShowBulkConfirm(false)}
         />
       )}
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/TodaysBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye, X } from "lucide-react";
+import { Edit, Trash2, Eye, X, CheckCircle } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -16,6 +16,7 @@ import {
   deleteBooking,
   fetchBookingById,
   updateBooking,
+  updatePayment,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
 
@@ -34,7 +35,7 @@ const formatEventDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const BookingCard = ({ row, onEdit, onView, onDelete }) => {
+const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid }) => {
   const ps = getPaymentStatus(row);
   return (
     <div className="booking-card booking-card--blue">
@@ -53,6 +54,9 @@ const BookingCard = ({ row, onEdit, onView, onDelete }) => {
         <button className="btn btn-sm btn-primary" onClick={() => onEdit(row)}>Edit</button>
         <button className="btn btn-sm btn-secondary" onClick={() => onView(row)}>View</button>
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
+        {ps.key !== "paid" && (
+          <button className="btn btn-sm btn-success" onClick={() => onMarkPaid(row)}>Paid</button>
+        )}
       </div>
     </div>
   );
@@ -79,13 +83,12 @@ function Bookings() {
 
   const [editingBookingId, setEditingBookingId] = useState(null);
 
-  const [popupDelete, setPopupDelete] = useState({
-    visible: false,
-    booking: null,
-  });
+  const [popupDelete, setPopupDelete] = useState({ visible: false, booking: null });
   const [popupEdit, setPopupEdit] = useState({ visible: false, booking: null });
-
   const [popupView, setPopupView] = useState({ visible: false, booking: null });
+  const [popupMarkPaid, setPopupMarkPaid] = useState({ visible: false, booking: null });
+  const [bulkPaidLoading, setBulkPaidLoading] = useState(false);
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
   const [holidayDates, setHolidayDates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -148,31 +151,27 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
-  const ActionButtons = ({ row }) => (
-    <div className="d-flex justify-content-center gap-3">
-      <span title="Edit Customer">
-        <Edit
-          className="action-icon text-primary"
-          size={18}
-          onClick={() => handleEditBooking(row)}
-        />
-      </span>
-      <span title="Delete Customer">
-        <Trash2
-          className="action-icon text-danger"
-          size={18}
-          onClick={() => handleDeleteBooking(row)}
-        />
-      </span>
-      <span title="View Bookings">
-        <Eye
-          className="action-icon text-info"
-          size={18}
-          onClick={() => handleViewBooking(row)}
-        />
-      </span>
-    </div>
-  );
+  const ActionButtons = ({ row }) => {
+    const alreadyPaid = getPaymentStatus(row).key === "paid";
+    return (
+      <div className="d-flex justify-content-center gap-3">
+        <span title="Edit Booking">
+          <Edit className="action-icon text-primary" size={18} onClick={() => handleEditBooking(row)} />
+        </span>
+        <span title="Delete Booking">
+          <Trash2 className="action-icon text-danger" size={18} onClick={() => handleDeleteBooking(row)} />
+        </span>
+        <span title="View Booking">
+          <Eye className="action-icon text-info" size={18} onClick={() => handleViewBooking(row)} />
+        </span>
+        {!alreadyPaid && (
+          <span title="Mark as Paid">
+            <CheckCircle className="action-icon text-success" size={18} onClick={() => handleMarkPaid(row)} />
+          </span>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     fetchTodaysBookings();
@@ -316,6 +315,75 @@ function Bookings() {
     }
   };
 
+  const handleMarkPaid = (booking) => {
+    setPopupMarkPaid({ visible: true, booking });
+  };
+
+  const confirmMarkPaid = async () => {
+    try {
+      const username = JSON.parse(user).username;
+      const [fullBooking, packages] = await Promise.all([
+        fetchBookingById(popupMarkPaid.booking.booking_id),
+        fetchPackage(),
+      ]);
+      const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+      const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+      await updatePayment(popupMarkPaid.booking.booking_id, {
+        ...fullBooking,
+        email: fullBooking.email ?? "",
+        address: fullBooking.address ?? "",
+        addons_note: fullBooking.addons_note ?? "",
+        payment_mode: fullBooking.payment_mode ?? "",
+        payment_notes: fullBooking.payment_notes ?? "",
+        created_by: fullBooking.created_by ?? "",
+        payment_total: fullAmount,
+        payment_paid: fullAmount,
+        updated_by: username,
+      });
+      setPopupMarkPaid({ visible: false, booking: null });
+      fetchTodaysBookings();
+    } catch (error) {
+      alert("Failed to mark as paid.");
+      console.error("Mark paid error:", error);
+      setPopupMarkPaid({ visible: false, booking: null });
+    }
+  };
+
+  const cancelMarkPaid = () => {
+    setPopupMarkPaid({ visible: false, booking: null });
+  };
+
+  const confirmBulkMarkPaid = async () => {
+    setShowBulkConfirm(false);
+    setBulkPaidLoading(true);
+    const username = user ? JSON.parse(user).username : null;
+    const unpaid = filteredData.filter((b) => getPaymentStatus(b).key !== "paid");
+    const packages = await fetchPackage();
+    for (const booking of unpaid) {
+      try {
+        const fullBooking = await fetchBookingById(booking.booking_id);
+        const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+        const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+        await updatePayment(fullBooking.booking_id, {
+          ...fullBooking,
+          email: fullBooking.email ?? "",
+          address: fullBooking.address ?? "",
+          addons_note: fullBooking.addons_note ?? "",
+          payment_mode: fullBooking.payment_mode ?? "cash",
+          payment_notes: fullBooking.payment_notes ?? "",
+          created_by: fullBooking.created_by ?? "",
+          payment_total: fullAmount,
+          payment_paid: fullAmount,
+          updated_by: username,
+        });
+      } catch (e) {
+        console.error(`Failed for booking ${booking.booking_id}:`, e);
+      }
+    }
+    setBulkPaidLoading(false);
+    fetchTodaysBookings();
+  };
+
   const availableYears = useMemo(() => {
     const years = new Set();
     todayBookingData.forEach((b) => {
@@ -367,9 +435,10 @@ function Bookings() {
         onEdit={handleEditBooking}
         onView={handleViewBooking}
         onDelete={handleDeleteBooking}
+        onMarkPaid={handleMarkPaid}
       />
     ),
-    [handleEditBooking, handleViewBooking, handleDeleteBooking]
+    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid]
   );
 
   return (
@@ -379,19 +448,31 @@ function Bookings() {
         <p className="page-date">
           {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
-        <div className="bookings-stat-chips">
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--blue" />
-            {hasFilter ? "Filtered" : "Total Today"}: {stats.total}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--green" />
-            Confirmed: {stats.confirmed}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--amber" />
-            Pending Payment: {stats.pendingPayment}
-          </span>
+        <div className="bookings-header-row">
+          <div className="bookings-stat-chips">
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--blue" />
+              {hasFilter ? "Filtered" : "Total Today"}: {stats.total}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--green" />
+              Confirmed: {stats.confirmed}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--amber" />
+              Pending Payment: {stats.pendingPayment}
+            </span>
+          </div>
+          {stats.pendingPayment > 0 && (
+            <button
+              className="bk-bulk-paid-btn"
+              onClick={() => setShowBulkConfirm(true)}
+              disabled={bulkPaidLoading}
+            >
+              <CheckCircle size={14} />
+              {bulkPaidLoading ? "Updating..." : `Mark All as Paid (${stats.pendingPayment})`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -463,6 +544,22 @@ function Bookings() {
           message={`Are you sure you want to delete the booking for ${popupDelete.booking.customer_name}?`}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      )}
+
+      {popupMarkPaid.visible && (
+        <NotificationPopup
+          message={`Mark "${popupMarkPaid.booking.customer_name}" as fully paid?`}
+          onConfirm={confirmMarkPaid}
+          onCancel={cancelMarkPaid}
+        />
+      )}
+
+      {showBulkConfirm && (
+        <NotificationPopup
+          message={`Mark all ${stats.pendingPayment} outstanding booking${stats.pendingPayment > 1 ? "s" : ""} as fully paid?`}
+          onConfirm={confirmBulkMarkPaid}
+          onCancel={() => setShowBulkConfirm(false)}
         />
       )}
 

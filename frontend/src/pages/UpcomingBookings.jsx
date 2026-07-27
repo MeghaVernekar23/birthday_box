@@ -92,6 +92,8 @@ function Bookings() {
 
   const [holidayDates, setHolidayDates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [bulkPaidLoading, setBulkPaidLoading] = useState(false);
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
 
   // Filters
   const [filterYear, setFilterYear] = useState("");
@@ -361,6 +363,37 @@ function Bookings() {
     }
   };
 
+  const confirmBulkMarkPaid = async () => {
+    setShowBulkConfirm(false);
+    setBulkPaidLoading(true);
+    const username = user ? JSON.parse(user).username : null;
+    const unpaid = filteredData.filter((b) => getPaymentStatus(b).key !== "paid");
+    const packages = await fetchPackage();
+    for (const booking of unpaid) {
+      try {
+        const fullBooking = await fetchBookingById(booking.booking_id);
+        const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
+        const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+        await updatePayment(fullBooking.booking_id, {
+          ...fullBooking,
+          email: fullBooking.email ?? "",
+          address: fullBooking.address ?? "",
+          addons_note: fullBooking.addons_note ?? "",
+          payment_mode: fullBooking.payment_mode ?? "cash",
+          payment_notes: fullBooking.payment_notes ?? "",
+          created_by: fullBooking.created_by ?? "",
+          payment_total: fullAmount,
+          payment_paid: fullAmount,
+          updated_by: username,
+        });
+      } catch (e) {
+        console.error(`Failed for booking ${booking.booking_id}:`, e);
+      }
+    }
+    setBulkPaidLoading(false);
+    fetchUpcomingBookings();
+  };
+
   const availableYears = useMemo(() => {
     const years = new Set();
     upcomingBookingData.forEach((b) => {
@@ -407,7 +440,8 @@ function Bookings() {
       const d = new Date(b.event_date);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
-    return { total, thisWeek, thisMonth };
+    const unpaid = filteredData.filter((b) => getPaymentStatus(b).key !== "paid").length;
+    return { total, thisWeek, thisMonth, unpaid };
   }, [filteredData]);
 
   const cardTemplate = useCallback(
@@ -430,19 +464,31 @@ function Bookings() {
         <p className="page-date">
           {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
-        <div className="bookings-stat-chips">
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--purple" />
-            {hasFilter ? "Filtered" : "Total Upcoming"}: {stats.total}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--blue" />
-            This Week: {stats.thisWeek}
-          </span>
-          <span className="stat-chip">
-            <span className="stat-chip__dot stat-chip__dot--amber" />
-            This Month: {stats.thisMonth}
-          </span>
+        <div className="bookings-header-row">
+          <div className="bookings-stat-chips">
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--purple" />
+              {hasFilter ? "Filtered" : "Total Upcoming"}: {stats.total}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--blue" />
+              This Week: {stats.thisWeek}
+            </span>
+            <span className="stat-chip">
+              <span className="stat-chip__dot stat-chip__dot--amber" />
+              This Month: {stats.thisMonth}
+            </span>
+          </div>
+          {stats.unpaid > 0 && (
+            <button
+              className="bk-bulk-paid-btn"
+              onClick={() => setShowBulkConfirm(true)}
+              disabled={bulkPaidLoading}
+            >
+              <CheckCircle size={14} />
+              {bulkPaidLoading ? "Updating..." : `Mark All as Paid (${stats.unpaid})`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -514,6 +560,14 @@ function Bookings() {
           message={`Are you sure you want to delete the booking for ${popupDelete.booking.customer_name}?`}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      )}
+
+      {showBulkConfirm && (
+        <NotificationPopup
+          message={`Mark all ${stats.unpaid} outstanding booking${stats.unpaid > 1 ? "s" : ""} as fully paid?`}
+          onConfirm={confirmBulkMarkPaid}
+          onCancel={() => setShowBulkConfirm(false)}
         />
       )}
 

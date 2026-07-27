@@ -211,12 +211,47 @@
   margin: 0;
 }
 
+/* ── Header row (chips + bulk action) ─────────────────────── */
+.bookings-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
 /* ── Stat chips ────────────────────────────────────────────── */
 .bookings-stat-chips {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 12px;
+}
+
+/* ── Bulk paid button ──────────────────────────────────────── */
+.bk-bulk-paid-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2bba8f;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+.bk-bulk-paid-btn:hover:not(:disabled) {
+  background: #239e78;
+}
+.bk-bulk-paid-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .stat-chip {
@@ -393,6 +428,16 @@
 }
 
 @media (max-width: 600px) {
+  .bookings-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bk-bulk-paid-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .bk-filter-bar-card {
     gap: 8px;
   }
