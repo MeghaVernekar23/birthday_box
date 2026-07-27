@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import BirthdayLogo from "../images/logo.jpg";
 import "../css/Layout.css";
 import {
@@ -37,6 +37,16 @@ const Layout = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  // Fire gtag page_view on every route change (SPA navigation)
+  useEffect(() => {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "page_view", {
+        page_path: location.pathname + location.search,
+        page_title: document.title,
+      });
+    }
+  }, [location]);
 
   const isActive = (path) => location.pathname === path;
 
