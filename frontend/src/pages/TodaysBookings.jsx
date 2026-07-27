@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/TodaysBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, X } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -89,6 +89,11 @@ function Bookings() {
 
   const [holidayDates, setHolidayDates] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Filters
+  const [filterYear, setFilterYear] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -311,18 +316,49 @@ function Bookings() {
     }
   };
 
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    todayBookingData.forEach((b) => {
+      if (b.event_date) {
+        const y = new Date(b.event_date).getFullYear();
+        if (!isNaN(y)) years.add(y);
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [todayBookingData]);
+
+  const filteredData = useMemo(() => {
+    return todayBookingData.filter((b) => {
+      if (!b.event_date) return true;
+      const d = new Date(b.event_date);
+      if (isNaN(d.getTime())) return true;
+      if (filterDate) return b.event_date.slice(0, 10) === filterDate;
+      if (filterYear && d.getFullYear() !== Number(filterYear)) return false;
+      if (filterMonth && d.getMonth() !== Number(filterMonth)) return false;
+      return true;
+    });
+  }, [todayBookingData, filterYear, filterMonth, filterDate]);
+
+  const hasFilter = filterYear || filterMonth || filterDate;
+
+  const clearFilters = () => {
+    setFilterYear("");
+    setFilterMonth("");
+    setFilterDate("");
+  };
+
   const stats = useMemo(() => {
-    const total = todayBookingData.length;
-    const confirmed = todayBookingData.filter(
+    const total = filteredData.length;
+    const confirmed = filteredData.filter(
       (b) => (b.status || "").toLowerCase() === "confirmed"
     ).length;
-    const pendingPayment = todayBookingData.filter((b) => {
+    const pendingPayment = filteredData.filter((b) => {
       const t = Number(b.payment_total) || 0;
       const p = Number(b.payment_paid) || 0;
       return t > 0 && p < t;
     }).length;
     return { total, confirmed, pendingPayment };
-  }, [todayBookingData]);
+  }, [filteredData]);
 
   const cardTemplate = useCallback(
     (row) => (
@@ -346,7 +382,7 @@ function Bookings() {
         <div className="bookings-stat-chips">
           <span className="stat-chip">
             <span className="stat-chip__dot stat-chip__dot--blue" />
-            Total Today: {stats.total}
+            {hasFilter ? "Filtered" : "Total Today"}: {stats.total}
           </span>
           <span className="stat-chip">
             <span className="stat-chip__dot stat-chip__dot--green" />
@@ -359,6 +395,51 @@ function Bookings() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <div className="bk-filter-bar-card">
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Year</label>
+          <select
+            className="bk-filter-select"
+            value={filterYear}
+            onChange={(e) => { setFilterYear(e.target.value); setFilterDate(""); }}
+          >
+            <option value="">All Years</option>
+            {availableYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Month</label>
+          <select
+            className="bk-filter-select"
+            value={filterMonth}
+            onChange={(e) => { setFilterMonth(e.target.value); setFilterDate(""); }}
+          >
+            <option value="">All Months</option>
+            {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+              <option key={i} value={i}>{m}</option>
+            ))}
+          </select>
+        </div>
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Exact Date</label>
+          <input
+            type="date"
+            className="bk-filter-date"
+            value={filterDate}
+            onChange={(e) => { setFilterDate(e.target.value); setFilterYear(""); setFilterMonth(""); }}
+          />
+        </div>
+        {hasFilter && (
+          <button className="bk-filter-clear" onClick={clearFilters}>
+            <X size={14} />
+            Clear
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="bookings-spinner-wrapper">
           <div className="spinner-border text-primary" role="status">
@@ -369,15 +450,13 @@ function Bookings() {
         <DataTable
           title=""
           columns={columns}
-          data={todayBookingData}
+          data={filteredData}
           actions={[ActionButtons]}
           searchableFields={["customer_name", "phone_number"]}
           viewMode="card"
           cardTemplate={cardTemplate}
         />
       )}
-
-      {/* Keep all existing modal JSX exactly as-is below here */}
 
       {popupDelete.visible && (
         <NotificationPopup
@@ -398,129 +477,147 @@ function Bookings() {
       )}
 
       {popupView.visible && popupView.booking && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <div
-              className="modal-close-icon"
-              onClick={() => setPopupView({ visible: false, booking: null })}
-            >
-              ×
+        <div className="ps-modal-overlay" onClick={() => setPopupView({ visible: false, booking: null })}>
+          <div className="nb-modal" onClick={(e) => e.stopPropagation()}>
+
+            <div className="nb-modal-header">
+              <div>
+                <span className="nb-modal-eyebrow">Booking Details</span>
+                <h4 className="nb-modal-title">{popupView.booking.customer_name}</h4>
+              </div>
+              <button className="nb-modal-close" onClick={() => setPopupView({ visible: false, booking: null })}>×</button>
             </div>
-            <h5 className="text-center mb-3">Booking Details</h5>
 
-            <div className="form-step-wrapper text-start px-3">
-              <div className="review-box mb-3">
-                <h5 className="review-title">Customer Details</h5>
-                <p>
-                  <strong>Name:</strong> {popupView.booking.customer_name}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {popupView.booking.phone_number}
-                </p>
-                {popupView.booking.email && (
-                  <p>
-                    <strong>Email:</strong> {popupView.booking.email}
-                  </p>
-                )}
-                {popupView.booking.address && (
-                  <p>
-                    <strong>Address:</strong> {popupView.booking.address}
-                  </p>
-                )}
+            <div className="nb-modal-body">
+              <div className="nb-info-row">
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Date</span>
+                  <span className="nb-chip-value">{popupView.booking.event_date}</span>
+                </div>
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Time Slot</span>
+                  <span className="nb-chip-value">{popupView.booking.time_slot}</span>
+                </div>
+                <div className="nb-info-chip">
+                  <span className="nb-chip-label">Status</span>
+                  <span className={`nb-status-badge nb-status--${popupView.booking.status?.toLowerCase()}`}>
+                    {popupView.booking.status}
+                  </span>
+                </div>
               </div>
 
-              <div className="review-box mb-3">
-                <h5 className="review-title">Date & Time</h5>
-                <p>
-                  <strong>Date:</strong> {popupView.booking.event_date}
-                </p>
-                <p>
-                  <strong>Time Slot:</strong> {popupView.booking.time_slot}
-                </p>
+              <div className="nb-section-grid">
+                <div className="nb-section">
+                  <p className="nb-section-label">Customer Details</p>
+                  <div className="nb-field-list">
+                    <div className="nb-field">
+                      <span className="nb-field-key">Phone</span>
+                      <span className="nb-field-val">{popupView.booking.phone_number}</span>
+                    </div>
+                    {popupView.booking.email && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Email</span>
+                        <span className="nb-field-val">{popupView.booking.email}</span>
+                      </div>
+                    )}
+                    {popupView.booking.address && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Address</span>
+                        <span className="nb-field-val">{popupView.booking.address}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="nb-section">
+                  <p className="nb-section-label">Celebration</p>
+                  <div className="nb-field-list">
+                    <div className="nb-field">
+                      <span className="nb-field-key">Type</span>
+                      <span className="nb-field-val">{popupView.booking.celebration_name}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="review-box mb-3">
-                <h5 className="review-title">Celebration Type</h5>
-                <p>{popupView.booking.celebration_name}</p>
-              </div>
-
-              <div className="review-box mb-3">
-                <h5 className="review-title">Package</h5>
-                <p>{popupView.booking.package_name}</p>
+              <div className="nb-section nb-package-section">
+                <p className="nb-section-label">Package</p>
+                <div className="nb-package-card">
+                  <div className="nb-package-top">
+                    <span className="nb-package-name">{popupView.booking.package_name}</span>
+                    {popupView.booking.payment_total && (
+                      <span className="nb-package-price">₹{popupView.booking.payment_total}</span>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {popupView.booking.additional_items?.length > 0 && (
-                <div className="review-box mb-3">
-                  <h6>Additional Requirements:</h6>
-                  <ul>
-                    {popupView.booking.additional_items.map((item, index) => (
-                      <li key={index}>
-                        {item.description} – ₹{item.price}
-                      </li>
+                <div className="nb-section">
+                  <p className="nb-section-label">Additional Requirements</p>
+                  <div className="nb-field-list">
+                    {popupView.booking.additional_items.map((item, i) => (
+                      <div className="nb-field" key={i}>
+                        <span className="nb-field-key">{item.description}</span>
+                        <span className="nb-field-val">₹{item.price}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
-              <div className="review-box mb-3">
-                <h5 className="review-title">Booking Status</h5>
-                <p>{popupView.booking.status}</p>
-              </div>
-
-              <div className="review-box mb-3">
-                <h5 className="review-title">Payment Details</h5>
-                <p>
-                  <strong>Payment Mode:</strong>{" "}
-                  {popupView.booking.payment_mode
-                    ? popupView.booking.payment_mode
-                        .replace("_", " ")
-                        .toUpperCase()
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Total Amount:</strong> ₹
-                  {popupView.booking.payment_total || "0"}
-                </p>
-                <p>
-                  <strong>Amount Paid:</strong> ₹
-                  {popupView.booking.payment_paid || "0"}
-                </p>
-                <p>
-                  <strong>Balance:</strong> ₹
-                  {Math.max(
-                    0,
-                    (Number(popupView.booking.payment_total) || 0) -
-                      (Number(popupView.booking.payment_paid) || 0)
-                  )}
-                </p>
-                {popupView.booking.payment_notes && (
-                  <p>
-                    <strong>Notes:</strong> {popupView.booking.payment_notes}
+              <div className="nb-section">
+                <p className="nb-section-label">Payment</p>
+                <div className="nb-payment-grid">
+                  <div className="nb-payment-cell nb-payment-cell--total">
+                    <span className="nb-payment-key">Total</span>
+                    <span className="nb-payment-val">₹{popupView.booking.payment_total || 0}</span>
+                  </div>
+                  <div className="nb-payment-cell nb-payment-cell--paid">
+                    <span className="nb-payment-key">Paid</span>
+                    <span className="nb-payment-val">₹{popupView.booking.payment_paid || 0}</span>
+                  </div>
+                  <div className="nb-payment-cell nb-payment-cell--balance">
+                    <span className="nb-payment-key">Balance</span>
+                    <span className="nb-payment-val">
+                      ₹{Math.max(0, (Number(popupView.booking.payment_total) || 0) - (Number(popupView.booking.payment_paid) || 0))}
+                    </span>
+                  </div>
+                </div>
+                {popupView.booking.payment_mode && (
+                  <p className="nb-payment-mode">
+                    Mode: <strong>{popupView.booking.payment_mode.replace("_", " ").toUpperCase()}</strong>
                   </p>
+                )}
+                {popupView.booking.payment_notes && (
+                  <p className="nb-payment-mode">Notes: {popupView.booking.payment_notes}</p>
                 )}
               </div>
 
-              <div className="review-box mb-3">
-                <h5 className="review-title">Audit Trail</h5>
-                <p>
-                  <strong>Created By:</strong> {popupView.booking.created_by}
-                </p>
-                <p>
-                  <strong>Created At:</strong>{" "}
-                  {popupView.booking.created_at
-                    ? new Date(popupView.booking.created_at).toLocaleString()
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Updated By:</strong>{" "}
-                  {popupView.booking.updated_by || "N/A"}
-                </p>
-                <p>
-                  <strong>Updated At:</strong>{" "}
-                  {popupView.booking.updated_at
-                    ? new Date(popupView.booking.updated_at).toLocaleString()
-                    : "N/A"}
-                </p>
+              <div className="nb-section">
+                <p className="nb-section-label">Audit Trail</p>
+                <div className="nb-field-list">
+                  <div className="nb-field">
+                    <span className="nb-field-key">Created by</span>
+                    <span className="nb-field-val">{popupView.booking.created_by}</span>
+                  </div>
+                  <div className="nb-field">
+                    <span className="nb-field-key">Created at</span>
+                    <span className="nb-field-val">
+                      {popupView.booking.created_at ? new Date(popupView.booking.created_at).toLocaleString() : "N/A"}
+                    </span>
+                  </div>
+                  <div className="nb-field">
+                    <span className="nb-field-key">Updated by</span>
+                    <span className="nb-field-val">{popupView.booking.updated_by || "N/A"}</span>
+                  </div>
+                  <div className="nb-field">
+                    <span className="nb-field-key">Updated at</span>
+                    <span className="nb-field-val">
+                      {popupView.booking.updated_at ? new Date(popupView.booking.updated_at).toLocaleString() : "N/A"}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

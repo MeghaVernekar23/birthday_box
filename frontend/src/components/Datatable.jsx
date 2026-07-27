@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import "../css/Datatable.css";
 
 const DataTable = ({
@@ -17,15 +16,7 @@ const DataTable = ({
   const [searchQuery, setSearchQuery] = useState("");
   const entriesPerPage = 15;
   const maxVisiblePages = 5;
-  const totalPages = Math.ceil(data.length / entriesPerPage);
-  const currentGroup = Math.floor((currentPage - 1) / maxVisiblePages);
-  const startPage = currentGroup * maxVisiblePages + 1;
-  const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
 
-  const pageNumbers = [];
-  for (let i = startPage; i <= endPage; i++) {
-    pageNumbers.push(i);
-  }
   const filteredData =
     searchableFields.length === 0
       ? data
@@ -36,50 +27,60 @@ const DataTable = ({
           );
         });
 
+  const totalPages = Math.ceil(filteredData.length / entriesPerPage);
+  const currentGroup = Math.floor((currentPage - 1) / maxVisiblePages);
+  const startPage = currentGroup * maxVisiblePages + 1;
+  const endPage = Math.min(startPage + maxVisiblePages - 1, totalPages);
+
+  const pageNumbers = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
   const paginatedData = filteredData.slice(
     (currentPage - 1) * entriesPerPage,
     currentPage * entriesPerPage
   );
 
+  const isCard = viewMode === "card";
+
   return (
-    <div>
-      <h5 className="mb-3">{title}</h5>
+    <div className="dt-root">
+      {title && <h5 className="dt-title">{title}</h5>}
+
       {(searchableFields.length > 0 || actionButton) && (
-        <div className="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+        <div className="dt-toolbar">
           {searchableFields.length > 0 && (
             <input
               type="text"
-              className="form-control search-input"
-              placeholder="Search"
+              className="dt-search"
+              placeholder="Search by name or phone…"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              style={{ maxWidth: "300px" }}
             />
           )}
           {actionButton && <div>{actionButton}</div>}
         </div>
       )}
 
-      <div className="table-wrapper">
-        {viewMode === "card" ? (
-          <div className="table-body-scroll">
-            <div className="datatable-card-grid">
-              {paginatedData.length === 0 ? (
-                <p className="text-center text-muted py-4">No results found</p>
-              ) : (
-                paginatedData.map((row, index) => (
-                  <div key={row.booking_id || row.id || index}>
-                    {typeof cardTemplate === "function" ? cardTemplate(row) : null}
-                  </div>
-                ))
-              )}
-            </div>
+      <div className={isCard ? "dt-card-wrapper" : "dt-table-wrapper"}>
+        {isCard ? (
+          <div className="dt-card-grid">
+            {paginatedData.length === 0 ? (
+              <p className="dt-empty">No results found</p>
+            ) : (
+              paginatedData.map((row, index) => (
+                <div key={row.booking_id || row.id || index}>
+                  {typeof cardTemplate === "function" ? cardTemplate(row) : null}
+                </div>
+              ))
+            )}
           </div>
         ) : (
-          <div className="table-body-scroll">
+          <div className="dt-scroll">
             <table className="table table-bordered table-hover align-middle">
               <thead className="table-light">
                 <tr>
@@ -130,66 +131,34 @@ const DataTable = ({
             </table>
           </div>
         )}
-        <div className="pagination-bar">
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              opacity: currentPage === 1 ? 0.5 : 1,
-            }}
-            onClick={() => currentPage > 1 && setCurrentPage(1)}
-          >
-            {"<<"}
-          </span>
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              opacity: currentPage === 1 ? 0.5 : 1,
-            }}
-            onClick={() => {
-              if (startPage > 1) setCurrentPage(startPage - 1);
-            }}
-          >
-            {"<"}
-          </span>
-          {pageNumbers.map((page) => (
+
+        {totalPages > 1 && (
+          <div className={isCard ? "dt-pagination dt-pagination--card" : "dt-pagination dt-pagination--table"}>
             <span
-              key={page}
-              className={`page-link ${
-                page === currentPage ? "custom-active" : ""
-              }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </span>
-          ))}
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              opacity: currentPage === totalPages ? 0.5 : 1,
-            }}
-            onClick={() => {
-              if (endPage < totalPages) setCurrentPage(endPage + 1);
-            }}
-          >
-            {">"}
-          </span>
-          <span
-            className="page-link"
-            style={{
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              opacity: currentPage === totalPages ? 0.5 : 1,
-            }}
-            onClick={() =>
-              currentPage < totalPages && setCurrentPage(totalPages)
-            }
-          >
-            {">>"}
-          </span>
-        </div>
+              className={`dt-page-btn ${currentPage === 1 ? "dt-page-btn--disabled" : ""}`}
+              onClick={() => currentPage > 1 && setCurrentPage(1)}
+            >{"<<"}</span>
+            <span
+              className={`dt-page-btn ${startPage === 1 ? "dt-page-btn--disabled" : ""}`}
+              onClick={() => startPage > 1 && setCurrentPage(startPage - 1)}
+            >{"<"}</span>
+            {pageNumbers.map((page) => (
+              <span
+                key={page}
+                className={`dt-page-btn ${page === currentPage ? "dt-page-btn--active" : ""}`}
+                onClick={() => setCurrentPage(page)}
+              >{page}</span>
+            ))}
+            <span
+              className={`dt-page-btn ${endPage >= totalPages ? "dt-page-btn--disabled" : ""}`}
+              onClick={() => endPage < totalPages && setCurrentPage(endPage + 1)}
+            >{">"}</span>
+            <span
+              className={`dt-page-btn ${currentPage === totalPages ? "dt-page-btn--disabled" : ""}`}
+              onClick={() => currentPage < totalPages && setCurrentPage(totalPages)}
+            >{">>"}</span>
+          </div>
+        )}
       </div>
     </div>
   );

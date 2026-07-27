@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/UpcomingBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye, CheckCircle } from "lucide-react";
+import { Edit, Trash2, Eye, CheckCircle, X } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -92,6 +92,11 @@ function Bookings() {
 
   const [holidayDates, setHolidayDates] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Filters
+  const [filterYear, setFilterYear] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -356,23 +361,54 @@ function Bookings() {
     }
   };
 
+  const availableYears = useMemo(() => {
+    const years = new Set();
+    upcomingBookingData.forEach((b) => {
+      if (b.event_date) {
+        const y = new Date(b.event_date).getFullYear();
+        if (!isNaN(y)) years.add(y);
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [upcomingBookingData]);
+
+  const filteredData = useMemo(() => {
+    return upcomingBookingData.filter((b) => {
+      if (!b.event_date) return true;
+      const d = new Date(b.event_date);
+      if (isNaN(d.getTime())) return true;
+      if (filterDate) return b.event_date.slice(0, 10) === filterDate;
+      if (filterYear && d.getFullYear() !== Number(filterYear)) return false;
+      if (filterMonth && d.getMonth() !== Number(filterMonth)) return false;
+      return true;
+    });
+  }, [upcomingBookingData, filterYear, filterMonth, filterDate]);
+
+  const hasFilter = filterYear || filterMonth || filterDate;
+
+  const clearFilters = () => {
+    setFilterYear("");
+    setFilterMonth("");
+    setFilterDate("");
+  };
+
   const stats = useMemo(() => {
-    const total = upcomingBookingData.length;
+    const total = filteredData.length;
     const now = new Date();
     const weekEnd = new Date(now);
     weekEnd.setDate(weekEnd.getDate() + 7);
-    const thisWeek = upcomingBookingData.filter((b) => {
+    const thisWeek = filteredData.filter((b) => {
       if (!b.event_date) return false;
       const d = new Date(b.event_date);
       return d >= now && d <= weekEnd;
     }).length;
-    const thisMonth = upcomingBookingData.filter((b) => {
+    const thisMonth = filteredData.filter((b) => {
       if (!b.event_date) return false;
       const d = new Date(b.event_date);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
     return { total, thisWeek, thisMonth };
-  }, [upcomingBookingData]);
+  }, [filteredData]);
 
   const cardTemplate = useCallback(
     (row) => (
@@ -397,7 +433,7 @@ function Bookings() {
         <div className="bookings-stat-chips">
           <span className="stat-chip">
             <span className="stat-chip__dot stat-chip__dot--purple" />
-            Total Upcoming: {stats.total}
+            {hasFilter ? "Filtered" : "Total Upcoming"}: {stats.total}
           </span>
           <span className="stat-chip">
             <span className="stat-chip__dot stat-chip__dot--blue" />
@@ -410,6 +446,51 @@ function Bookings() {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <div className="bk-filter-bar-card">
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Year</label>
+          <select
+            className="bk-filter-select"
+            value={filterYear}
+            onChange={(e) => { setFilterYear(e.target.value); setFilterDate(""); }}
+          >
+            <option value="">All Years</option>
+            {availableYears.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Month</label>
+          <select
+            className="bk-filter-select"
+            value={filterMonth}
+            onChange={(e) => { setFilterMonth(e.target.value); setFilterDate(""); }}
+          >
+            <option value="">All Months</option>
+            {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m, i) => (
+              <option key={i} value={i}>{m}</option>
+            ))}
+          </select>
+        </div>
+        <div className="bk-filter-group">
+          <label className="bk-filter-label">Exact Date</label>
+          <input
+            type="date"
+            className="bk-filter-date"
+            value={filterDate}
+            onChange={(e) => { setFilterDate(e.target.value); setFilterYear(""); setFilterMonth(""); }}
+          />
+        </div>
+        {hasFilter && (
+          <button className="bk-filter-clear" onClick={clearFilters}>
+            <X size={14} />
+            Clear
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="bookings-spinner-wrapper">
           <div className="spinner-border text-primary" role="status">
@@ -420,7 +501,7 @@ function Bookings() {
         <DataTable
           title=""
           columns={columns}
-          data={upcomingBookingData}
+          data={filteredData}
           actions={[ActionButtons]}
           searchableFields={["customer_name", "phone_number"]}
           viewMode="card"

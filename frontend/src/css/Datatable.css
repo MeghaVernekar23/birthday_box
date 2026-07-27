@@ -1,194 +1,226 @@
-.container {
-  padding: 1rem;
-  height: auto;
-}
+/* ============================================================
+   Datatable.css
+   ============================================================ */
 
-.table {
-  border-collapse: collapse;
+/* ── Root ──────────────────────────────────────────────────── */
+.dt-root {
   width: 100%;
-  font-size: 0.95rem;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
-/* Table Header */
-.table thead th {
-  background-color: #b2c1f7;
-  font-weight: 600;
-  text-align: left;
-  padding: 12px;
-  border-bottom: 1px solid #b2c1f7;
-  border-top: 1px solid #b2c1f7;
-  border-left: 1px solid #b2c1f7;
-  border-right: 1px solid #b2c1f7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.dt-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #213547;
+  margin: 0 0 14px;
 }
 
-/* Table Body */
-.table tbody td {
-  padding: 10px;
-  vertical-align: middle;
-  border-bottom: 1px solid #b2c1f7;
-  border-right: 1px solid #b2c1f7;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: 200px;
-}
-
-/* Hover Effect */
-.table tbody tr:hover {
-  background-color: #eef2ff;
-  transition: background-color 0.2s ease-in-out;
-}
-
-
-
-
-.table-body-scroll {
-  flex: 1 1 auto;
-  overflow: auto;
-}
-
-/* Required to align thead and tbody properly */
-.table-body-scroll table {
-  border-collapse: collapse;
-  width: 100%;
-  min-width: 600px;
-}
-
-/* Sticky header magic */
-.table-body-scroll thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-bar {
-  
-  position: sticky;
-  background-color: #b2c1f7;
-  padding: 10px;
+/* ── Toolbar (search + action button) ─────────────────────── */
+.dt-toolbar {
   display: flex;
-  justify-content: center;
   align-items: center;
-  flex-wrap: nowrap;
-  gap: 4px;
-  overflow-x: auto;
-  border-right: 1px solid #b2c1f7;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 
-
-
-.pagination-bar .page-link.custom-active {
-  color: black;
-  font-weight: bold;
-  font-family: 'Segoe UI', sans-serif;
+.dt-search {
+  height: 38px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+  color: #213547;
+  background: #fff;
+  outline: none;
+  min-width: 200px;
+  max-width: 300px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dt-search:focus {
+  border-color: #7c8fe8;
+  box-shadow: 0 0 0 3px rgba(124, 143, 232, 0.15);
 }
 
- .pagination-bar span {
-    margin: 0 5px;
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 50%;
-    
-  }
-
-.table-wrapper {
+/* ── Table mode wrapper ────────────────────────────────────── */
+.dt-table-wrapper {
+  border: 1px solid #b2c1f7;
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   max-height: 60vh;
-  border: 1px solid #b2c1f7;
-  border-radius: 8px;
-  overflow: hidden;
+}
+
+.dt-scroll {
+  flex: 1;
+  overflow: auto;
+}
+
+.dt-scroll table {
+  border-collapse: collapse;
   width: 100%;
+  min-width: 600px;
+  font-size: 0.9rem;
+  margin: 0 !important;
 }
 
-.page-link {
-  display: inline-block;
-  margin: 0 4px;
-  padding: 6px 12px;
+.dt-scroll thead th {
+  background-color: #b2c1f7;
+  font-weight: 600;
+  text-align: left;
+  padding: 11px 12px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
   border: 1px solid #b2c1f7;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
-.page-link.custom-active {
-  background-color: #b2c1f7;
-  color: #b2c1f7;
-  font-weight: bold;
+.dt-scroll tbody td {
+  padding: 9px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #dde5ff;
+  border-right: 1px solid #dde5ff;
+  word-break: break-word;
+  max-width: 200px;
 }
 
-
-.pagination-bar::-webkit-scrollbar {
-  height: 4px;
-}
-.pagination-bar::-webkit-scrollbar-thumb {
-  background-color: #b2c1f7;
-  border-radius: 4px;
+.dt-scroll tbody tr:hover {
+  background-color: #eef2ff;
 }
 
-.table-responsive-wrapper {
-  width: 100%;
-  overflow-x: auto;
+/* ── Card mode wrapper ─────────────────────────────────────── */
+.dt-card-wrapper {
+  /* no border/box — cards have their own styling */
 }
 
-/* Optional: Keep it neat */
-.table-responsive-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-.table-responsive-wrapper::-webkit-scrollbar-thumb {
-  background-color:#b2c1f7;
-  border-radius: 4px;
-}
-
-/* Card grid layout (used when viewMode="card") */
-.datatable-card-grid {
+.dt-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
   gap: 16px;
-  padding: 4px 0 8px;
+  padding: 2px 0 8px;
 }
 
-/* ===== Responsive ===== */
+.dt-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #718096;
+  padding: 40px 0;
+  font-size: 0.9rem;
+}
+
+/* ── Pagination ────────────────────────────────────────────── */
+.dt-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 8px;
+}
+
+.dt-pagination--table {
+  background: #f0f4ff;
+  border-top: 1px solid #b2c1f7;
+}
+
+.dt-pagination--card {
+  background: transparent;
+  margin-top: 8px;
+}
+
+.dt-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #4a5568;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.dt-page-btn:hover:not(.dt-page-btn--disabled):not(.dt-page-btn--active) {
+  background: #eef2ff;
+  border-color: #7c8fe8;
+  color: #7c8fe8;
+}
+
+.dt-page-btn--active {
+  background: #7c8fe8;
+  border-color: #7c8fe8;
+  color: #fff;
+  font-weight: 700;
+  cursor: default;
+}
+
+.dt-page-btn--disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ── Legacy class aliases (other pages still reference these) ── */
+.table-wrapper { /* keep for any non-booking pages */ }
+.pagination-bar { display: none; } /* superseded — hide if still rendered */
+.past-payment-row { background-color: #ffe0e0 !important; }
+.past-payment-row td { color: #b30000; font-weight: 500; }
+
+/* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .table-wrapper {
+  .dt-table-wrapper {
     max-height: 70vh;
   }
 
-  .table-body-scroll {
-    overflow-x: auto;
-    overflow-y: auto;
-  }
-
-  .table {
-    font-size: 0.82rem;
+  .dt-scroll table {
+    font-size: 0.8rem;
     min-width: 480px;
   }
 
-  .table thead th,
-  .table tbody td {
-    padding: 8px 6px;
+  .dt-scroll thead th,
+  .dt-scroll tbody td {
+    padding: 7px 8px;
   }
 
-  .table tbody td {
-    max-width: 140px;
+  .dt-search {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
   }
 
-  .container {
-    padding: 0.5rem;
+  .dt-card-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dt-page-btn {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.78rem;
   }
 }
 
-.past-payment-row {
-  background-color: #ffe0e0 !important;
+@media (max-width: 480px) {
+  .dt-card-grid {
+    gap: 10px;
+  }
+
+  .dt-pagination {
+    gap: 3px;
+    padding: 8px 4px;
+  }
+
+  .dt-page-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.74rem;
+    padding: 0 5px;
+  }
 }
-
-.past-payment-row td {
-  color: #b30000;
-  font-weight: 500;
-}
-
-

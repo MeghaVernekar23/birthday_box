@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import logoPng from "../images/logo.png";
-import imgScreen from "../images/screen.jpeg";
-import imgDoll from "../images/doll.jpeg";
-import imgDeco from "../images/deco.JPG";
-import imgHall from "../images/hall.JPG";
-import imgHallOther from "../images/hall_other.JPG";
-import imgSitting from "../images/sitting.JPG";
+import imgScreen from "../images/screen.webp";
+import imgDoll from "../images/doll.webp";
+import imgDeco from "../images/deco.webp";
+import imgHall from "../images/hall.webp";
+import imgHallOther from "../images/hall_other.webp";
+import imgSitting from "../images/sitting.webp";
 import "./Home.css";
 import { fetchPackage } from "../services/bookingServices";
 

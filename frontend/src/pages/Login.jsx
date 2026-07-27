@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../css/Login.css";
-import BirthdayLoginImage from "../images/Birthdax_login_image.jpg";
+import BirthdayLoginImage from "../images/Birthdax_login_image.webp";
 import BirthdayLogo from "../images/logo.jpg";
 import { apiRequest } from "../utils/APIrequest";
 import { useNavigate } from "react-router-dom";
