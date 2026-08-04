@@ -54,6 +54,21 @@ function getCelebrationData(bookings) {
     .slice(0, 6);
 }
 
+function getReferralData(bookings) {
+  const counts = {};
+  bookings.forEach((b) => {
+    const note = b.addons_note || "";
+    const match = note.match(/Heard from:\s*([^|]+)/i);
+    if (match) {
+      const source = match[1].trim();
+      counts[source] = (counts[source] || 0) + 1;
+    }
+  });
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 function getPackageData(bookings) {
   const counts = {};
   bookings.forEach((b) => {
@@ -197,6 +212,7 @@ const AnalyticsSection = () => {
   const statusData = useMemo(() => getStatusData(bookings), [bookings]);
   const celebrationData = useMemo(() => getCelebrationData(bookings), [bookings]);
   const packageData = useMemo(() => getPackageData(bookings), [bookings]);
+  const referralData = useMemo(() => getReferralData(bookings), [bookings]);
   const dailyComparisonData = useMemo(() => getDailyComparisonData(bookings), [bookings]);
   const packageRevenueData = useMemo(() => getPackageRevenueData(bookings, packagePriceMap), [bookings, packagePriceMap]);
   const thisMonthRevenue = useMemo(() => getThisMonthRevenue(bookings, packagePriceMap), [bookings, packagePriceMap]);
@@ -538,6 +554,32 @@ const AnalyticsSection = () => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+        </div>
+
+        {/* Referral Sources */}
+        <div className="analytics-card">
+          <h6>How Did Customers Hear About Us?</h6>
+          {referralData.length === 0 ? (
+            <p style={{ color: "#888", fontSize: 13 }}>No referral data available.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={referralData}
+                margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="count" name="Customers" radius={[4, 4, 0, 0]}>
+                  {referralData.map((entry, i) => (
+                    <Cell key={entry.name} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                  ))}
+                  <LabelList dataKey="count" position="top" style={{ fontSize: 12, fontWeight: 600 }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
     </div>

@@ -247,7 +247,8 @@
 .bn-checkbox-option {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   padding: 12px 16px;
   border: 2px solid #e8d5ed;
   border-radius: 10px;
@@ -489,28 +490,159 @@
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 600px) {
+
+/* Tablet / large phone */
+@media (max-width: 768px) {
+  .bn-form {
+    padding: 24px 12px 40px;
+  }
+
   .bn-card {
-    padding: 28px 20px;
+    padding: 32px 24px;
+    gap: 24px;
+  }
+
+  .bn-hero {
+    padding: 36px 16px 24px;
   }
 
   .bn-hero-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    letter-spacing: 0.08em;
   }
 
+  .bn-addons-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Small phone */
+@media (max-width: 480px) {
+  .bn-nav {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .bn-logo {
+    height: 38px;
+  }
+
+  .bn-nav-title {
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bn-nav-back {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .bn-hero {
+    padding: 28px 12px 20px;
+  }
+
+  .bn-hero-title {
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+  }
+
+  .bn-hero-sub {
+    font-size: 0.9rem;
+  }
+
+  .bn-form {
+    padding: 16px 8px 40px;
+  }
+
+  .bn-card {
+    padding: 24px 16px;
+    gap: 20px;
+    border-radius: 14px;
+  }
+
+  .bn-label {
+    font-size: 0.78rem;
+  }
+
+  .bn-input,
+  .bn-select {
+    font-size: 0.95rem;
+    padding: 11px 14px;
+  }
+
+  /* Radio options — full width on small screens */
   .bn-radio-group {
     flex-direction: column;
+  }
+
+  .bn-radio-option {
+    width: 100%;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+  }
+
+  /* Package checkboxes — stack label and price */
+  .bn-checkbox-option {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    gap: 6px;
+  }
+
+  .bn-pkg-label {
+    flex: 1 1 100%;
+  }
+
+  .bn-pkg-price {
+    flex: 0 0 auto;
+    margin-left: 0;
+    font-size: 0.88rem;
   }
 
   .bn-addons-group {
     grid-template-columns: 1fr;
   }
 
-  .bn-nav {
-    padding: 12px 16px;
+  .bn-agreement-label {
+    font-size: 0.88rem;
+    padding: 12px 14px;
   }
 
+  .bn-submit-btn {
+    font-size: 1rem;
+    padding: 14px;
+  }
+
+  .bn-success-card {
+    padding: 32px 20px;
+  }
+
+  .bn-success-card h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Very small phone (320px) */
+@media (max-width: 360px) {
   .bn-nav-title {
+    display: none;
+  }
+
+  .bn-hero-title {
+    font-size: 1.2rem;
+  }
+
+  .bn-card {
+    padding: 20px 12px;
+  }
+
+  .bn-input,
+  .bn-select {
     font-size: 0.9rem;
+    padding: 10px 12px;
   }
 }

@@ -64,14 +64,14 @@ const PACKAGES_2HR = [
 ];
 
 const ADDONS = [
-  "Customised Cake",
-  "Customized Decoration",
-  "Photography - ₹1,500/hr",
-  "Fire Entry - ₹800",
-  "Popcorn",
-  "Fog Entry - ₹750",
-  "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000",
-  "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)",
+  { id: "a1", label: "Customised Cake", price: null },
+  { id: "a2", label: "Customized Decoration", price: null },
+  { id: "a3", label: "Photography - ₹1,500/hr", price: 1500 },
+  { id: "a4", label: "Fire Entry - ₹800", price: 800 },
+  { id: "a5", label: "Popcorn", price: null },
+  { id: "a6", label: "Fog Entry - ₹750", price: 750 },
+  { id: "a7", label: "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000", price: 1000 },
+  { id: "a8", label: "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)", price: 1000 },
 ];
 
 const TIME_OPTIONS = (() => {
@@ -314,8 +314,18 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         if (pkg) total += parsePrice(pkg.price);
       });
     }
+    form.addons.forEach((id) => {
+      const addon = ADDONS.find((a) => a.id === id);
+      if (addon && addon.price) total += addon.price;
+    });
     return total;
   };
+
+  const hasUnpricedAddons = () =>
+    form.addons.some((id) => {
+      const addon = ADDONS.find((a) => a.id === id);
+      return addon && addon.price === null;
+    });
 
   const validate = () => {
     const e = {};
@@ -365,7 +375,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       }
 
       // Build addons note
-      const addonsList = [...form.addons];
+      const addonsList = form.addons.map((id) => ADDONS.find((a) => a.id === id)?.label).filter(Boolean);
       if (form.needCake === "YES") addonsList.push("Cake required");
       const addons_note = [
         form.timeSlot ? `Time slot: ${form.timeSlot}` : "",
@@ -718,13 +728,17 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <label className="bn-label">ADD-ONS</label>
             <div className="bn-checkbox-group bn-addons-group">
               {ADDONS.map((addon) => (
-                <label key={addon} className={`bn-checkbox-option ${form.addons.includes(addon) ? "bn-checkbox-selected" : ""}`}>
+                <label key={addon.id} className={`bn-checkbox-option ${form.addons.includes(addon.id) ? "bn-checkbox-selected" : ""}`}>
                   <input
                     type="checkbox"
-                    checked={form.addons.includes(addon)}
-                    onChange={() => toggleCheck("addons", addon)}
+                    checked={form.addons.includes(addon.id)}
+                    onChange={() => toggleCheck("addons", addon.id)}
                   />
-                  <span>{addon}</span>
+                  <span className="bn-pkg-label">{addon.label}</span>
+                  {addon.price !== null
+                    ? <span className="bn-pkg-price">₹{addon.price.toLocaleString("en-IN")}</span>
+                    : <span className="bn-pkg-price" style={{ color: "#888", fontStyle: "italic" }}>Price TBD — discuss with staff</span>
+                  }
                 </label>
               ))}
             </div>
@@ -813,6 +827,11 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               disabled
               style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed", fontWeight: "bold" }}
             />
+            {hasUnpricedAddons() && (
+              <span className="bn-field-hint" style={{ color: "#e8603c" }}>
+                * Some selected add-ons have no fixed price — our staff will discuss the final amount with you.
+              </span>
+            )}
           </div>
 
           {/* PAYMENT AMOUNT */}
