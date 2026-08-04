@@ -3,6 +3,7 @@ import json
 import logging
 import urllib.request
 import asyncio
+import requests as _requests
 from datetime import datetime, timedelta, timezone, date, time as dt_time
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -32,15 +33,19 @@ def _get_chat_ids() -> list[str]:
 
 def send_telegram_message(message: str, chat_id: str, bot_token: str) -> dict:
     """Send a single Telegram message via the Bot API."""
+    import time
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = json.dumps({
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML",
-    }).encode("utf-8")
-    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        return json.loads(resp.read())
+    payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+    for attempt in range(3):
+        try:
+            resp = _requests.post(url, json=payload, timeout=15)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(2 ** attempt)  # 1s, 2s
+            else:
+                raise
 
 
 def _send_message_sync(text: str) -> None:
@@ -54,9 +59,10 @@ def _send_message_sync(text: str) -> None:
     for chat_id in chat_ids:
         try:
             result = send_telegram_message(text, chat_id, token)
-            print(f"[Telegram] Sent to {chat_id}: {result}")
+            msg_id = result.get("result", {}).get("message_id", "?")
+            print(f"[Telegram] Sent to {chat_id}: message_id={msg_id}")
         except Exception as e:
-            print(f"[Telegram] Error for {chat_id}: {e}")
+            print(f"[Telegram] Error for {chat_id}: {type(e).__name__}: {str(e).encode('ascii', errors='replace').decode()}")
 
 
 async def _send_message_async(text: str) -> None:
@@ -67,8 +73,22 @@ async def _send_message_async(text: str) -> None:
 
 def build_booking_message(booking_data: dict, label: str = "New Booking") -> str:
     """Format a booking notification message."""
-    payment_paid = booking_data.get('payment_paid')
-    payment_line = f"\n<b>Amount Paid:</b> ₹{payment_paid}" if payment_paid else ""
+    payment_total = booking_data.get('payment_total') or 0
+    payment_paid = booking_data.get('payment_paid') or 0
+    payment_left = max(0, payment_total - payment_paid)
+
+    payment_lines = ""
+    if payment_total > 0:
+        payment_lines += f"\n<b>Total Amount:</b> ₹{payment_total:,.0f}"
+    if payment_paid > 0:
+        payment_lines += f"\n<b>Amount Paid:</b> ₹{payment_paid:,.0f}"
+        payment_lines += f"\n<b>Amount Left:</b> ₹{payment_left:,.0f}"
+
+    addons_note = booking_data.get('addons_note', '')
+    staff_note = ""
+    if addons_note and "BOOKED BY STAFF" in addons_note:
+        staff_note = "\n\n⚠️ <b>NOTE: Booked by staff — please cross check</b>"
+
     return (
         f"<b>{label}</b>\n\n"
         f"<b>Customer:</b> {booking_data['customer_name']}\n"
@@ -77,9 +97,10 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
         f"<b>Time Slot:</b> {booking_data['time_slot']}\n"
         f"<b>Package:</b> {booking_data.get('package_name', '')}\n"
         f"<b>Celebration:</b> {booking_data.get('celebration_name', '')}\n"
-        f"<b>Notes:</b> {booking_data.get('addons_note', '')}\n"
+        f"<b>Notes:</b> {addons_note}\n"
         f"<b>Status:</b> {booking_data.get('status', '')}"
-        f"{payment_line}"
+        f"{payment_lines}"
+        f"{staff_note}"
     )
 
 

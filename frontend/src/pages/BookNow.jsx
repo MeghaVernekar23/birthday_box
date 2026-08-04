@@ -8,6 +8,7 @@ const TIME_SLOTS = [
   "30 Minutes",
   "1 Hour (Quick)",
   "1.5 Hours (Classic)",
+  "2 Hours",
   "Other",
 ];
 
@@ -15,6 +16,7 @@ const slotDurationMinutes = (timeSlot) => {
   if (timeSlot === "30 Minutes") return 30;
   if (timeSlot === "1 Hour (Quick)") return 60;
   if (timeSlot === "1.5 Hours (Classic)") return 90;
+  if (timeSlot === "2 Hours") return 120;
   return 60;
 };
 
@@ -49,6 +51,16 @@ const PACKAGES_1HR30 = [
   { id: "p15h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,699" },
   { id: "p15h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,999" },
   { id: "p15h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" },
+];
+
+const PACKAGES_2HR = [
+  { id: "p2h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,499" },
+  { id: "p2h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,799" },
+  { id: "p2h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹2,299" },
+  { id: "p2h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,699" },
+  { id: "p2h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,199" },
+  { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,499" },
+  { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,500" },
 ];
 
 const ADDONS = [
@@ -122,12 +134,14 @@ export default function BookNow() {
     celebrationType: "",
     packages1hr: [],
     packages1hr30: [],
+    packages2hr: [],
     addons: [],
     referral: "",
     agreement: false,
     contactUs: "",
     status: "pending",
     paymentPaid: "",
+    bookedByStaff: false,
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -177,6 +191,7 @@ export default function BookNow() {
         const getDuration = (note) => {
           if (!note) return 1;
           if (note.includes("30 Minutes")) return 0.5;
+          if (note.includes("2 Hours")) return 2;
           if (note.includes("1.5 Hours")) return 1.5;
           if (note.includes("1 Hour")) return 1;
           return 1;
@@ -279,6 +294,29 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     });
   };
 
+  const parsePrice = (p) => parseInt((p || "").replace(/[₹,]/g, "")) || 0;
+
+  const computeTotal = () => {
+    let total = 0;
+    if (form.timeSlot === "30 Minutes" || form.timeSlot === "1 Hour (Quick)") {
+      form.packages1hr.forEach((id) => {
+        const pkg = PACKAGES_1HR.find((p) => p.id === id);
+        if (pkg) total += parsePrice(pkg.price);
+      });
+    } else if (form.timeSlot === "1.5 Hours (Classic)") {
+      form.packages1hr30.forEach((id) => {
+        const pkg = PACKAGES_1HR30.find((p) => p.id === id);
+        if (pkg) total += parsePrice(pkg.price);
+      });
+    } else if (form.timeSlot === "2 Hours") {
+      form.packages2hr.forEach((id) => {
+        const pkg = PACKAGES_2HR.find((p) => p.id === id);
+        if (pkg) total += parsePrice(pkg.price);
+      });
+    }
+    return total;
+  };
+
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = "Name is required.";
@@ -313,6 +351,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       const allSelectedLabels = [
         ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)?.label),
         ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)?.label),
+        ...form.packages2hr.map((id) => PACKAGES_2HR.find((p) => p.id === id)?.label),
       ].filter(Boolean);
 
       let package_id = pkgList[0]?.package_id;
@@ -334,6 +373,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
         form.contactUs ? `Message: ${form.contactUs}` : "",
+        form.bookedByStaff ? "BOOKED BY STAFF — CROSS CHECK" : "",
       ]
         .filter(Boolean)
         .join(" | ");
@@ -367,7 +407,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         addons_note,
         status: form.status,
         payment_mode: "",
-        payment_total: 0,
+        payment_total: computeTotal(),
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
         payment_notes: "",
         created_by: "customer",
@@ -494,7 +534,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                     value={slot}
                     checked={form.timeSlot === slot}
                     onChange={() => {
-                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [] }));
+                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [], packages2hr: [] }));
                       setErrors((prev) => ({ ...prev, timeSlot: "" }));
                       if (form.preferredDate) fetchBookedTimesForDate(form.preferredDate, slot);
                     }}
@@ -653,6 +693,26 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             </div>
           )}
 
+          {/* PACKAGES 2 HR — only when 2 Hours is selected */}
+          {form.timeSlot === "2 Hours" && (
+            <div className="bn-field">
+              <label className="bn-label">PACKAGES (2 HR)</label>
+              <div className="bn-checkbox-group">
+                {PACKAGES_2HR.map((pkg) => (
+                  <label key={pkg.id} className={`bn-checkbox-option ${form.packages2hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.packages2hr.includes(pkg.id)}
+                      onChange={() => toggleCheck("packages2hr", pkg.id)}
+                    />
+                    <span className="bn-pkg-label">{pkg.label}</span>
+                    <span className="bn-pkg-price">{pkg.price}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ADD-ONS */}
           <div className="bn-field">
             <label className="bn-label">ADD-ONS</label>
@@ -743,6 +803,18 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             </div>
           </div>
 
+          {/* TOTAL AMOUNT */}
+          <div className="bn-field">
+            <label className="bn-label">TOTAL AMOUNT</label>
+            <input
+              className="bn-input"
+              type="text"
+              value={computeTotal() > 0 ? `₹${computeTotal().toLocaleString("en-IN")}` : "₹0 (no package selected)"}
+              disabled
+              style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed", fontWeight: "bold" }}
+            />
+          </div>
+
           {/* PAYMENT AMOUNT */}
           <div className="bn-field">
             <label className="bn-label">AMOUNT PAID (optional)</label>
@@ -754,6 +826,18 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               value={form.paymentPaid}
               onChange={(e) => set("paymentPaid", e.target.value)}
             />
+          </div>
+
+          {/* BOOKED BY STAFF */}
+          <div className="bn-field">
+            <label className="bn-agreement-label">
+              <input
+                type="checkbox"
+                checked={form.bookedByStaff}
+                onChange={(e) => set("bookedByStaff", e.target.checked)}
+              />
+              <span>Booked by staff?</span>
+            </label>
           </div>
 
           {submitError && (
