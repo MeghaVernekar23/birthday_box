@@ -54,13 +54,13 @@ const PACKAGES_1HR30 = [
 ];
 
 const PACKAGES_2HR = [
-  { id: "p2h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,499" },
-  { id: "p2h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,799" },
-  { id: "p2h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹2,299" },
-  { id: "p2h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,699" },
-  { id: "p2h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,199" },
-  { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,499" },
-  { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,500" },
+  { id: "p2h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,998" },
+  { id: "p2h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹2,598" },
+  { id: "p2h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹3,598" },
+  { id: "p2h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹4,398" },
+  { id: "p2h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹5,398" },
+  { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹9,998" },
+  { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹2,000" },
 ];
 
 const ADDONS = [
