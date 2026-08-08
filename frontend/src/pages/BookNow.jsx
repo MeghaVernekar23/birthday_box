@@ -154,7 +154,6 @@ export default function BookNow() {
     agreement: false,
     contactUs: "",
     status: "pending",
-    paymentMode: "",
     paymentPaid: "",
     bookedByStaff: false,
   });
@@ -360,6 +359,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     if (!form.celebrationType) e.celebrationType = "Please select a celebration type.";
     if (!form.referral) e.referral = "Please tell us how you heard about us.";
     if (!form.agreement) e.agreement = "You must agree to the Customer Disclaimer.";
+    if (computeTotal() === 0) e.total = "Please select at least one package before submitting.";
     return e;
   };
 
@@ -676,6 +676,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -697,6 +698,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR30.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -718,6 +720,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (3 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_3HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages3hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -739,6 +742,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (2 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_2HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages2hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -901,12 +905,13 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
           <div className="bn-field">
             <label className="bn-label">TOTAL AMOUNT</label>
             <input
-              className="bn-input"
+              className={`bn-input ${errors.total ? "bn-input-err" : ""}`}
               type="text"
               value={computeTotal() > 0 ? `₹${computeTotal().toLocaleString("en-IN")}` : "₹0 (no package selected)"}
               disabled
               style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed", fontWeight: "bold" }}
             />
+            {errors.total && <span className="bn-error">{errors.total}</span>}
             {hasUnpricedAddons() && (
               <span className="bn-field-hint" style={{ color: "#e8603c" }}>
                 * Some selected add-ons have no fixed price — our staff will discuss the final amount with you.
@@ -927,24 +932,6 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             />
           </div>
 
-          {/* PAYMENT MODE */}
-          <div className="bn-field">
-            <label className="bn-label">PAYMENT MODE</label>
-            <div className="bn-radio-group">
-              {["UPI", "Cash", "Other"].map((mode) => (
-                <label key={mode} className={`bn-radio-option ${form.paymentMode === mode ? "bn-radio-selected" : ""}`}>
-                  <input
-                    type="radio"
-                    name="paymentMode"
-                    value={mode}
-                    checked={form.paymentMode === mode}
-                    onChange={() => set("paymentMode", mode)}
-                  />
-                  {mode}
-                </label>
-              ))}
-            </div>
-          </div>
 
           {/* BOOKED BY STAFF */}
           <div className="bn-field">
