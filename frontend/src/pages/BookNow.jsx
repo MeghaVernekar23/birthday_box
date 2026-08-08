@@ -148,6 +148,7 @@ export default function BookNow() {
     packages3hr: [],
     extraGuests: 0,
     extraGuestRate: 100,
+    needHall: false,
     addons: [],
     referral: "",
     agreement: false,
@@ -405,7 +406,8 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         form.referral ? `Heard from: ${form.referral}` : "",
         addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
-        (parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} × ₹${form.extraGuestRate}` : "",
+        (parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} x Rs${form.extraGuestRate}` : "",
+        form.needHall ? "Hall required: YES — price TBD with staff" : "",
         form.contactUs ? `Message: ${form.contactUs}` : "",
         form.bookedByStaff ? "BOOKED BY STAFF — CROSS CHECK" : "",
       ]
@@ -788,6 +790,17 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 </div>
               )}
             </div>
+            <label className={`bn-agreement-label bn-hall-toggle ${form.needHall ? "bn-radio-selected" : ""}`}>
+              <input
+                type="checkbox"
+                checked={form.needHall}
+                onChange={(e) => set("needHall", e.target.checked)}
+              />
+              <span>
+                <strong>Need an Extra Hall?</strong> — for larger groups (more than 40 people) &nbsp;
+                <span style={{ fontWeight: 400, color: "#888", fontSize: "0.85rem" }}>Price to be discussed with staff</span>
+              </span>
+            </label>
           </div>
 
           {/* ADD-ONS */}

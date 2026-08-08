@@ -88,6 +88,8 @@ def _parse_addons_note(addons_note: str) -> dict:
             result["packages"] = segment[len("Packages selected:"):].strip()
         elif segment.startswith("Extra guests:"):
             result["extra_guests"] = segment[len("Extra guests:"):].strip()
+        elif segment.startswith("Hall required:"):
+            result["hall"] = segment[len("Hall required:"):].strip()
         elif segment.startswith("Message:"):
             result["message"] = segment[len("Message:"):].strip()
         elif "BOOKED BY STAFF" in segment:
@@ -133,6 +135,10 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
     if parsed.get("extra_guests"):
         extra_guests_line = f"\n<b>👥 Extra Guests:</b> {parsed['extra_guests']}"
 
+    hall_line = ""
+    if parsed.get("hall"):
+        hall_line = f"\n<b>🏛 Hall Required:</b> {parsed['hall']}"
+
     referral_line = ""
     if parsed.get("referral"):
         referral_line = f"\n<b>📣 Heard From:</b> {parsed['referral']}"
@@ -151,6 +157,7 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
         f"<b>🎉 Celebration:</b> {booking_data.get('celebration_name', '')}"
         f"{packages_line}"
         f"{extra_guests_line}"
+        f"{hall_line}"
         f"{addons_line}"
         f"{referral_line}"
         f"{message_line}\n"
