@@ -71,6 +71,30 @@ async def _send_message_async(text: str) -> None:
     await loop.run_in_executor(None, _send_message_sync, text)
 
 
+def _parse_addons_note(addons_note: str) -> dict:
+    """Parse pipe-separated addons_note into a structured dict."""
+    result = {}
+    if not addons_note:
+        return result
+    for segment in addons_note.split(" | "):
+        segment = segment.strip()
+        if segment.startswith("Time slot:"):
+            result["time_slot"] = segment[len("Time slot:"):].strip()
+        elif segment.startswith("Heard from:"):
+            result["referral"] = segment[len("Heard from:"):].strip()
+        elif segment.startswith("Add-ons:"):
+            result["addons"] = segment[len("Add-ons:"):].strip()
+        elif segment.startswith("Packages selected:"):
+            result["packages"] = segment[len("Packages selected:"):].strip()
+        elif segment.startswith("Extra guests:"):
+            result["extra_guests"] = segment[len("Extra guests:"):].strip()
+        elif segment.startswith("Message:"):
+            result["message"] = segment[len("Message:"):].strip()
+        elif "BOOKED BY STAFF" in segment:
+            result["staff_booked"] = True
+    return result
+
+
 def build_booking_message(booking_data: dict, label: str = "New Booking") -> str:
     """Format a booking notification message."""
     payment_total = booking_data.get('payment_total') or 0
@@ -79,26 +103,58 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
 
     payment_lines = ""
     if payment_total > 0:
-        payment_lines += f"\n<b>Total Amount:</b> ₹{payment_total:,.0f}"
+        payment_lines += f"\n<b>💰 Total Amount:</b> ₹{payment_total:,.0f}"
     if payment_paid > 0:
-        payment_lines += f"\n<b>Amount Paid:</b> ₹{payment_paid:,.0f}"
-        payment_lines += f"\n<b>Amount Left:</b> ₹{payment_left:,.0f}"
+        payment_lines += f"\n<b>✅ Amount Paid:</b> ₹{payment_paid:,.0f}"
+        payment_lines += f"\n<b>⏳ Amount Left:</b> ₹{payment_left:,.0f}"
 
-    addons_note = booking_data.get('addons_note', '')
+    addons_note = booking_data.get('addons_note', '') or ''
+    parsed = _parse_addons_note(addons_note)
+
     staff_note = ""
-    if addons_note and "BOOKED BY STAFF" in addons_note:
+    if parsed.get("staff_booked"):
         staff_note = "\n\n⚠️ <b>NOTE: Booked by staff — please cross check</b>"
+
+    duration_line = ""
+    if parsed.get("time_slot"):
+        duration_line = f"\n<b>⏱ Duration:</b> {parsed['time_slot']}"
+
+    packages_line = ""
+    if parsed.get("packages"):
+        pkg_items = parsed["packages"].split("; ")
+        pkg_formatted = "\n  \u2022 ".join(pkg_items)
+        packages_line = f"\n<b>\U0001f4e6 Package(s) Selected:</b>\n  \u2022 {pkg_formatted}"
+
+    addons_line = ""
+    if parsed.get("addons"):
+        addons_line = f"\n<b>➕ Add-ons:</b> {parsed['addons']}"
+
+    extra_guests_line = ""
+    if parsed.get("extra_guests"):
+        extra_guests_line = f"\n<b>👥 Extra Guests:</b> {parsed['extra_guests']}"
+
+    referral_line = ""
+    if parsed.get("referral"):
+        referral_line = f"\n<b>📣 Heard From:</b> {parsed['referral']}"
+
+    message_line = ""
+    if parsed.get("message"):
+        message_line = f"\n<b>💬 Customer Message:</b> {parsed['message']}"
 
     return (
         f"<b>{label}</b>\n\n"
-        f"<b>Customer:</b> {booking_data['customer_name']}\n"
-        f"<b>Phone:</b> {booking_data['phone_number']}\n"
-        f"<b>Event Date:</b> {booking_data['event_date']}\n"
-        f"<b>Time Slot:</b> {booking_data['time_slot']}\n"
-        f"<b>Package:</b> {booking_data.get('package_name', '')}\n"
-        f"<b>Celebration:</b> {booking_data.get('celebration_name', '')}\n"
-        f"<b>Notes:</b> {addons_note}\n"
-        f"<b>Status:</b> {booking_data.get('status', '')}"
+        f"<b>👤 Customer:</b> {booking_data['customer_name']}\n"
+        f"<b>📞 Phone:</b> {booking_data['phone_number']}\n"
+        f"<b>📅 Event Date:</b> {booking_data['event_date']}\n"
+        f"<b>🕐 Time:</b> {booking_data['time_slot']}"
+        f"{duration_line}\n"
+        f"<b>🎉 Celebration:</b> {booking_data.get('celebration_name', '')}"
+        f"{packages_line}"
+        f"{extra_guests_line}"
+        f"{addons_line}"
+        f"{referral_line}"
+        f"{message_line}\n"
+        f"<b>📋 Status:</b> {booking_data.get('status', '')}"
         f"{payment_lines}"
         f"{staff_note}"
     )

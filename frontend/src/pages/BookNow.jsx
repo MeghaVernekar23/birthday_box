@@ -9,6 +9,7 @@ const TIME_SLOTS = [
   "1 Hour (Quick)",
   "1.5 Hours (Classic)",
   "2 Hours",
+  "3 Hours",
   "Other",
 ];
 
@@ -17,6 +18,7 @@ const slotDurationMinutes = (timeSlot) => {
   if (timeSlot === "1 Hour (Quick)") return 60;
   if (timeSlot === "1.5 Hours (Classic)") return 90;
   if (timeSlot === "2 Hours") return 120;
+  if (timeSlot === "3 Hours") return 180;
   return 60;
 };
 
@@ -61,6 +63,15 @@ const PACKAGES_2HR = [
   { id: "p2h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹5,398" },
   { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹9,998" },
   // { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹2,000" },
+];
+
+const PACKAGES_3HR = [
+  { id: "p3h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹2,997" },
+  { id: "p3h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹3,897" },
+  { id: "p3h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹5,397" },
+  { id: "p3h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹6,597" },
+  { id: "p3h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹8,097" },
+  { id: "p3h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹14,997" },
 ];
 
 const ADDONS = [
@@ -128,18 +139,21 @@ export default function BookNow() {
     name: "",
     phone: "",
     timeSlot: "",
-    needCake: "",
     preferredDate: "",
     preferredTime: "",
     celebrationType: "",
     packages1hr: [],
     packages1hr30: [],
     packages2hr: [],
+    packages3hr: [],
+    extraGuests: 0,
+    extraGuestRate: 100,
     addons: [],
     referral: "",
     agreement: false,
     contactUs: "",
     status: "pending",
+    paymentMode: "",
     paymentPaid: "",
     bookedByStaff: false,
   });
@@ -191,6 +205,7 @@ export default function BookNow() {
         const getDuration = (note) => {
           if (!note) return 1;
           if (note.includes("30 Minutes")) return 0.5;
+          if (note.includes("3 Hours")) return 3;
           if (note.includes("2 Hours")) return 2;
           if (note.includes("1.5 Hours")) return 1.5;
           if (note.includes("1 Hour")) return 1;
@@ -313,7 +328,15 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         const pkg = PACKAGES_2HR.find((p) => p.id === id);
         if (pkg) total += parsePrice(pkg.price);
       });
+    } else if (form.timeSlot === "3 Hours") {
+      form.packages3hr.forEach((id) => {
+        const pkg = PACKAGES_3HR.find((p) => p.id === id);
+        if (pkg) total += parsePrice(pkg.price);
+      });
     }
+    const guests = parseInt(form.extraGuests) || 0;
+    const rate = parseInt(form.extraGuestRate) || 0;
+    total += guests * rate;
     form.addons.forEach((id) => {
       const addon = ADDONS.find((a) => a.id === id);
       if (addon && addon.price) total += addon.price;
@@ -362,6 +385,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)?.label),
         ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)?.label),
         ...form.packages2hr.map((id) => PACKAGES_2HR.find((p) => p.id === id)?.label),
+        ...form.packages3hr.map((id) => PACKAGES_3HR.find((p) => p.id === id)?.label),
       ].filter(Boolean);
 
       let package_id = pkgList[0]?.package_id;
@@ -376,12 +400,12 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
 
       // Build addons note
       const addonsList = form.addons.map((id) => ADDONS.find((a) => a.id === id)?.label).filter(Boolean);
-      if (form.needCake === "YES") addonsList.push("Cake required");
       const addons_note = [
         form.timeSlot ? `Time slot: ${form.timeSlot}` : "",
         form.referral ? `Heard from: ${form.referral}` : "",
         addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
+        (parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} × ₹${form.extraGuestRate}` : "",
         form.contactUs ? `Message: ${form.contactUs}` : "",
         form.bookedByStaff ? "BOOKED BY STAFF — CROSS CHECK" : "",
       ]
@@ -416,7 +440,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         package_id,
         addons_note,
         status: form.status,
-        payment_mode: "",
+        payment_mode: form.paymentMode,
         payment_total: computeTotal(),
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
         payment_notes: "",
@@ -544,7 +568,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                     value={slot}
                     checked={form.timeSlot === slot}
                     onChange={() => {
-                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [], packages2hr: [] }));
+                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [], packages2hr: [], packages3hr: [] }));
                       setErrors((prev) => ({ ...prev, timeSlot: "" }));
                       if (form.preferredDate) fetchBookedTimesForDate(form.preferredDate, slot);
                     }}
@@ -556,24 +580,6 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             {errors.timeSlot && <span className="bn-error">{errors.timeSlot}</span>}
           </div>
 
-          {/* NEED CAKE */}
-          <div className="bn-field">
-            <label className="bn-label">DO YOU NEED A CAKE?</label>
-            <div className="bn-radio-group">
-              {["YES", "NO"].map((opt) => (
-                <label key={opt} className={`bn-radio-option ${form.needCake === opt ? "bn-radio-selected" : ""}`}>
-                  <input
-                    type="radio"
-                    name="needCake"
-                    value={opt}
-                    checked={form.needCake === opt}
-                    onChange={() => set("needCake", opt)}
-                  />
-                  {opt}
-                </label>
-              ))}
-            </div>
-          </div>
 
           {/* PREFERRED DATE */}
           <div className="bn-field">
@@ -667,7 +673,8 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
           {(form.timeSlot === "30 Minutes" || form.timeSlot === "1 Hour (Quick)") && (
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR)</label>
-              <div className="bn-checkbox-group">
+              <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
@@ -687,7 +694,8 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
           {form.timeSlot === "1.5 Hours (Classic)" && (
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
-              <div className="bn-checkbox-group">
+              <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR30.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
@@ -703,11 +711,33 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             </div>
           )}
 
+          {/* PACKAGES 3 HR — only when 3 Hours is selected */}
+          {form.timeSlot === "3 Hours" && (
+            <div className="bn-field">
+              <label className="bn-label">PACKAGES (3 HR)</label>
+              <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <div className="bn-checkbox-group bn-addons-group">
+                {PACKAGES_3HR.map((pkg) => (
+                  <label key={pkg.id} className={`bn-checkbox-option ${form.packages3hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={form.packages3hr.includes(pkg.id)}
+                      onChange={() => toggleCheck("packages3hr", pkg.id)}
+                    />
+                    <span className="bn-pkg-label">{pkg.label}</span>
+                    <span className="bn-pkg-price">{pkg.price}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* PACKAGES 2 HR — only when 2 Hours is selected */}
           {form.timeSlot === "2 Hours" && (
             <div className="bn-field">
               <label className="bn-label">PACKAGES (2 HR)</label>
-              <div className="bn-checkbox-group">
+              <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
+              <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_2HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages2hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
@@ -722,6 +752,43 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               </div>
             </div>
           )}
+
+          {/* EXTRA GUESTS */}
+          <div className="bn-field">
+            <label className="bn-label">EXTRA GUESTS</label>
+            <span className="bn-field-hint" style={{ color: "#555" }}>
+              Up to 10 people are included. Add extra guests below (charged per person).
+            </span>
+            <div className="bn-extra-guests-row">
+              <div className="bn-extra-guests-col">
+                <label className="bn-sublabel">Number of extra guests</label>
+                <input
+                  className="bn-input"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={form.extraGuests}
+                  onChange={(e) => set("extraGuests", e.target.value)}
+                />
+              </div>
+              <div className="bn-extra-guests-col">
+                <label className="bn-sublabel">Rate per person (₹)</label>
+                <input
+                  className="bn-input"
+                  type="number"
+                  min="0"
+                  placeholder="100"
+                  value={form.extraGuestRate}
+                  onChange={(e) => set("extraGuestRate", e.target.value)}
+                />
+              </div>
+              {(parseInt(form.extraGuests) > 0) && (
+                <div className="bn-extra-guests-total">
+                  Extra guests charge: <strong>₹{((parseInt(form.extraGuests) || 0) * (parseInt(form.extraGuestRate) || 0)).toLocaleString("en-IN")}</strong>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* ADD-ONS */}
           <div className="bn-field">
@@ -845,6 +912,25 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               value={form.paymentPaid}
               onChange={(e) => set("paymentPaid", e.target.value)}
             />
+          </div>
+
+          {/* PAYMENT MODE */}
+          <div className="bn-field">
+            <label className="bn-label">PAYMENT MODE</label>
+            <div className="bn-radio-group">
+              {["UPI", "Cash", "Other"].map((mode) => (
+                <label key={mode} className={`bn-radio-option ${form.paymentMode === mode ? "bn-radio-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value={mode}
+                    checked={form.paymentMode === mode}
+                    onChange={() => set("paymentMode", mode)}
+                  />
+                  {mode}
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* BOOKED BY STAFF */}

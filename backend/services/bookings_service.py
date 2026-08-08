@@ -59,6 +59,15 @@ def update_package(package_id: int, package_details: EditPackageDetails, db: Ses
     return {"message": "Package updated successfully"}    
 
 
+def delete_package(package_id: int, db: Session) -> dict:
+    pkg = db.query(Packages).filter(Packages.package_id == package_id).first()
+    if not pkg:
+        raise Exception(f"Package {package_id} not found")
+    db.delete(pkg)
+    db.commit()
+    return {"message": "Package deleted successfully"}
+
+
 def get_bookings_details(filter: str,  db: Session) -> List[BookingDetails]:
     """
     Fetch booking details based on filter (today, future, past, all).

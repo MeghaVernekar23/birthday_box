@@ -17,6 +17,7 @@ from services.bookings_service import (
     get_celebration_type,
     get_package,
     update_package,
+    delete_package,
     add_booking_details,
     delete_booking_detail,
     get_booking_details_by_id,
@@ -175,6 +176,22 @@ def update_package_details(
 ) -> dict:
     try:
         return update_package(package_id=package_id, package_details=package_details, db=db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@bookings_router.delete(
+    "/package/{package_id}",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Delete a package by ID.",
+)
+def delete_package_details(
+    package_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    try:
+        return delete_package(package_id=package_id, db=db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

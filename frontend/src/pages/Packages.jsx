@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../components/Datatable";
-import { fetchPackage, updatePackage } from "../services/bookingServices";
+import { fetchPackage, updatePackage, deletePackage } from "../services/bookingServices";
 import "../css/Packages.css";
 
 const Packages = () => {
@@ -56,6 +56,16 @@ const Packages = () => {
     }
   };
 
+  const handleDelete = async (pkg) => {
+    if (!window.confirm(`Delete package "${pkg.package_name}"? This cannot be undone.`)) return;
+    try {
+      await deletePackage(pkg.package_id);
+      fetchPackageData();
+    } catch (err) {
+      alert("Failed to delete package.");
+    }
+  };
+
   const columns = [
     { key: "package_id", label: "ID" },
     { key: "package_name", label: "Package Name" },
@@ -70,9 +80,14 @@ const Packages = () => {
         columns={columns}
         data={packages}
         actions={[({ row }) => (
-          <button className="pkg-btn-edit-row" onClick={() => openEdit(row)}>
-            Edit
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button className="pkg-btn-edit-row" onClick={() => openEdit(row)}>
+              Edit
+            </button>
+            <button className="pkg-btn-delete-row" onClick={() => handleDelete(row)}>
+              Delete
+            </button>
+          </div>
         )]}
         searchableFields={["package_name", "description"]}
       />

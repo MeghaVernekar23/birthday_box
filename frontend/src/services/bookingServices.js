@@ -80,6 +80,13 @@ export const updatePackage = (packageId, formData) => {
     });
 };
 
+export const deletePackage = (packageId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/package/${packageId}`,
+        method: "DELETE",
+    });
+};
+
 export const fetchNextBooking = () => {
     return apiRequest({
         url: `${BASE_URL}/bookings/next-booking`,
