@@ -459,7 +459,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
         (!form.needHall && parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} x Rs${form.extraGuestRate}` : "",
-        form.needHall ? "Extra Dining Hall required: YES — Rs2000" : "",
+        form.needHall ? "Hall required: Extra Dining Hall — Rs2000" : "",
         form.contactUs ? `Message: ${form.contactUs}` : "",
         form.bookedByStaff ? "BOOKED BY STAFF — CROSS CHECK" : "",
       ]
