@@ -150,6 +150,7 @@ export default function BookNow() {
     extraGuestRate: 100,
     needHall: false,
     addons: [],
+    customAddons: [],
     referral: "",
     agreement: false,
     contactUs: "",
@@ -171,8 +172,9 @@ export default function BookNow() {
   // Staff PIN unlock state
   const [rateUnlocked, setRateUnlocked] = useState(false);
   const [totalUnlocked, setTotalUnlocked] = useState(false);
+  const [addonsUnlocked, setAddonsUnlocked] = useState(false);
   const [totalOverride, setTotalOverride] = useState("");
-  const [pinModal, setPinModal] = useState(null); // "rate" | "total" | null
+  const [pinModal, setPinModal] = useState(null); // "rate" | "total" | "addons" | null
   const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState("");
   const STAFF_PIN = import.meta.env.VITE_STAFF_PIN;
@@ -180,6 +182,7 @@ export default function BookNow() {
   const handlePinSubmit = () => {
     if (pinInput === STAFF_PIN) {
       if (pinModal === "rate") setRateUnlocked(true);
+      if (pinModal === "addons") setAddonsUnlocked(true);
       if (pinModal === "total") {
         setTotalUnlocked(true);
         setTotalOverride(String(computeTotal()));
@@ -369,6 +372,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       const addon = ADDONS.find((a) => a.id === id);
       if (addon && addon.price) total += addon.price;
     });
+    form.customAddons.forEach((ca) => {
+      const p = parseFloat(ca.price);
+      if (!isNaN(p) && p > 0) total += p;
+    });
     return total;
   };
 
@@ -453,10 +460,17 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
 
       // Build addons note
       const addonsList = form.addons.map((id) => ADDONS.find((a) => a.id === id)?.label).filter(Boolean);
+      const customAddonsList = form.customAddons
+        .filter((ca) => ca.label.trim())
+        .map((ca) => {
+          const p = parseFloat(ca.price);
+          return ca.label.trim() + ((!isNaN(p) && p > 0) ? ` — ₹${p.toLocaleString("en-IN")}` : " (Price TBD)");
+        });
+      const allAddonsList = [...addonsList, ...customAddonsList];
       const addons_note = [
         form.timeSlot ? `Time slot: ${form.timeSlot}` : "",
         form.referral ? `Heard from: ${form.referral}` : "",
-        addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
+        allAddonsList.length > 0 ? `Add-ons: ${allAddonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
         (!form.needHall && parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} x Rs${form.extraGuestRate}` : "",
         form.needHall ? "Hall required: Extra Dining Hall — Rs2000" : "",
@@ -904,6 +918,68 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* CUSTOM ADD-ONS */}
+          <div className="bn-field">
+            <label className="bn-label">CUSTOM ADD-ONS</label>
+            {!addonsUnlocked ? (
+              <button
+                type="button"
+                style={{ background: "none", border: "1px dashed #aaa", color: "#888", borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontSize: "0.9rem" }}
+                onClick={() => setPinModal("addons")}
+              >
+                🔒 Staff PIN Required to Add Custom Add-Ons
+              </button>
+            ) : (
+              <>
+                {form.customAddons.map((ca, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center" }}>
+                    <input
+                      className="bn-input"
+                      type="text"
+                      placeholder="Add-on name"
+                      value={ca.label}
+                      style={{ flex: 2 }}
+                      onChange={(e) => {
+                        const updated = [...form.customAddons];
+                        updated[idx] = { ...updated[idx], label: e.target.value };
+                        setForm((prev) => ({ ...prev, customAddons: updated }));
+                      }}
+                    />
+                    <input
+                      className="bn-input"
+                      type="number"
+                      placeholder="Price (₹)"
+                      value={ca.price}
+                      min="0"
+                      style={{ flex: 1 }}
+                      onChange={(e) => {
+                        const updated = [...form.customAddons];
+                        updated[idx] = { ...updated[idx], price: e.target.value };
+                        setForm((prev) => ({ ...prev, customAddons: updated }));
+                      }}
+                    />
+                    <button
+                      type="button"
+                      style={{ background: "none", border: "none", color: "#e8603c", cursor: "pointer", fontSize: "1.2rem", padding: "0 4px" }}
+                      onClick={() => {
+                        const updated = form.customAddons.filter((_, i) => i !== idx);
+                        setForm((prev) => ({ ...prev, customAddons: updated }));
+                      }}
+                    >✕</button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="bn-add-custom-addon-btn"
+                  style={{ marginTop: "4px", background: "none", border: "1px dashed #e8603c", color: "#e8603c", borderRadius: "6px", padding: "6px 14px", cursor: "pointer", fontSize: "0.9rem" }}
+                  onClick={() => setForm((prev) => ({ ...prev, customAddons: [...prev.customAddons, { label: "", price: "" }] }))}
+                >
+                  + Add Custom Add-On
+                </button>
+              </>
+            )}
           </div>
 
           {/* REFERRAL */}
