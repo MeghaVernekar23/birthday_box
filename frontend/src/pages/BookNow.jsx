@@ -549,9 +549,9 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
           <div className="bn-success-card">
             <div className="bn-success-icon">🎉</div>
             <h2>Thank You, {form.name}!</h2>
-            <p>Your booking request has been received.</p>
+            <p>We're so excited to be part of your celebration! Your booking request has been received and our team will reach out to you shortly to confirm the details.</p>
             <p className="bn-success-note">
-              Please call us at <strong>+91 89715 43330</strong> to confirm availability and complete payment.
+              Can't wait to hear from us? Feel free to give us a call at <strong>+91 89715 43330</strong> — we'd love to chat!
             </p>
             <button className="bn-btn-primary" onClick={() => navigate("/")}>
               Back to Home
