@@ -622,7 +622,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                     value={slot}
                     checked={form.timeSlot === slot}
                     onChange={() => {
-                      setForm((prev) => ({ ...prev, timeSlot: slot, packages1hr: [], packages1hr30: [], packages2hr: [], packages3hr: [] }));
+                      setForm((prev) => ({ ...prev, timeSlot: slot, preferredTime: "", packages1hr: [], packages1hr30: [], packages2hr: [], packages3hr: [] }));
                       setErrors((prev) => ({ ...prev, timeSlot: "" }));
                       if (form.preferredDate) fetchBookedTimesForDate(form.preferredDate, slot);
                     }}
