@@ -148,8 +148,7 @@ function AddBookings() {
       const { total } = calcTotals();
       if (!paymentMode) { alert("Please select a payment mode."); return; }
       if (!amountPaid || Number(amountPaid) < 0) { alert("Amount paid must be a valid number."); return; }
-      if (Number(amountPaid) > total) { alert("Amount paid cannot exceed the total amount."); return; }
-      setFormData({ ...formData, payment_mode: paymentMode, payment_paid: amountPaid, payment_notes: paymentNotes, payment_total: total });
+setFormData({ ...formData, payment_mode: paymentMode, payment_paid: amountPaid, payment_notes: paymentNotes, payment_total: total });
     }
     if (step === 7) { setPopup({ visible: true, booking: formData }); return; }
     setStep(step + 1);

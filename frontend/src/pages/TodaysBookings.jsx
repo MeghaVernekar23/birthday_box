@@ -1433,11 +1433,6 @@ function Bookings() {
                       alert("Amount paid must be a valid number.");
                       return;
                     }
-                    if (Number(formData.payment_paid) > total) {
-                      alert("Amount paid cannot exceed total amount.");
-                      return;
-                    }
-
                     setFormData({
                       ...formData,
                       payment_mode: formData.payment_mode,
