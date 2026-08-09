@@ -385,41 +385,75 @@ const AnalyticsSection = () => {
       {/* Revenue Drill-down Modal */}
       {revenueModal && (
         <div className="ps-modal-overlay" onClick={() => setRevenueModal(null)}>
-          <div className="booking-taken-modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700, width: "90%" }}>
-            <h5>Revenue Breakdown — {revenueModal.label}</h5>
-            <div className="modal-close-icon" onClick={() => setRevenueModal(null)}>×</div>
-            {revenueModal.bookings.length === 0 ? (
-              <p style={{ color: "#888" }}>No bookings found for this month.</p>
-            ) : (
-              <>
-                <p style={{ margin: "0 0 12px", fontSize: 13, color: "#555" }}>
-                  Total: <strong>{formatCurrency(revenueModal.bookings.reduce((s, b) => s + (packagePriceMap[b.package_name] || 0), 0))}</strong> across {revenueModal.bookings.length} booking{revenueModal.bookings.length !== 1 ? "s" : ""}
-                </p>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <div className="rev-modal" onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div className="rev-modal__header">
+              <div>
+                <span className="rev-modal__eyebrow">Revenue Breakdown</span>
+                <h4 className="rev-modal__title">{revenueModal.label}</h4>
+              </div>
+              <button className="rev-modal__close" onClick={() => setRevenueModal(null)} aria-label="Close">×</button>
+            </div>
+
+            {/* Summary chips */}
+            {revenueModal.bookings.length > 0 && (() => {
+              const total = revenueModal.bookings.reduce((s, b) => s + (packagePriceMap[b.package_name] || 0), 0);
+              return (
+                <div className="rev-modal__chips">
+                  <div className="rev-chip rev-chip--green">
+                    <span className="rev-chip__label">Total Revenue</span>
+                    <span className="rev-chip__value">{formatCurrency(total)}</span>
+                  </div>
+                  <div className="rev-chip rev-chip--blue">
+                    <span className="rev-chip__label">Bookings</span>
+                    <span className="rev-chip__value">{revenueModal.bookings.length}</span>
+                  </div>
+                  <div className="rev-chip rev-chip--purple">
+                    <span className="rev-chip__label">Avg / Booking</span>
+                    <span className="rev-chip__value">{formatCurrency(Math.round(total / revenueModal.bookings.length))}</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Body */}
+            <div className="rev-modal__body">
+              {revenueModal.bookings.length === 0 ? (
+                <div className="rev-modal__empty">No bookings found for this month.</div>
+              ) : (
+                <div className="rev-modal__scroll">
+                  <table className="rev-table">
                     <thead>
-                      <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-                        <th style={{ padding: "6px 10px" }}>Customer</th>
-                        <th style={{ padding: "6px 10px" }}>Package</th>
-                        <th style={{ padding: "6px 10px" }}>Event Date</th>
-                        <th style={{ padding: "6px 10px" }}>Status</th>
-                        <th style={{ padding: "6px 10px", textAlign: "right" }}>Revenue</th>
+                      <tr>
+                        <th>Customer</th>
+                        <th>Package</th>
+                        <th>Event Date</th>
+                        <th>Status</th>
+                        <th className="rev-table__right">Revenue</th>
                       </tr>
                     </thead>
                     <tbody>
                       {revenueModal.bookings.map((b) => (
-                        <tr key={b.booking_id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                          <td style={{ padding: "6px 10px" }}>{b.customer_name}</td>
-                          <td style={{ padding: "6px 10px" }}>{b.package_name}</td>
-                          <td style={{ padding: "6px 10px" }}>{b.event_date}</td>
-                          <td style={{ padding: "6px 10px" }}>
-                            <span style={{
-                              background: b.status === "confirmed" ? "#d1fae5" : b.status === "cancelled" ? "#fee2e2" : "#fef3c7",
-                              color: b.status === "confirmed" ? "#065f46" : b.status === "cancelled" ? "#991b1b" : "#92400e",
-                              padding: "2px 8px", borderRadius: 10, fontSize: 11
-                            }}>{b.status}</span>
+                        <tr key={b.booking_id}>
+                          <td>
+                            <a
+                              className="rev-table__link"
+                              href={`/bookings/older?id=${b.booking_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {b.customer_name || "—"}
+                            </a>
                           </td>
-                          <td style={{ padding: "6px 10px", textAlign: "right", fontWeight: 600 }}>
+                          <td>{b.package_name || "—"}</td>
+                          <td>{b.event_date || "—"}</td>
+                          <td>
+                            <span className={`rev-status rev-status--${(b.status || "unknown").toLowerCase()}`}>
+                              {b.status || "unknown"}
+                            </span>
+                          </td>
+                          <td className="rev-table__right rev-table__amount">
                             {formatCurrency(packagePriceMap[b.package_name] || 0)}
                           </td>
                         </tr>
@@ -427,8 +461,8 @@ const AnalyticsSection = () => {
                     </tbody>
                   </table>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 import "../css/Booking.css";
@@ -119,6 +120,8 @@ function Bookings() {
     );
   };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     fetchOlderBookings();
   }, []);
@@ -129,6 +132,18 @@ function Bookings() {
     setOlderBookings(data);
     setLoading(false);
   };
+
+  // Auto-open booking from URL ?id= param (e.g. navigated from revenue modal)
+  useEffect(() => {
+    const bookingId = searchParams.get("id");
+    if (!bookingId) return;
+    fetchBookingById(Number(bookingId))
+      .then((fullBooking) => {
+        setPopupView({ visible: true, booking: fullBooking });
+        setSearchParams({}, { replace: true });
+      })
+      .catch((err) => console.error("Failed to load booking from URL param", err));
+  }, [searchParams]);
 
   const handleViewBooking = async (booking) => {
     try {

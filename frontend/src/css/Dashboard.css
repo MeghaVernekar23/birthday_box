@@ -921,3 +921,231 @@
     gap: 4px;
   }
 }
+
+/* ============================================================
+   Revenue Breakdown Modal
+   ============================================================ */
+.rev-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  width: min(700px, 94vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+/* Header */
+.rev-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #f0f3ff 0%, #faf8ff 100%);
+  flex-shrink: 0;
+}
+
+.rev-modal__eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6366f1;
+  margin-bottom: 4px;
+}
+
+.rev-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1f3c;
+  line-height: 1.2;
+}
+
+.rev-modal__close {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+}
+.rev-modal__close:hover { background: rgba(99, 102, 241, 0.2); }
+
+/* Summary chips */
+.rev-modal__chips {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f4ff;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.rev-chip {
+  flex: 1 1 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+.rev-chip--green  { background: #f0fdf4; }
+.rev-chip--blue   { background: #eff6ff; }
+.rev-chip--purple { background: #f5f3ff; }
+
+.rev-chip__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+}
+
+.rev-chip__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1f3c;
+}
+
+/* Body */
+.rev-modal__body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.rev-modal__scroll {
+  overflow: auto;
+  flex: 1;
+}
+
+.rev-modal__empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+/* Table */
+.rev-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+  font-size: 0.875rem;
+}
+
+.rev-table thead tr {
+  background: linear-gradient(135deg, #1a1f3c 0%, #16213e 100%);
+}
+
+.rev-table thead th {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 12px 16px;
+  white-space: nowrap;
+  text-align: left;
+  border: none;
+}
+
+.rev-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s;
+}
+.rev-table tbody tr:last-child { border-bottom: none; }
+.rev-table tbody tr:nth-child(even) { background: #fafbff; }
+.rev-table tbody tr:hover { background: #f0f4ff; }
+
+.rev-table tbody td {
+  padding: 11px 16px;
+  color: #334155;
+  border: none;
+  vertical-align: middle;
+}
+
+.rev-table__right { text-align: right !important; }
+
+.rev-table__amount {
+  font-weight: 700;
+  color: #1a1f3c;
+}
+
+.rev-table__link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+.rev-table__link:hover {
+  text-decoration: underline;
+  color: #6366f1;
+}
+
+/* Status badges */
+.rev-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.rev-status--confirmed  { background: #d1fae5; color: #065f46; }
+.rev-status--pending    { background: #fef3c7; color: #92400e; }
+.rev-status--cancelled  { background: #fee2e2; color: #991b1b; }
+.rev-status--completed  { background: #e0f2fe; color: #075985; }
+.rev-status--unknown    { background: #f1f5f9; color: #64748b; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .rev-modal {
+    width: 96vw;
+    border-radius: 16px;
+    max-height: 92vh;
+  }
+
+  .rev-modal__header {
+    padding: 16px 16px 14px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .rev-modal__title { font-size: 1.05rem; }
+
+  .rev-modal__chips {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+
+  .rev-chip {
+    flex: 1 1 calc(50% - 4px);
+    padding: 8px 12px;
+  }
+
+  .rev-chip__value { font-size: 1rem; }
+
+  .rev-table thead th,
+  .rev-table tbody td {
+    padding: 9px 12px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .rev-chip { flex: 1 1 100%; }
+}
+
