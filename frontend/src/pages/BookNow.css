@@ -304,6 +304,19 @@
   margin-left: 8px;
 }
 
+/* ── UNLOCK ROW (rate / total) ── */
+.bn-unlock-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bn-unlock-row .bn-input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* ── EXTRA GUESTS ── */
 .bn-sublabel {
   font-size: 0.78rem;
@@ -559,6 +572,11 @@
   .bn-addons-group {
     grid-template-columns: 1fr;
   }
+
+  .bn-extra-guests-col {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
 }
 
 /* Small phone */
@@ -652,6 +670,35 @@
     grid-template-columns: 1fr;
   }
 
+  /* Extra guests — stack cols vertically */
+  .bn-extra-guests-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bn-extra-guests-col {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Unlock row — button full width below input */
+  .bn-unlock-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bn-staff-unlock-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Hall toggle text size */
+  .bn-hall-toggle {
+    font-size: 0.88rem;
+    padding: 12px 12px;
+  }
+
   .bn-agreement-label {
     font-size: 0.88rem;
     padding: 12px 14px;
@@ -668,6 +715,12 @@
 
   .bn-success-card h2 {
     font-size: 1.4rem;
+  }
+
+  /* PIN modal full-width on mobile */
+  .bn-pin-modal {
+    padding: 24px 16px;
+    width: 92vw;
   }
 }
 
@@ -690,4 +743,145 @@
     font-size: 0.9rem;
     padding: 10px 12px;
   }
+
+  .bn-pin-input {
+    font-size: 1.3rem;
+  }
+}
+
+/* ============================================================
+   Staff PIN Unlock
+   ============================================================ */
+
+.bn-staff-unlock-btn {
+  white-space: nowrap;
+  padding: 10px 14px;
+  border: 1.5px solid #e91e8c;
+  background: #fff;
+  color: #e91e8c;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.bn-staff-unlock-btn:hover {
+  background: #fde9f5;
+}
+
+.bn-staff-unlock-btn--active {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.bn-staff-unlock-btn--active:hover {
+  background: #e8f5e9;
+}
+
+/* PIN Modal Overlay */
+.bn-pin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.bn-pin-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px 28px;
+  width: 320px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+
+.bn-pin-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1b1464;
+  text-align: center;
+}
+
+.bn-pin-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #555;
+  text-align: center;
+}
+
+.bn-pin-input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  letter-spacing: 0.4em;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.bn-pin-input:focus {
+  border-color: #e91e8c;
+}
+
+.bn-pin-error {
+  color: #d32f2f;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.bn-pin-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.bn-pin-cancel {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid #ccc;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+}
+
+.bn-pin-cancel:hover {
+  background: #f5f5f5;
+}
+
+.bn-pin-confirm {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: linear-gradient(90deg, #e91e8c, #f05537);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bn-pin-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bn-pin-confirm:not(:disabled):hover {
+  opacity: 0.9;
 }

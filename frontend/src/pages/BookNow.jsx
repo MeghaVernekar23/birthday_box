@@ -168,6 +168,31 @@ export default function BookNow() {
   const [customerStatus, setCustomerStatus] = useState(null); // null | "existing" | "new"
   const [lookingUpPhone, setLookingUpPhone] = useState(false);
 
+  // Staff PIN unlock state
+  const [rateUnlocked, setRateUnlocked] = useState(false);
+  const [totalUnlocked, setTotalUnlocked] = useState(false);
+  const [totalOverride, setTotalOverride] = useState("");
+  const [pinModal, setPinModal] = useState(null); // "rate" | "total" | null
+  const [pinInput, setPinInput] = useState("");
+  const [pinError, setPinError] = useState("");
+  const STAFF_PIN = import.meta.env.VITE_STAFF_PIN;
+
+  const handlePinSubmit = () => {
+    if (pinInput === STAFF_PIN) {
+      if (pinModal === "rate") setRateUnlocked(true);
+      if (pinModal === "total") {
+        setTotalUnlocked(true);
+        setTotalOverride(String(computeTotal()));
+      }
+      setPinModal(null);
+      setPinInput("");
+      setPinError("");
+    } else {
+      setPinError("Incorrect PIN. Try again.");
+      setPinInput("");
+    }
+  };
+
   useEffect(() => {
     fetch(`${BASE_URL}/bookings/celebration-type`)
       .then((r) => r.json())
@@ -334,9 +359,12 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         if (pkg) total += parsePrice(pkg.price);
       });
     }
-    const guests = parseInt(form.extraGuests) || 0;
-    const rate = parseInt(form.extraGuestRate) || 0;
-    total += guests * rate;
+    if (!form.needHall) {
+      const guests = parseInt(form.extraGuests) || 0;
+      const rate = parseInt(form.extraGuestRate) || 0;
+      total += guests * rate;
+    }
+    if (form.needHall) total += 2000;
     form.addons.forEach((id) => {
       const addon = ADDONS.find((a) => a.id === id);
       if (addon && addon.price) total += addon.price;
@@ -350,6 +378,30 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       return addon && addon.price === null;
     });
 
+  // Dining hall visible: Sunday (any time) OR weekday Mon-Fri after 5 PM
+  const showDiningHall = (() => {
+    if (!form.preferredDate) return false;
+    const day = new Date(form.preferredDate + "T00:00:00").getDay(); // 0=Sun,6=Sat
+    if (day === 0) return true; // Sunday: always
+    if (day === 6) return false; // Saturday: never
+    // Weekday: check if preferredTime >= 17:00
+    if (!form.preferredTime) return false;
+    const match = form.preferredTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return false;
+    let h = parseInt(match[1]);
+    const mer = match[3].toUpperCase();
+    if (mer === "PM" && h !== 12) h += 12;
+    if (mer === "AM" && h === 12) h = 0;
+    return h >= 17;
+  })();
+
+  // Reset needHall when dining hall option becomes unavailable
+  useEffect(() => {
+    if (!showDiningHall && form.needHall) {
+      set("needHall", false);
+    }
+  }, [showDiningHall]);
+
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = "Name is required.";
@@ -359,7 +411,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     if (!form.celebrationType) e.celebrationType = "Please select a celebration type.";
     if (!form.referral) e.referral = "Please tell us how you heard about us.";
     if (!form.agreement) e.agreement = "You must agree to the Customer Disclaimer.";
-    if (computeTotal() === 0) e.total = "Please select at least one package before submitting.";
+    if (!totalUnlocked && computeTotal() === 0) e.total = "Please select at least one package before submitting.";
     return e;
   };
 
@@ -406,8 +458,8 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         form.referral ? `Heard from: ${form.referral}` : "",
         addonsList.length > 0 ? `Add-ons: ${addonsList.join(", ")}` : "",
         allSelectedLabels.length > 0 ? `Packages selected: ${allSelectedLabels.join("; ")}` : "",
-        (parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} x Rs${form.extraGuestRate}` : "",
-        form.needHall ? "Hall required: YES — price TBD with staff" : "",
+        (!form.needHall && parseInt(form.extraGuests) > 0) ? `Extra guests: ${form.extraGuests} x Rs${form.extraGuestRate}` : "",
+        form.needHall ? "Extra Dining Hall required: YES — Rs2000" : "",
         form.contactUs ? `Message: ${form.contactUs}` : "",
         form.bookedByStaff ? "BOOKED BY STAFF — CROSS CHECK" : "",
       ]
@@ -443,7 +495,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         addons_note,
         status: form.status,
         payment_mode: form.paymentMode,
-        payment_total: computeTotal(),
+        payment_total: totalUnlocked && totalOverride !== "" ? parseFloat(totalOverride) : computeTotal(),
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
         payment_notes: "",
         created_by: "customer",
@@ -765,7 +817,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <span className="bn-field-hint" style={{ color: "#555" }}>
               Up to 10 people are included. Add extra guests below (charged per person).
             </span>
-            <div className="bn-extra-guests-row">
+            <div className="bn-extra-guests-row" style={form.needHall ? { opacity: 0.45, pointerEvents: "none" } : {}}>
               <div className="bn-extra-guests-col">
                 <label className="bn-sublabel">Number of extra guests</label>
                 <input
@@ -775,18 +827,42 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                   placeholder="0"
                   value={form.extraGuests}
                   onChange={(e) => set("extraGuests", e.target.value)}
+                  disabled={form.needHall}
                 />
               </div>
               <div className="bn-extra-guests-col">
                 <label className="bn-sublabel">Rate per person (₹)</label>
-                <input
-                  className="bn-input"
-                  type="number"
-                  min="0"
-                  placeholder="100"
-                  value={form.extraGuestRate}
-                  onChange={(e) => set("extraGuestRate", e.target.value)}
-                />
+                <div className="bn-unlock-row">
+                  <input
+                    className="bn-input"
+                    type="number"
+                    min="0"
+                    placeholder="100"
+                    value={form.extraGuestRate}
+                    onChange={(e) => set("extraGuestRate", e.target.value)}
+                    disabled={!rateUnlocked || form.needHall}
+                    style={(!rateUnlocked || form.needHall) ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" } : {}}
+                  />
+                  {!rateUnlocked ? (
+                    <button
+                      type="button"
+                      className="bn-staff-unlock-btn"
+                      onClick={() => { setPinModal("rate"); setPinInput(""); setPinError(""); }}
+                      title="Staff only"
+                    >
+                      🔒 Edit
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="bn-staff-unlock-btn bn-staff-unlock-btn--active"
+                      onClick={() => setRateUnlocked(false)}
+                      title="Lock field"
+                    >
+                      🔓 Lock
+                    </button>
+                  )}
+                </div>
               </div>
               {(parseInt(form.extraGuests) > 0) && (
                 <div className="bn-extra-guests-total">
@@ -794,17 +870,19 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 </div>
               )}
             </div>
-            <label className={`bn-agreement-label bn-hall-toggle ${form.needHall ? "bn-radio-selected" : ""}`}>
-              <input
-                type="checkbox"
-                checked={form.needHall}
-                onChange={(e) => set("needHall", e.target.checked)}
-              />
-              <span>
-                <strong>Need an Extra Hall?</strong> — for larger groups (more than 40 people) &nbsp;
-                <span style={{ fontWeight: 400, color: "#888", fontSize: "0.85rem" }}>Price to be discussed with staff</span>
-              </span>
-            </label>
+            {showDiningHall && (
+              <label className={`bn-agreement-label bn-hall-toggle ${form.needHall ? "bn-radio-selected" : ""}`}>
+                <input
+                  type="checkbox"
+                  checked={form.needHall}
+                  onChange={(e) => set("needHall", e.target.checked)}
+                />
+                <span>
+                  <strong>Need an Extra Dining Hall?</strong> &nbsp;
+                  <span style={{ fontWeight: 400, color: "#e8603c", fontSize: "0.85rem" }}>+₹2,000</span>
+                </span>
+              </label>
+            )}
           </div>
 
           {/* ADD-ONS */}
@@ -904,13 +982,39 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
           {/* TOTAL AMOUNT */}
           <div className="bn-field">
             <label className="bn-label">TOTAL AMOUNT</label>
-            <input
-              className={`bn-input ${errors.total ? "bn-input-err" : ""}`}
-              type="text"
-              value={computeTotal() > 0 ? `₹${computeTotal().toLocaleString("en-IN")}` : "₹0 (no package selected)"}
-              disabled
-              style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed", fontWeight: "bold" }}
-            />
+            <div className="bn-unlock-row">
+              <input
+                className={`bn-input ${errors.total ? "bn-input-err" : ""}`}
+                type={totalUnlocked ? "number" : "text"}
+                value={
+                  totalUnlocked
+                    ? totalOverride
+                    : (computeTotal() > 0 ? `₹${computeTotal().toLocaleString("en-IN")}` : "₹0 (no package selected)")
+                }
+                onChange={totalUnlocked ? (e) => setTotalOverride(e.target.value) : undefined}
+                disabled={!totalUnlocked}
+                style={!totalUnlocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", fontWeight: "bold" } : { fontWeight: "bold" }}
+              />
+              {!totalUnlocked ? (
+                <button
+                  type="button"
+                  className="bn-staff-unlock-btn"
+                  onClick={() => { setPinModal("total"); setPinInput(""); setPinError(""); }}
+                  title="Staff only"
+                >
+                  🔒 Edit
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="bn-staff-unlock-btn bn-staff-unlock-btn--active"
+                  onClick={() => { setTotalUnlocked(false); setTotalOverride(""); }}
+                  title="Lock field"
+                >
+                  🔓 Lock
+                </button>
+              )}
+            </div>
             {errors.total && <span className="bn-error">{errors.total}</span>}
             {hasUnpricedAddons() && (
               <span className="bn-field-hint" style={{ color: "#e8603c" }}>
@@ -958,6 +1062,45 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       <footer className="bn-footer">
         <p>© {new Date().getFullYear()} Birthday Box. All rights reserved.</p>
       </footer>
+
+      {/* STAFF PIN MODAL */}
+      {pinModal && (
+        <div className="bn-pin-overlay" onClick={() => { setPinModal(null); setPinInput(""); setPinError(""); }}>
+          <div className="bn-pin-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="bn-pin-title">🔒 Staff Access Required</h3>
+            <p className="bn-pin-desc">Enter 4-digit staff PIN to edit this field.</p>
+            <input
+              className="bn-pin-input"
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="----"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              onKeyDown={(e) => e.key === "Enter" && handlePinSubmit()}
+              autoFocus
+            />
+            {pinError && <span className="bn-pin-error">{pinError}</span>}
+            <div className="bn-pin-actions">
+              <button
+                type="button"
+                className="bn-pin-cancel"
+                onClick={() => { setPinModal(null); setPinInput(""); setPinError(""); }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="bn-pin-confirm"
+                onClick={handlePinSubmit}
+                disabled={pinInput.length !== 4}
+              >
+                Unlock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
