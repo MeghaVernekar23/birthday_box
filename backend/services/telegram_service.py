@@ -272,6 +272,92 @@ def check_and_send_anniversary_reminders() -> None:
         db.close()
 
 
+SHIVA_QUOTES = [
+    "🙏 <i>\"Where there is Shiva, there is prosperity. Where there is devotion, there is success.\"</i>",
+    "🙏 <i>\"Har Har Mahadev — with Lord Shiva's grace, every challenge becomes an opportunity.\"</i>",
+    "🙏 <i>\"Shiva destroys what no longer serves so that something better can bloom.\"</i>",
+    "🙏 <i>\"The one who has Shiva in their heart has no fear — only purpose.\"</i>",
+    "🙏 <i>\"Mahadev blesses those who work with devotion and serve with love.\"</i>",
+    "🙏 <i>\"With Shiva's trident clearing the path, no obstacle is too great for a devoted heart.\"</i>",
+    "🙏 <i>\"Om Namah Shivaya — surrender your worries, and let the divine guide your day.\"</i>",
+    "🙏 <i>\"In stillness, Shiva resides. In action, his energy flows through us. Begin with intention.\"</i>",
+    "🙏 <i>\"Shiva's blessings multiply when you bring joy to others. Today, make someone smile.\"</i>",
+    "🙏 <i>\"Just as Shiva holds the universe in balance, may your day be balanced with success and peace.\"</i>",
+]
+
+
+def send_morning_digest() -> None:
+    """
+    Send a morning digest to Telegram with today's bookings.
+    Picks a daily Shiva quote (rotates by day-of-year).
+    """
+    import random
+    from db.sessions import SessionLocal
+    from db.models.sqlalchemy_models import Booking, Customer
+
+    frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+    today = date.today()
+
+    db = SessionLocal()
+    try:
+        rows = (
+            db.query(Booking, Customer)
+            .join(Customer, Booking.customer_id == Customer.customer_id)
+            .filter(Booking.event_date == today)
+            .filter(~Booking.status.in_(["cancelled", "canceled"]))
+            .order_by(Booking.event_time)
+            .all()
+        )
+    finally:
+        db.close()
+
+    # Rotate quote by day-of-year so it changes daily but is deterministic
+    quote = SHIVA_QUOTES[today.timetuple().tm_yday % len(SHIVA_QUOTES)]
+
+    lines = [
+        f"🌅 <b>Good Morning! — {today.strftime('%d %B %Y')}</b>\n",
+        quote,
+        "",
+    ]
+
+    if rows:
+        lines.append(f"📋 <b>Today's Bookings ({len(rows)})</b>")
+        for i, (booking, customer) in enumerate(rows, 1):
+            time_display = booking.event_time or "—"
+            name = customer.name or "—"
+            if frontend_url:
+                link = f'<a href="{frontend_url}/bookings/older?id={booking.booking_id}">{name}</a>'
+            else:
+                link = name
+            lines.append(f"{i}. {link} : {time_display}")
+    else:
+        lines.append("📋 <b>No bookings scheduled for today.</b>")
+
+    lines += ["", "✨ <b>Have a wonderful day! May every celebration be magical. 🎉</b>"]
+
+    message = "\n".join(lines)
+    _send_message_sync(message)
+    log.info(f"[MorningDigest] Sent digest for {today} with {len(rows)} booking(s).")
+
+
+async def run_daily_morning_digest() -> None:
+    """
+    Asyncio task: fires at 08:30 IST every day.
+    """
+    while True:
+        now = datetime.now(IST)
+        next_run = now.replace(hour=8, minute=30, second=0, microsecond=0)
+        if now >= next_run:
+            next_run += timedelta(days=1)
+        delay = (next_run - now).total_seconds()
+        log.info(f"[MorningDigest] Next digest at {next_run.strftime('%Y-%m-%d %H:%M %Z')} (in {delay:.0f}s)")
+        await asyncio.sleep(delay)
+        try:
+            await asyncio.get_event_loop().run_in_executor(None, send_morning_digest)
+        except Exception as e:
+            log.error(f"[MorningDigest] Error: {e}", exc_info=True)
+
+
 async def run_daily_birthday_reminders() -> None:
     """
     Asyncio task started at server startup.
