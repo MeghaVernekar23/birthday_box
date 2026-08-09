@@ -118,9 +118,6 @@
 @media (max-width: 768px) {
   .booking-card__body {
     grid-template-columns: 1fr;
-  }
-
-  .booking-card__body {
     padding-bottom: 10px; /* action bar flows normally on mobile; reserved space not needed */
   }
 
@@ -129,10 +126,40 @@
     position: static;
     border-top: 1px solid #f0f4ff;
     padding: 8px 14px;
+    flex-wrap: wrap;
     transition: none; /* no slide animation on touch */
   }
 
   .booking-card {
     min-height: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-card__header {
+    padding: 11px 13px 8px;
+  }
+
+  .booking-card__name {
+    font-size: 0.9rem;
+  }
+
+  .booking-card__body {
+    padding: 8px 13px 8px;
+    gap: 5px 10px;
+  }
+
+  .booking-card__field {
+    font-size: 0.8rem;
+  }
+
+  .booking-card__actions {
+    padding: 7px 10px;
+    gap: 6px;
+  }
+
+  .booking-card__actions .btn {
+    font-size: 0.74rem;
+    padding: 3px 9px;
   }
 }

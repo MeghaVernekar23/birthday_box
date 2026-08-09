@@ -433,7 +433,8 @@
     align-items: flex-start;
   }
 
-  .bk-bulk-paid-btn {
+  .bk-bulk-paid-btn,
+  .bk-download-btn {
     width: 100%;
     justify-content: center;
   }

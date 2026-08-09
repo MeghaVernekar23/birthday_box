@@ -37,3 +37,14 @@
   accent-color: #1a73e8;
   cursor: pointer;
 }
+
+@media (max-width: 480px) {
+  .dl-mode-option {
+    font-size: 0.84rem;
+  }
+
+  .bk-download-btn {
+    font-size: 0.79rem;
+    padding: 5px 12px;
+  }
+}
