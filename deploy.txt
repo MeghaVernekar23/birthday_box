@@ -1,6 +1,7 @@
 ---- FRONTEND
 cd frontend/
 git pull
+npm install .
 npm run build
 sudo rm -rf /var/www/frontend/*
 sudo cp -r dist/* /var/www/frontend/
