@@ -2,54 +2,72 @@
    Datatable.css
    ============================================================ */
 
-/* ── Root ──────────────────────────────────────────────────── */
 .dt-root {
   width: 100%;
 }
 
-.dt-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #213547;
-  margin: 0 0 14px;
-}
-
-/* ── Toolbar (search + action button) ─────────────────────── */
-.dt-toolbar {
+/* ── Unified header card (title + search + action) ─────────── */
+.dt-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #ffffff;
+  border: 1px solid #e0e6f1;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+}
+
+.dt-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a1f3c;
+  margin: 0;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.dt-toolbar {
+  display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .dt-search {
   height: 38px;
-  border: 1px solid #d1d9e6;
-  border-radius: 8px;
-  padding: 0 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0 14px;
   font-size: 0.875rem;
-  color: #213547;
-  background: #fff;
+  color: #1e293b;
+  background: #f8f9fc;
   outline: none;
-  min-width: 200px;
-  max-width: 300px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 220px;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
+.dt-search::placeholder { color: #a0aec0; }
 .dt-search:focus {
-  border-color: #7c8fe8;
-  box-shadow: 0 0 0 3px rgba(124, 143, 232, 0.15);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fff;
 }
 
-/* ── Table mode wrapper ────────────────────────────────────── */
+/* ── Table wrapper ─────────────────────────────────────────── */
 .dt-table-wrapper {
-  border: 1px solid #b2c1f7;
-  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e0e6f1;
+  border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 60vh;
+  max-height: 62vh;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
 }
 
 .dt-scroll {
@@ -57,43 +75,60 @@
   overflow: auto;
 }
 
+.dt-scroll .table,
 .dt-scroll table {
-  border-collapse: collapse;
+  border-collapse: collapse !important;
   width: 100%;
-  min-width: 600px;
-  font-size: 0.9rem;
+  min-width: 580px;
+  font-size: 0.875rem;
   margin: 0 !important;
+  border: none !important;
 }
 
-.dt-scroll thead th {
-  background-color: #b2c1f7;
-  font-weight: 600;
-  text-align: left;
-  padding: 11px 12px;
+/* Header */
+.dt-scroll thead tr {
+  background: linear-gradient(135deg, #1a1f3c 0%, #16213e 100%);
+}
+
+.dt-scroll thead th,
+.dt-scroll .table > thead > tr > th {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-size: 0.73rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 13px 16px !important;
   white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 2;
-  border: 1px solid #b2c1f7;
+  border: none !important;
+  text-align: left !important;
 }
 
-.dt-scroll tbody td {
-  padding: 9px 12px;
-  vertical-align: middle;
-  border-bottom: 1px solid #dde5ff;
-  border-right: 1px solid #dde5ff;
+/* Body */
+.dt-scroll tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.13s;
+}
+.dt-scroll tbody tr:last-child { border-bottom: none; }
+.dt-scroll tbody tr:nth-child(even) { background: #fafbff; }
+.dt-scroll tbody tr:hover { background: #f0f4ff !important; }
+
+.dt-scroll tbody td,
+.dt-scroll .table > tbody > tr > td {
+  padding: 12px 16px !important;
+  vertical-align: middle !important;
+  border: none !important;
+  color: #334155;
+  font-size: 0.875rem;
   word-break: break-word;
-  max-width: 200px;
+  max-width: 220px;
 }
 
-.dt-scroll tbody tr:hover {
-  background-color: #eef2ff;
-}
-
-/* ── Card mode wrapper ─────────────────────────────────────── */
-.dt-card-wrapper {
-  /* no border/box — cards have their own styling */
-}
+/* ── Card grid ─────────────────────────────────────────────── */
+.dt-card-wrapper { }
 
 .dt-card-grid {
   display: grid;
@@ -105,8 +140,8 @@
 .dt-empty {
   grid-column: 1 / -1;
   text-align: center;
-  color: #718096;
-  padding: 40px 0;
+  color: #94a3b8;
+  padding: 48px 0;
   font-size: 0.9rem;
 }
 
@@ -117,17 +152,17 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 4px;
-  padding: 10px 8px;
+  padding: 12px 8px;
 }
 
 .dt-pagination--table {
-  background: #f0f4ff;
-  border-top: 1px solid #b2c1f7;
+  background: #f8f9fc;
+  border-top: 1px solid #eef0f6;
 }
 
 .dt-pagination--card {
   background: transparent;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .dt-page-btn {
@@ -137,11 +172,11 @@
   min-width: 34px;
   height: 34px;
   padding: 0 8px;
-  border: 1px solid #d1d9e6;
+  border: 1.5px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 500;
-  color: #4a5568;
+  color: #475569;
   background: #fff;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -150,49 +185,74 @@
 
 .dt-page-btn:hover:not(.dt-page-btn--disabled):not(.dt-page-btn--active) {
   background: #eef2ff;
-  border-color: #7c8fe8;
-  color: #7c8fe8;
+  border-color: #6366f1;
+  color: #6366f1;
 }
 
 .dt-page-btn--active {
-  background: #7c8fe8;
-  border-color: #7c8fe8;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border-color: transparent;
   color: #fff;
   font-weight: 700;
   cursor: default;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .dt-page-btn--disabled {
-  opacity: 0.38;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-/* ── Legacy class aliases (other pages still reference these) ── */
-.table-wrapper { /* keep for any non-booking pages */ }
-.pagination-bar { display: none; } /* superseded — hide if still rendered */
-.past-payment-row { background-color: #ffe0e0 !important; }
-.past-payment-row td { color: #b30000; font-weight: 500; }
+/* ── Legacy ────────────────────────────────────────────────── */
+.table-wrapper { }
+.pagination-bar { display: none; }
+.past-payment-row { background-color: #fff0f0 !important; }
+.past-payment-row td { color: #b91c1c !important; font-weight: 500; }
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .dt-table-wrapper {
-    max-height: 70vh;
+  .dt-header {
+    padding: 13px 16px;
+    border-radius: 12px;
+    gap: 10px;
   }
 
-  .dt-scroll table {
-    font-size: 0.8rem;
-    min-width: 480px;
+  .dt-title {
+    font-size: 1rem;
+    width: 100%;
   }
 
-  .dt-scroll thead th,
-  .dt-scroll tbody td {
-    padding: 7px 8px;
+  .dt-toolbar {
+    justify-content: flex-start;
+    width: 100%;
   }
 
   .dt-search {
-    min-width: 0;
     width: 100%;
-    max-width: 100%;
+    flex: 1;
+  }
+
+  .dt-table-wrapper {
+    max-height: 70vh;
+    border-radius: 12px;
+  }
+
+  .dt-scroll .table,
+  .dt-scroll table {
+    font-size: 0.82rem;
+    min-width: 460px;
+  }
+
+  .dt-scroll thead th,
+  .dt-scroll .table > thead > tr > th {
+    padding: 10px 12px !important;
+    font-size: 0.68rem !important;
+  }
+
+  .dt-scroll tbody td,
+  .dt-scroll .table > tbody > tr > td {
+    padding: 10px 12px !important;
+    font-size: 0.82rem;
   }
 
   .dt-card-grid {
@@ -208,9 +268,12 @@
 }
 
 @media (max-width: 480px) {
-  .dt-card-grid {
-    gap: 10px;
+  .dt-header {
+    padding: 11px 13px;
+    border-radius: 10px;
   }
+
+  .dt-card-grid { gap: 10px; }
 
   .dt-pagination {
     gap: 3px;

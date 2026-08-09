@@ -1,6 +1,6 @@
 /* ── Page container ─────────────────────────────────────────── */
 .customer-page {
-  padding: 1.5rem;
+  padding: 0;
   min-height: 70vh;
 }
 
@@ -343,7 +343,7 @@
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .customer-page {
-    padding: 1rem 0.75rem;
+    padding: 0;
   }
 
   .customer-modal,

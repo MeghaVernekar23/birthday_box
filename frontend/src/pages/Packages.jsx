@@ -95,31 +95,39 @@ const Packages = () => {
       {editingPkg && (
         <div className="pkg-modal-overlay" onClick={closeEdit}>
           <div className="pkg-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit Package</h3>
-            <label>
-              Package Name
+            <div className="pkg-modal-header">
+              <p className="pkg-modal-title">Edit Package</p>
+              <button className="pkg-modal-close" onClick={closeEdit} aria-label="Close">×</button>
+            </div>
+
+            <div className="pkg-field-group">
+              <label className="pkg-field-label">Package Name</label>
               <input
+                className="pkg-field-input"
                 value={form.package_name}
                 onChange={(e) => setForm({ ...form, package_name: e.target.value })}
               />
-            </label>
-            <label>
-              Description
+            </div>
+            <div className="pkg-field-group">
+              <label className="pkg-field-label">Description</label>
               <textarea
+                className="pkg-field-textarea"
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
-            </label>
-            <label>
-              Price (₹)
+            </div>
+            <div className="pkg-field-group">
+              <label className="pkg-field-label">Price (₹)</label>
               <input
+                className="pkg-field-input"
                 type="number"
                 min="0"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
               />
-            </label>
+            </div>
+
             <div className="pkg-modal-actions">
               <button className="pkg-btn-cancel" onClick={closeEdit}>Cancel</button>
               <button className="pkg-btn-save" onClick={handleSave} disabled={saving}>

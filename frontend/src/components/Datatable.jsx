@@ -46,23 +46,24 @@ const DataTable = ({
 
   return (
     <div className="dt-root">
-      {title && <h5 className="dt-title">{title}</h5>}
-
-      {(searchableFields.length > 0 || actionButton) && (
-        <div className="dt-toolbar">
-          {searchableFields.length > 0 && (
-            <input
-              type="text"
-              className="dt-search"
-              placeholder="Search by name or phone…"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-          )}
-          {actionButton && <div>{actionButton}</div>}
+      {(title || searchableFields.length > 0 || actionButton) && (
+        <div className="dt-header">
+          {title && <h5 className="dt-title">{title}</h5>}
+          <div className="dt-toolbar">
+            {searchableFields.length > 0 && (
+              <input
+                type="text"
+                className="dt-search"
+                placeholder="Search…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            )}
+            {actionButton && <div>{actionButton}</div>}
+          </div>
         </div>
       )}
 
