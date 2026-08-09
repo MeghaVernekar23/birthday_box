@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import * as XLSX from "xlsx";
 
 import "../css/Booking.css";
 import "../css/OlderBookings.css";
 import "../css/BookingCards.css";
-import { Eye, Trash2, X, CheckCircle } from "lucide-react";
+import { Eye, Trash2, X, CheckCircle, Download } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 
@@ -74,6 +75,13 @@ function Bookings() {
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterDate, setFilterDate] = useState("");
+
+  // Download modal state
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [dlMode, setDlMode] = useState("all"); // "all" | "date" | "month"
+  const [dlDate, setDlDate] = useState("");
+  const [dlYear, setDlYear] = useState("");
+  const [dlMonth, setDlMonth] = useState("");
 
   const columns = [
     { key: "customer_name", label: "Customer Name" },
@@ -268,6 +276,63 @@ function Bookings() {
     return { total, paid, unpaid };
   }, [filteredData]);
 
+  const handleDownload = () => {
+    let data = olderBookingData;
+
+    if (dlMode === "date" && dlDate) {
+      data = data.filter((b) => b.event_date?.slice(0, 10) === dlDate);
+    } else if (dlMode === "month" && dlYear) {
+      data = data.filter((b) => {
+        if (!b.event_date) return false;
+        const d = new Date(b.event_date);
+        if (isNaN(d.getTime())) return false;
+        if (d.getFullYear() !== Number(dlYear)) return false;
+        if (dlMonth !== "" && d.getMonth() !== Number(dlMonth)) return false;
+        return true;
+      });
+    }
+
+    const rows = data.map((b) => ({
+      "Booking ID": b.booking_id,
+      "Customer Name": b.customer_name || "",
+      "Phone": b.phone_number || "",
+      "Email": b.email || "",
+      "Address": b.address || "",
+      "Event Date": b.event_date || "",
+      "Time Slot": b.time_slot || "",
+      "Celebration Type": b.celebration_name || "",
+      "Package": b.package_name || "",
+      "Status": b.status || "",
+      "Payment Mode": b.payment_mode || "",
+      "Total (₹)": b.payment_total || 0,
+      "Paid (₹)": b.payment_paid || 0,
+      "Balance (₹)": Math.max(0, (Number(b.payment_total) || 0) - (Number(b.payment_paid) || 0)),
+      "Payment Notes": b.payment_notes || "",
+      "Created By": b.created_by || "",
+      "Updated By": b.updated_by || "",
+    }));
+
+    if (rows.length === 0) {
+      alert("No bookings found for the selected filter.");
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bookings");
+
+    let filename = "older_bookings";
+    if (dlMode === "date" && dlDate) filename += `_${dlDate}`;
+    else if (dlMode === "month" && dlYear) {
+      filename += `_${dlYear}`;
+      if (dlMonth !== "") filename += `_${MONTHS[Number(dlMonth)]}`;
+    }
+    filename += ".xlsx";
+
+    XLSX.writeFile(wb, filename);
+    setShowDownloadModal(false);
+  };
+
   const cardTemplate = useCallback(
     (row) => (
       <OlderBookingCard
@@ -302,6 +367,13 @@ function Bookings() {
               Outstanding: {stats.unpaid}
             </span>
           </div>
+          <button
+            className="bk-download-btn"
+            onClick={() => { setDlMode("all"); setDlDate(""); setDlYear(""); setDlMonth(""); setShowDownloadModal(true); }}
+          >
+            <Download size={14} />
+            Download Excel
+          </button>
           {stats.unpaid > 0 && (
             <button
               className="bk-bulk-paid-btn"
@@ -413,6 +485,106 @@ function Bookings() {
           onConfirm={confirmBulkMarkPaid}
           onCancel={() => setShowBulkConfirm(false)}
         />
+      )}
+
+      {showDownloadModal && (
+        <div className="ps-modal-overlay" onClick={() => setShowDownloadModal(false)}>
+          <div className="nb-modal dl-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div className="nb-modal-header">
+              <div>
+                <span className="nb-modal-eyebrow">Export</span>
+                <h4 className="nb-modal-title">Download Bookings</h4>
+              </div>
+              <button className="nb-modal-close" onClick={() => setShowDownloadModal(false)}>×</button>
+            </div>
+            <div className="nb-modal-body" style={{ padding: "1.25rem" }}>
+              <div className="dl-mode-group">
+                <label className="dl-mode-option">
+                  <input
+                    type="radio"
+                    name="dlMode"
+                    value="all"
+                    checked={dlMode === "all"}
+                    onChange={() => setDlMode("all")}
+                  />
+                  <span>All bookings</span>
+                </label>
+                <label className="dl-mode-option">
+                  <input
+                    type="radio"
+                    name="dlMode"
+                    value="date"
+                    checked={dlMode === "date"}
+                    onChange={() => setDlMode("date")}
+                  />
+                  <span>Specific date</span>
+                </label>
+                <label className="dl-mode-option">
+                  <input
+                    type="radio"
+                    name="dlMode"
+                    value="month"
+                    checked={dlMode === "month"}
+                    onChange={() => setDlMode("month")}
+                  />
+                  <span>By year / month</span>
+                </label>
+              </div>
+
+              {dlMode === "date" && (
+                <div className="bk-filter-group" style={{ marginTop: "1rem" }}>
+                  <label className="bk-filter-label">Select Date</label>
+                  <input
+                    type="date"
+                    className="bk-filter-date"
+                    value={dlDate}
+                    onChange={(e) => setDlDate(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {dlMode === "month" && (
+                <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                  <div className="bk-filter-group">
+                    <label className="bk-filter-label">Year</label>
+                    <select
+                      className="bk-filter-select"
+                      value={dlYear}
+                      onChange={(e) => setDlYear(e.target.value)}
+                    >
+                      <option value="">Select year</option>
+                      {availableYears.map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="bk-filter-group">
+                    <label className="bk-filter-label">Month (optional)</label>
+                    <select
+                      className="bk-filter-select"
+                      value={dlMonth}
+                      onChange={(e) => setDlMonth(e.target.value)}
+                    >
+                      <option value="">All months</option>
+                      {MONTHS.map((m, i) => (
+                        <option key={i} value={i}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <button
+                className="bk-bulk-paid-btn"
+                style={{ marginTop: "1.5rem", width: "100%", justifyContent: "center" }}
+                onClick={handleDownload}
+              >
+                <Download size={14} />
+                Download .xlsx
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {popupView.visible && popupView.booking && (

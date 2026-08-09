@@ -1,1 +1,39 @@
 /* OlderBookings.css — shared filter bar styles moved to Booking.css */
+
+.bk-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.bk-download-btn:hover {
+  background: #1558b0;
+}
+
+.dl-mode-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dl-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.dl-mode-option input[type="radio"] {
+  accent-color: #1a73e8;
+  cursor: pointer;
+}

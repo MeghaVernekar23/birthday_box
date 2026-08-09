@@ -27,6 +27,7 @@ from services.bookings_service import (
     get_next_upcoming_booking,
     update_payment_detail
 )
+from services.telegram_service import build_booking_message, _send_message_sync
 from services.oauth import get_current_user
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 
@@ -338,6 +339,40 @@ async def update_payment(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))    
+
+
+@bookings_router.post(
+    "/{booking_id}/send-telegram",
+    dependencies=[Depends(get_current_user)],
+    description="Send booking details to Telegram chats.",
+)
+def send_booking_telegram(
+    booking_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        booking = get_booking_details_by_id(booking_id, db)
+        booking_data = {
+            "customer_name": booking.customer_name,
+            "phone_number": booking.phone_number,
+            "email": booking.email,
+            "address": booking.address,
+            "event_date": str(booking.event_date),
+            "time_slot": booking.time_slot,
+            "package_name": booking.package_name,
+            "celebration_name": booking.celebration_name,
+            "addons_note": booking.addons_note,
+            "payment_total": booking.payment_total,
+            "payment_paid": booking.payment_paid,
+            "payment_mode": booking.payment_mode,
+            "status": booking.status,
+            "booking_id": booking.booking_id,
+        }
+        message = build_booking_message(booking_data, label="📋 Booking Details")
+        _send_message_sync(message)
+        return {"status": "sent"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @bookings_router.get(

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/TodaysBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye, X, CheckCircle } from "lucide-react";
+import { Edit, Trash2, Eye, X, CheckCircle, Send } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -18,6 +18,7 @@ import {
   updateBooking,
   updatePayment,
   fetchUpcomingHoliday,
+  sendTelegramMessage,
 } from "../services/bookingServices";
 
 const getPaymentStatus = (row) => {
@@ -35,7 +36,7 @@ const formatEventDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid }) => {
+const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid, onSendTelegram }) => {
   const ps = getPaymentStatus(row);
   return (
     <div className="booking-card booking-card--blue">
@@ -57,6 +58,7 @@ const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid }) => {
         {ps.key !== "paid" && (
           <button className="btn btn-sm btn-success" onClick={() => onMarkPaid(row)}>Paid</button>
         )}
+        <button className="btn btn-sm btn-info" onClick={() => onSendTelegram(row)}>Telegram</button>
       </div>
     </div>
   );
@@ -151,6 +153,16 @@ function Bookings() {
     { key: "updated_by", label: "Updated By" },
   ];
 
+  const handleSendTelegram = async (booking) => {
+    try {
+      await sendTelegramMessage(booking.booking_id);
+      alert("Telegram message sent!");
+    } catch (error) {
+      alert("Failed to send Telegram message.");
+      console.error("Telegram send error:", error);
+    }
+  };
+
   const ActionButtons = ({ row }) => {
     const alreadyPaid = getPaymentStatus(row).key === "paid";
     return (
@@ -169,6 +181,9 @@ function Bookings() {
             <CheckCircle className="action-icon text-success" size={18} onClick={() => handleMarkPaid(row)} />
           </span>
         )}
+        <span title="Send Telegram">
+          <Send className="action-icon text-secondary" size={18} onClick={() => handleSendTelegram(row)} />
+        </span>
       </div>
     );
   };
@@ -436,9 +451,10 @@ function Bookings() {
         onView={handleViewBooking}
         onDelete={handleDeleteBooking}
         onMarkPaid={handleMarkPaid}
+        onSendTelegram={handleSendTelegram}
       />
     ),
-    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid]
+    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid, handleSendTelegram]
   );
 
   return (

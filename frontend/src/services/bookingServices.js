@@ -94,6 +94,13 @@ export const fetchNextBooking = () => {
 };
 
 
+export const sendTelegramMessage = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/${bookingId}/send-telegram`,
+        method: "POST",
+    });
+};
+
 export const fetchUpcomingHoliday = () => {
     return apiRequest({
         url: `${BASE_URL}/holidays/`,
