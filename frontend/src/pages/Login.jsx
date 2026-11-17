@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../css/Login.css";
-import BirthdayLoginImage from "../images/Birthdax_login_image.webp";
-import BirthdayLogo from "../images/logo.jpg";
+import PartyLogo from "../components/PartyLogo";
 import { apiRequest } from "../utils/APIrequest";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../services/utils";
@@ -54,7 +53,6 @@ function Login() {
       <div className="login-card">
         {/* Form panel */}
         <div className="login-form-panel">
-          <img src={BirthdayLogo} alt="Birthday Box logo" className="login-logo" />
           <h1 className="login-title">Welcome back</h1>
           <p className="login-subtitle">Sign in to your Birthday Box account</p>
 
@@ -102,16 +100,9 @@ function Login() {
           </form>
         </div>
 
-        {/* Image panel */}
-        <div
-          className="login-banner"
-          style={{ backgroundImage: `url(${BirthdayLoginImage})` }}
-          aria-hidden="true"
-        >
-          <div className="login-banner-overlay">
-            <h2>Celebrate Every Moment</h2>
-            <p>The perfect gift, delivered with love.</p>
-          </div>
+        {/* Logo panel */}
+        <div className="login-banner">
+          <PartyLogo />
         </div>
       </div>
     </div>
