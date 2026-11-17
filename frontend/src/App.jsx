@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import BookNow from "./pages/BookNow";
 import PublicBooking from "./pages/PublicBooking";
+import Menu from "./pages/Menu";
 import Dashboard from "./pages/Dashboard";
 import CustomerDetails from "./pages/Customer";
 import TodaysBookings from "./pages/TodaysBookings";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/booknow" element={<BookNow />} />
         <Route path="/booking/:token" element={<PublicBooking />} />
+        <Route path="/menu" element={<Menu />} />
 
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />

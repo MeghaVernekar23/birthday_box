@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import "./BookNow.css";
 import { BASE_URL } from "../services/utils";
+import { PACKAGES_1HR, PACKAGES_1HR30, PACKAGES_2HR, PACKAGES_3HR, ADDONS } from "../data/packageCatalog";
 
 const TIME_SLOTS = [
   "30 Minutes",
@@ -33,56 +34,6 @@ const CELEBRATION_TYPES = [
   "Bride Events",
   "Mother's Day",
   "Father's Day",
-];
-
-const PACKAGES_1HR = [
-  { id: "p1h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹999" },
-  // { id: "p1h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,299" },
-  // { id: "p1h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹1,799" },
-  // { id: "p1h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,199" },
-  // { id: "p1h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹2,699" },
-  // { id: "p1h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹4,999" },
-  // { id: "p1h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" }, // hidden
-];
-
-const PACKAGES_1HR30 = [
-  { id: "p15h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,499" },
-  { id: "p15h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,799" },
-  { id: "p15h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹2,499" },
-  { id: "p15h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,899" },
-  { id: "p15h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,699" },
-  { id: "p15h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,999" },
-  // { id: "p15h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" },
-];
-
-const PACKAGES_2HR = [
-  { id: "p2h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹1,998" },
-  { id: "p2h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹2,598" },
-  { id: "p2h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹3,598" },
-  { id: "p2h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹4,398" },
-  { id: "p2h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹5,398" },
-  { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹9,998" },
-  // { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹2,000" },
-];
-
-const PACKAGES_3HR = [
-  { id: "p3h1", label: "BASIC = BALLON DECORATION + PRIVATE SCRENING + MUSIC", price: "₹2,997" },
-  { id: "p3h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹3,897" },
-  { id: "p3h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹5,397" },
-  { id: "p3h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹6,597" },
-  { id: "p3h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹8,097" },
-  { id: "p3h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹14,997" },
-];
-
-const ADDONS = [
-  { id: "a1", label: "Customised Cake", price: null },
-  { id: "a2", label: "Customized Decoration", price: null },
-  { id: "a3", label: "Photography - ₹1,500/hr", price: 1500 },
-  { id: "a4", label: "Fire Entry - ₹800", price: 800 },
-  { id: "a5", label: "Popcorn", price: null },
-  { id: "a6", label: "Fog Entry - ₹750", price: 750 },
-  { id: "a7", label: "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000", price: 1000 },
-  { id: "a8", label: "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)", price: 1000 },
 ];
 
 // Maps a form package label ("CLASSIC PACKAGE = BASIC + ...") to its packages.package_name in the DB.
@@ -172,6 +123,42 @@ export default function BookNow() {
     paymentPaid: "",
     bookedByStaff: false,
   });
+
+  // Pre-fill from the public menu: /booknow?slot=1.5 Hours (Classic)&pkg=p15h2
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const slot = searchParams.get("slot");
+    const pkg = searchParams.get("pkg");
+    // e.g. &addons=a9 (cake ticked on the menu card); only known add-on ids are accepted
+    const addonIds = (searchParams.get("addons") || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter((id) => ADDONS.some((a) => a.id === id));
+    if (addonIds.length) {
+      setForm((prev) => ({ ...prev, addons: Array.from(new Set([...prev.addons, ...addonIds])) }));
+    }
+    if (!slot || !TIME_SLOTS.includes(slot)) return;
+    const lists = {
+      packages1hr: PACKAGES_1HR,
+      packages1hr30: PACKAGES_1HR30,
+      packages2hr: PACKAGES_2HR,
+      packages3hr: PACKAGES_3HR,
+    };
+    const fieldForSlot = {
+      "30 Minutes": "packages1hr",
+      "1 Hour (Quick)": "packages1hr",
+      "1.5 Hours (Classic)": "packages1hr30",
+      "2 Hours": "packages2hr",
+      "3 Hours": "packages3hr",
+    }[slot];
+    // only pre-select a package that belongs to the chosen duration
+    const field = fieldForSlot && lists[fieldForSlot].some((p) => p.id === pkg) ? fieldForSlot : null;
+    setForm((prev) => ({
+      ...prev,
+      timeSlot: slot,
+      ...(field ? { [field]: [pkg] } : {}),
+    }));
+  }, [searchParams]);
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -793,7 +780,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
-              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — add a ½ kg cake for ₹500 from the add-ons below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -815,7 +802,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (1 HR 30 MIN)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
-              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — add a ½ kg cake for ₹500 from the add-ons below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_1HR30.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -837,7 +824,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (3 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
-              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — add a ½ kg cake for ₹500 from the add-ons below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_3HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages3hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
@@ -859,7 +846,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
             <div className="bn-field">
               <label className="bn-label">PACKAGES (2 HR)</label>
               <span className="bn-field-hint bn-capacity-hint">👥 Up to 10 people included in all packages</span>
-              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — cake can be added as an add-on below</span>
+              <span className="bn-field-hint bn-capacity-hint" style={{ background: "#fff3e0", borderColor: "#ffcc80", color: "#6d4c41" }}>🎂 All packages come without a cake — add a ½ kg cake for ₹500 from the add-ons below</span>
               <div className="bn-checkbox-group bn-addons-group">
                 {PACKAGES_2HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages2hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>

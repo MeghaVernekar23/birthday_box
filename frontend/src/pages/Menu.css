@@ -1,0 +1,115 @@
+/* Public package menu (/menu). Builds on BookNow.css. Mobile-first sizing:
+   every grid track can shrink to the screen (min(…, 100%)) and text wraps. */
+.mn-wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+.mn-wrap * { min-width: 0; }
+
+/* "Every celebration includes" */
+.mn-h2--first { margin-top: 4px !important; }
+.mn-perks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 12px; margin-top: 14px; }
+.mn-perk { background: #fff; border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 2px 10px rgba(233, 30, 140, 0.06); }
+.mn-perk-icon { font-size: 1.4rem; width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; background: #fdf6f9; border-radius: 10px; }
+.mn-perk strong { display: block; color: #1b1464; font-size: 0.95rem; }
+.mn-perk div span { display: block; color: #666; font-size: 0.84rem; line-height: 1.4; margin-top: 2px; }
+
+.mn-occasions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; margin: 18px 0 4px; }
+.mn-occ-label { font-weight: 700; color: #1b1464; font-size: 0.85rem; margin-right: 4px; }
+.mn-occ { background: linear-gradient(135deg, #fde3f1, #feeadf); color: #a3165f; border-radius: 999px; padding: 4px 12px; font-size: 0.8rem; font-weight: 600; }
+
+/* Quick facts */
+.mn-facts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 22px; }
+.mn-facts span { background: #fff; border: 1px solid #f6d6e6; border-radius: 999px; padding: 6px 14px; font-size: 0.85rem; color: #1b1464; max-width: 100%; }
+
+/* Duration tabs */
+.mn-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+.mn-tab { position: relative; border: 2px solid #f6d6e6; background: #fff; color: #1b1464; border-radius: 999px; padding: 10px 18px; min-height: 44px; font-family: inherit; font-weight: 600; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.mn-tab--on { background: #e91e8c; border-color: #e91e8c; color: #fff; }
+.mn-pop { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; background: #f7941d; color: #fff; border-radius: 999px; padding: 2px 7px; }
+
+/* Package cards */
+.mn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 16px; }
+.mn-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 18px rgba(233, 30, 140, 0.08); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.mn-card-top { display: flex; align-items: center; gap: 12px; }
+.mn-card-top > div { flex: 1; }
+.mn-emoji { font-size: 1.8rem; width: 46px; height: 46px; display: grid; place-items: center; background: #fdf6f9; border-radius: 12px; flex-shrink: 0; }
+.mn-name { margin: 0; font-size: 1.1rem; color: #1b1464; overflow-wrap: anywhere; }
+.mn-dur { font-size: 0.78rem; color: #888; }
+.mn-price { font-size: 1.25rem; font-weight: 700; color: #e91e8c; white-space: nowrap; flex-shrink: 0; }
+
+.mn-count { align-self: flex-start; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1d8a66; background: #e3f7ef; border-radius: 999px; padding: 3px 10px; }
+.mn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 0.92rem; flex: 1; }
+.mn-list li { display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
+.mn-list .mn-tick { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; margin-top: 1px; }
+.mn-new { color: #1b1464; font-weight: 600; }
+.mn-tick { background: #e91e8c; color: #fff; }  /* every tick is filled, so nothing looks disabled */
+.mn-inh { color: #333; }
+.mn-optional { display: flex; gap: 10px; align-items: center; background: #fff6ea; border: 1px dashed #f7b267; border-radius: 10px; padding: 10px 12px; min-height: 44px; font-size: 0.88rem; color: #6d4c41; cursor: pointer; user-select: none; transition: background 0.15s, border-color 0.15s; }
+.mn-optional:hover { background: #ffefd9; }
+.mn-optional--on { background: #fff0e0; border-style: solid; border-color: #f7941d; }
+.mn-optional strong { color: #e8603c; }
+.mn-optional em { color: #a1887f; font-size: 0.8rem; }
+.mn-check { flex-shrink: 0; width: 20px; height: 20px; margin: 0; accent-color: #f7941d; cursor: pointer; }
+.mn-price-box { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.mn-price-note { font-size: 0.7rem; font-weight: 600; color: #f7941d; }
+.mn-prev { color: #999; font-size: 0.78rem; font-style: italic; }
+.mn-book { margin-top: auto; font-size: 1rem; padding: 14px; overflow-wrap: anywhere; }
+
+/* Add-ons */
+.mn-h2 { margin: 36px 0 4px; color: #1b1464; font-size: 1.3rem; text-align: center; }
+.mn-sub { margin: 0 0 14px; color: #777; font-size: 0.9rem; text-align: center; }
+.mn-addons { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+.mn-addon { background: #fff; border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 0.92rem; border: 1px solid #f3e3ec; }
+.mn-addon strong { color: #e91e8c; white-space: nowrap; flex-shrink: 0; }
+
+/* Bottom call-to-action */
+.mn-cta { margin-top: 36px; text-align: center; background: #fff; border-radius: 16px; padding: 22px 16px; }
+.mn-cta p { margin: 0 0 12px; color: #1b1464; font-weight: 600; }
+.mn-cta-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+.mn-cta-row .bn-submit-btn { width: auto; padding-left: 24px; padding-right: 24px; margin: 0; }
+.mn-call { color: #e91e8c; font-weight: 600; text-decoration: none; padding: 10px 4px; }
+
+/* Header + hero tweaks for this page only */
+.mn-page .bn-nav-back { white-space: nowrap; flex-shrink: 0; }
+.mn-page .bn-nav-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Phones ── */
+@media (max-width: 600px) {
+  .mn-wrap { padding: 18px 12px 40px; }
+
+  .mn-perks { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mn-perk { flex-direction: column; gap: 8px; padding: 12px; }
+  .mn-perk-icon { width: 34px; height: 34px; font-size: 1.15rem; }
+  .mn-perk strong { font-size: 0.86rem; }
+  .mn-perk div span { font-size: 0.76rem; }
+  .mn-occ-label { width: 100%; text-align: center; margin: 0 0 2px; }
+
+  /* facts become a tidy 2-column list */
+  .mn-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mn-facts span { border-radius: 12px; font-size: 0.8rem; padding: 8px 10px; line-height: 1.35; }
+
+  /* 4 tabs on one row, badge sits on the tab edge */
+  .mn-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .mn-tab { padding: 8px 4px; font-size: 0.85rem; border-radius: 12px; white-space: nowrap; }
+  .mn-pop { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; padding: 1px 6px; }
+
+  .mn-card { padding: 16px; }
+  .mn-emoji { width: 40px; height: 40px; font-size: 1.5rem; }
+  .mn-price { font-size: 1.1rem; }
+
+  .mn-cta-row { flex-direction: column; align-items: stretch; }
+  .mn-cta-row .bn-submit-btn { width: 100%; }
+
+  .mn-page .bn-hero-title { font-size: 1.4rem; letter-spacing: 0.08em; }
+  .mn-page .bn-hero-sub { font-size: 0.92rem; }
+}
+
+/* ── Very small phones (≤360px) ── */
+@media (max-width: 360px) {
+  .mn-facts { grid-template-columns: 1fr; }
+  .mn-perks { grid-template-columns: 1fr; }
+  .mn-perk { flex-direction: row; }
+  .mn-tabs { grid-template-columns: 1fr 1fr; row-gap: 12px; }
+  .mn-name { font-size: 1rem; }
+  .mn-price { font-size: 1rem; }
+  .mn-page .bn-nav-back { padding: 6px 10px; font-size: 0.8rem; }
+  .mn-page .bn-hero-title { font-size: 1.15rem; }
+}
