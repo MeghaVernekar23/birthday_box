@@ -14,4 +14,6 @@ cd backend/
 cat .env
 git branch
 git pull
+uv sync
+uv run alembic upgrade head
 sudo systemctl restart fastapi

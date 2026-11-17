@@ -45,8 +45,8 @@ class Booking(Base):
 class Customer(Base):
     __tablename__ = "customers"
     customer_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    phone_number = Column(String)
+    name = Column(String, nullable=False)
+    phone_number = Column(String, nullable=False)
     email = Column(String)
     address = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)  
@@ -54,16 +54,16 @@ class Customer(Base):
 class Packages(Base):
     __tablename__ = "packages"
     package_id = Column(Integer, primary_key=True, index=True)
-    package_name = Column(String)
+    package_name = Column(String, nullable=False)
     description = Column(Text)
-    price = Column(Integer)
-    is_active = Column(Integer)    
+    price = Column(Float, nullable=False)
+    is_active = Column(Integer, nullable=False, server_default="1")    
 
 
 class CelebrationType(Base):
     __tablename__ = "celebration_type"
     celebration_id = Column(Integer, primary_key=True, index=True)
-    celebration_name = Column(String)
+    celebration_name = Column(String, nullable=False, unique=True)
     active = Column(Integer)    
 
 

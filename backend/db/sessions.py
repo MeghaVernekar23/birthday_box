@@ -78,7 +78,12 @@ def seed_data() -> None:
 
 
 def create_tables() -> None:
-    Base.metadata.create_all(bind=engine)
+    """Apply pending Alembic migrations, then seed default rows.
+
+    Schema changes go through Alembic now (see backend/README.md), not create_all.
+    """
+    from db.migrations import run_migrations
+    run_migrations()
     seed_data()
 
     
