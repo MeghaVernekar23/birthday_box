@@ -619,11 +619,9 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               placeholder="Your full name"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              readOnly={customerStatus === "existing"}
-              style={customerStatus === "existing" ? { backgroundColor: "#f0f0f0", cursor: "not-allowed" } : {}}
             />
             {customerStatus === "existing" && (
-              <span className="bn-field-hint">Name is prefilled from your existing profile.</span>
+              <span className="bn-field-hint">Welcome back! Name is prefilled from your profile. Celebrating someone else? Just change the name.</span>
             )}
             {errors.name && <span className="bn-error">{errors.name}</span>}
           </div>
