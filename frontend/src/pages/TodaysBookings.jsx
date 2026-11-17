@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/TodaysBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye, X, CheckCircle, Send , RotateCcw } from "lucide-react";
+import { Edit, Trash2, Eye, X, CheckCircle, Send , RotateCcw, Ban } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import {
   reactivateBooking,
+  unconfirmBooking,
   fetchBookingsByFilter,
   fetchCelebrationType,
   fetchPackage,
@@ -182,9 +183,13 @@ function Bookings() {
             <CheckCircle className="action-icon text-success" size={18} onClick={() => handleMarkPaid(row)} />
           </span>
         )}
-        {(row.status || "").toLowerCase() === "unconfirmed" && (
+        {(row.status || "").toLowerCase() === "unconfirmed" ? (
           <span title="Reactivate Booking">
-            <RotateCcw className="action-icon text-warning" size={18} onClick={() => handleReactivate(row)} />
+            <RotateCcw className="action-icon text-success" size={18} onClick={() => handleReactivate(row)} />
+          </span>
+        ) : (
+          <span title="Unconfirm Booking (stops Telegram reminders)">
+            <Ban className="action-icon text-warning" size={18} onClick={() => handleUnconfirm(row)} />
           </span>
         )}
         <span title="Send Telegram">
@@ -197,6 +202,17 @@ function Bookings() {
   useEffect(() => {
     fetchTodaysBookings();
   }, []);
+
+  const handleUnconfirm = async (booking) => {
+    if (!window.confirm(`Unconfirm the booking for ${booking.customer_name}? No Telegram reminders will be sent and it won't count in the dashboard. You can reactivate it later.`)) return;
+    try {
+      await unconfirmBooking(booking.booking_id);
+      fetchTodaysBookings();
+    } catch (error) {
+      console.error("Unconfirm failed:", error);
+      alert("Failed to unconfirm the booking. Please try again.");
+    }
+  };
 
   const handleReactivate = async (booking) => {
     if (!window.confirm(`Reactivate the booking for ${booking.customer_name}? It will be marked as confirmed and reminders will resume.`)) return;

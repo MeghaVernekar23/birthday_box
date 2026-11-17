@@ -42,7 +42,7 @@ function AddBookings() {
   const [formData, setFormData] = useState({
     customer_name: "", phone_number: "", email: "", address: "",
     event_date: "", time_slot: "", celebration_id: "", package_id: "",
-    addons_note: "", updated_by: "", created_by: "", status: "pending",
+    addons_note: "", updated_by: "", created_by: "", status: "confirmed",
     created_at: "", updated_at: "", payment_mode: "", payment_total: "",
     payment_paid: "", payment_notes: "", additional_items: [],
   });
@@ -50,7 +50,7 @@ function AddBookings() {
   const emptyForm = {
     customer_name: "", phone_number: "", email: "", address: "",
     event_date: "", time_slot: "", celebration_id: "", package_id: "",
-    addons_note: "", updated_by: "", created_by: "", status: "pending",
+    addons_note: "", updated_by: "", created_by: "", status: "confirmed",
     payment_mode: "", payment_total: "", payment_paid: "", payment_notes: "",
     additional_items: [],
   };
@@ -397,9 +397,10 @@ setFormData({ ...formData, payment_mode: paymentMode, payment_paid: amountPaid, 
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   style={{ maxWidth: "220px" }}
                 >
-                  <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
+                  <option value="pending">Pending</option>
                   <option value="completed">Completed</option>
+                  <option value="unconfirmed">Unconfirmed</option>
                 </select>
               </div>
               <div>

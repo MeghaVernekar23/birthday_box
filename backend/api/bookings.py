@@ -344,6 +344,23 @@ async def update_payment(
 
 
 @bookings_router.put(
+    "/{booking_id}/unconfirm",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Unconfirm a booking: no Telegram reminders, excluded from dashboard figures.",
+)
+def unconfirm(booking_id: int, db: Session = Depends(get_db)) -> dict:
+    from services.booking_status_service import unconfirm_booking
+    try:
+        booking = unconfirm_booking(booking_id, db)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"message": "Booking unconfirmed", "booking_id": booking.booking_id, "status": booking.status}
+
+
+@bookings_router.put(
     "/{booking_id}/reactivate",
     response_model=dict,
     dependencies=[Depends(get_current_user)],

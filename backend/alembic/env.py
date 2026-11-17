@@ -50,7 +50,17 @@ def compare_type(ctx, inspected_column, metadata_column, inspected_type, metadat
     return db_aff != model_aff
 
 
+# Tables owned by other libraries that live in the same database. Alembic must
+# never try to create, change or drop them (APScheduler keeps the scheduled
+# Telegram reminders in apscheduler_jobs).
+EXTERNAL_TABLES = {"apscheduler_jobs"}
+
+
 def include_object(obj, name, type_, reflected, compare_to):
+    if type_ == "table" and name in EXTERNAL_TABLES:
+        return False
+    if type_ == "index" and getattr(getattr(obj, "table", None), "name", None) in EXTERNAL_TABLES:
+        return False
     if context.get_context().dialect.name != "sqlite":
         return True
     # SQLite doesn't enforce foreign keys (PRAGMA foreign_keys is off).

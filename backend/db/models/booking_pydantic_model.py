@@ -76,7 +76,7 @@ class AddBookingDetails(BaseModel):
     celebration_id: int
     package_id: int
     addons_note: str
-    status: Optional[str] = "pending"
+    status: Optional[str] = "confirmed"
     payment_mode: Optional[str] = ""
     payment_total: Optional[float] = 0.0
     payment_paid: Optional[float] = 0.0

@@ -44,7 +44,7 @@ class Booking(Base):
     event_date = Column(Date)
     event_time = Column(String)
     location = Column(Text)
-    status = Column(String, default="pending")
+    status = Column(String, default="confirmed")
     notes = Column(Text)
     payment_mode = Column(String)
     payment_total = Column(Float)

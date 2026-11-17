@@ -36,15 +36,11 @@ def start_scheduler() -> None:
     if not scheduler.running:
         scheduler.start()
         log.info("[Scheduler] APScheduler started.")
-    # Safety net for the 24h rule (server restarts, edited dates, missed jobs).
-    scheduler.add_job(
-        _unconfirm_sweep_job,
-        trigger="interval",
-        minutes=10,
-        id="unconfirm_sweep",
-        replace_existing=True,
-        next_run_time=datetime.now(IST) + timedelta(seconds=30),
-    )
+    # The old auto-unconfirm sweep is gone; drop it if an earlier run persisted it.
+    try:
+        scheduler.remove_job("unconfirm_sweep")
+    except Exception:
+        pass
 
 
 def stop_scheduler() -> None:
@@ -54,30 +50,17 @@ def stop_scheduler() -> None:
         log.info("[Scheduler] APScheduler stopped.")
 
 
-def _unconfirm_sweep_job() -> None:
-    from services.booking_status_service import unconfirm_due_bookings
-    n = unconfirm_due_bookings()
-    if n:
-        log.info(f"[Scheduler] Unconfirmed {n} booking(s).")
-
-
 def _send_reminder_job(booking_data: dict, label: str) -> None:
     """
     Synchronous job function called by APScheduler.
 
     Looks the booking up again at fire time (status/date may have changed since
-    it was scheduled):
-      - deleted, cancelled or unconfirmed  -> no reminder
-      - still pending at the 24h mark      -> Telegram notice, then set unconfirmed
-      - pending at the 4h mark             -> no reminder
-      - confirmed / completed              -> reminder with current details
+    it was scheduled). Deleted, cancelled or unconfirmed bookings get no reminder.
     """
     from db.sessions import SessionLocal
     from db.models.sqlalchemy_models import Booking
     from services.telegram_service import build_booking_message, _send_message_sync
-    from services.booking_status_service import (
-        REMINDABLE_STATUSES, should_unconfirm, unconfirm_booking, _booking_message_data,
-    )
+    from services.booking_status_service import is_active, booking_message_data
 
     booking_id = booking_data.get("booking_id")
     db = SessionLocal()
@@ -86,14 +69,10 @@ def _send_reminder_job(booking_data: dict, label: str) -> None:
         if booking is None:
             log.info(f"[Scheduler] Reminder skipped: booking {booking_id} no longer exists.")
             return
-        status = (booking.status or "").lower()
-        if "24" in label and should_unconfirm(booking):
-            unconfirm_booking(booking, db)
+        if not is_active(booking.status):
+            log.info(f"[Scheduler] Reminder skipped for booking {booking_id} (status={booking.status}).")
             return
-        if status not in REMINDABLE_STATUSES:
-            log.info(f"[Scheduler] Reminder skipped for booking {booking_id} (status={status}).")
-            return
-        fresh = _booking_message_data(booking_id, db) or booking_data
+        fresh = booking_message_data(booking_id, db) or booking_data
         message = build_booking_message(fresh, label=label)
     finally:
         db.close()

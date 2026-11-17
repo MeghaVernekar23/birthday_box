@@ -19,7 +19,7 @@ const BAR_COLORS = ["#4f8ef7","#7c5cbf","#2bba8f","#f5a623","#e8603c","#a0c4ff"]
 
 // Revenue figures use what was actually billed/paid on each booking, not the
 // package list price (which ignores duration, add-ons, extra guests, hall...).
-// Cancelled and auto-unconfirmed bookings never count towards any figure.
+// Cancelled and unconfirmed bookings never count towards any figure.
 const INACTIVE = new Set(["cancelled", "canceled", "unconfirmed"]);
 const isCancelled = (b) => INACTIVE.has((b.status || "").toLowerCase());
 const bookingTotal = (b) =>

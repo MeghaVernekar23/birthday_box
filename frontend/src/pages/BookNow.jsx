@@ -555,7 +555,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         celebration_id,
         package_id,
         addons_note,
-        status: "pending", // every new booking starts pending; staff confirm it
+        status: "confirmed", // every new booking starts confirmed; staff can unconfirm it
         payment_mode: "",
         payment_total: isNaN(finalTotal) ? computedTotal : finalTotal,
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,

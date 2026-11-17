@@ -128,10 +128,18 @@ export const deleteHoliday = (holidayId) => {
 
 
 
-// Owner reactivates an auto-unconfirmed booking (it becomes confirmed again).
+// Owner reactivates an unconfirmed booking (it becomes confirmed again).
 export const reactivateBooking = (bookingId) => {
     return apiRequest({
         url: `${BASE_URL}/bookings/${bookingId}/reactivate`,
+        method: "PUT",
+    });
+};
+
+// Staff unconfirm a booking: no Telegram reminders, excluded from dashboard figures.
+export const unconfirmBooking = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/${bookingId}/unconfirm`,
         method: "PUT",
     });
 };
