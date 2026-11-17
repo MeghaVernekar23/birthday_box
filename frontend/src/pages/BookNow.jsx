@@ -40,7 +40,7 @@ const PACKAGES_1HR = [
   // { id: "p1h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,299" },
   // { id: "p1h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹1,799" },
   // { id: "p1h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,199" },
-  // { id: "p1h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹2,699" },
+  // { id: "p1h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹2,699" },
   // { id: "p1h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹4,999" },
   // { id: "p1h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" }, // hidden
 ];
@@ -50,7 +50,7 @@ const PACKAGES_1HR30 = [
   { id: "p15h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹1,799" },
   { id: "p15h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹2,499" },
   { id: "p15h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹2,899" },
-  { id: "p15h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,699" },
+  { id: "p15h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹3,699" },
   { id: "p15h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹5,999" },
   // { id: "p15h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹1,000" },
 ];
@@ -60,7 +60,7 @@ const PACKAGES_2HR = [
   { id: "p2h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹2,598" },
   { id: "p2h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹3,598" },
   { id: "p2h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹4,398" },
-  { id: "p2h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹5,398" },
+  { id: "p2h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹5,398" },
   { id: "p2h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹9,998" },
   // { id: "p2h7", label: "INSTAGRAM REEL EDIT USING IPHONE 16 PRO MAX (PROFESSIONALLY EDITED & INSTAGRAM-READY)", price: "₹2,000" },
 ];
@@ -70,7 +70,7 @@ const PACKAGES_3HR = [
   { id: "p3h2", label: "CLASSIC PACKAGE = BASIC + GAMES + GIFT", price: "₹3,897" },
   { id: "p3h3", label: "DYNAMIC PACKAGE = CLASSIC + FOG ENTRY", price: "₹5,397" },
   { id: "p3h4", label: "ELITE PACKAGE = DYNAMIC + 1/2KG PASTY", price: "₹6,597" },
-  { id: "p3h5", label: "GLODEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹8,097" },
+  { id: "p3h5", label: "GOLDEN GLOW PACKAGE = ELITE + FIRE ENTRY", price: "₹8,097" },
   { id: "p3h6", label: "DREAM CELEBRATION PACKAGE = GOLDEN GLOW + COMPLEMENTARY WELCOME DRINKS (FRESH JUICE) + 1HR PHOTOSHOOT (50 PICKS)", price: "₹14,997" },
 ];
 
@@ -84,6 +84,20 @@ const ADDONS = [
   { id: "a7", label: "Instagram Reel Edit by iPhone 16 Pro Max - ₹1,000", price: 1000 },
   { id: "a8", label: "Photography by iPhone 16 Pro Max - ₹1,000 (30 Photos)", price: 1000 },
 ];
+
+// Maps a form package label ("CLASSIC PACKAGE = BASIC + ...") to its packages.package_name in the DB.
+const DB_PACKAGE_NAMES = {
+  BASIC: "BASIC",
+  CLASSIC: "CLASSIC PACKAGE",
+  DYNAMIC: "DYNAMIC PACKAGE",
+  ELITE: "ELITE PACKAGE",
+  GOLDEN: "GOLDEN GLOW PACKAGE",
+  DREAM: "DREAM CELEBRATION PACKAGE",
+};
+const dbPackageName = (label) => {
+  const head = (label || "").split("=")[0].trim().toUpperCase();
+  return DB_PACKAGE_NAMES[head.split(/\s+/)[0]] || head;
+};
 
 const TIME_OPTIONS = (() => {
   const slots = [];
@@ -443,23 +457,53 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
       const celebration_id = form.celebrationType ? parseInt(form.celebrationType, 10) : null;
       if (!celebration_id) throw new Error("Could not resolve celebration type. Please try again.");
 
-      // Resolve package_id: pick first selected package by label match, fallback to first available
+      // Selected packages (with the duration-specific price shown to the customer)
       const pkgList = Array.isArray(packages) ? packages : [];
-      const allSelectedLabels = [
-        ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)?.label),
-        ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)?.label),
-        ...form.packages2hr.map((id) => PACKAGES_2HR.find((p) => p.id === id)?.label),
-        ...form.packages3hr.map((id) => PACKAGES_3HR.find((p) => p.id === id)?.label),
+      const selectedPkgs = [
+        ...form.packages1hr.map((id) => PACKAGES_1HR.find((p) => p.id === id)),
+        ...form.packages1hr30.map((id) => PACKAGES_1HR30.find((p) => p.id === id)),
+        ...form.packages2hr.map((id) => PACKAGES_2HR.find((p) => p.id === id)),
+        ...form.packages3hr.map((id) => PACKAGES_3HR.find((p) => p.id === id)),
       ].filter(Boolean);
+      const allSelectedLabels = selectedPkgs.map((p) => p.label);
 
+      // Map the first selected package to its DB row by exact name.
       let package_id = pkgList[0]?.package_id;
       if (!package_id) throw new Error("Could not resolve package. Please try again.");
-      if (allSelectedLabels.length > 0) {
-        const firstLabel = allSelectedLabels[0].split("=")[0].trim().toUpperCase();
-        const pkgMatch = pkgList.find(
-          (p) => p.package_name.toUpperCase().includes(firstLabel) || firstLabel.includes(p.package_name.toUpperCase())
-        );
+      if (selectedPkgs.length > 0) {
+        const wanted = dbPackageName(selectedPkgs[0].label);
+        const pkgMatch = pkgList.find((p) => p.package_name.trim().toUpperCase() === wanted);
         if (pkgMatch) package_id = pkgMatch.package_id;
+      }
+
+      // Every priced extra is stored as a line item, so that
+      // payment_total = package_price + sum(additional_items) everywhere.
+      const package_price = selectedPkgs.length > 0 ? parsePrice(selectedPkgs[0].price) : 0;
+      const additional_items = [];
+      selectedPkgs.slice(1).forEach((p) =>
+        additional_items.push({ description: `Package: ${dbPackageName(p.label)} (${form.timeSlot})`, price: parsePrice(p.price) })
+      );
+      form.addons.forEach((id) => {
+        const a = ADDONS.find((x) => x.id === id);
+        if (a) additional_items.push({ description: a.price === null ? `${a.label} (price TBD)` : a.label, price: a.price || 0 });
+      });
+      form.customAddons
+        .filter((ca) => ca.label.trim())
+        .forEach((ca) => {
+          const p = parseFloat(ca.price);
+          additional_items.push({ description: ca.label.trim() + ((!isNaN(p) && p > 0) ? "" : " (price TBD)"), price: (!isNaN(p) && p > 0) ? p : 0 });
+        });
+      const extraGuests = parseInt(form.extraGuests) || 0;
+      const guestRate = parseInt(form.extraGuestRate) || 0;
+      if (!form.needHall && extraGuests > 0) {
+        additional_items.push({ description: `Extra guests: ${extraGuests} × ₹${guestRate}`, price: extraGuests * guestRate });
+      }
+      if (form.needHall) additional_items.push({ description: "Extra Dining Hall", price: 2000 });
+
+      const computedTotal = computeTotal();
+      const finalTotal = totalUnlocked && totalOverride !== "" ? parseFloat(totalOverride) : computedTotal;
+      if (!isNaN(finalTotal) && finalTotal !== computedTotal) {
+        additional_items.push({ description: "Staff price adjustment", price: finalTotal - computedTotal });
       }
 
       // Build addons note
@@ -512,13 +556,18 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         package_id,
         addons_note,
         status: form.status,
-        payment_mode: form.paymentMode,
-        payment_total: totalUnlocked && totalOverride !== "" ? parseFloat(totalOverride) : computeTotal(),
+        payment_mode: "",
+        payment_total: isNaN(finalTotal) ? computedTotal : finalTotal,
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
         payment_notes: "",
         created_by: "customer",
         updated_by: null,
-        additional_items: [],
+        package_price,
+        additional_items,
+        duration: form.timeSlot || null,
+        referral_source: form.referral || null,
+        customer_message: form.contactUs.trim() || null,
+        booked_by_staff: form.bookedByStaff,
       };
 
       const res = await fetch(`${BASE_URL}/bookings/submit`, {

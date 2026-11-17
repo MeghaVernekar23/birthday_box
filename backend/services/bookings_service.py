@@ -15,6 +15,11 @@ from services.telegram_service import notify_new_booking
 from services.scheduler_service import schedule_booking_reminders
 
 
+def _items_total(items) -> float:
+    """Sum of the prices of a booking's additional line items."""
+    return sum(float(i.price or 0) for i in items or [])
+
+
 def get_celebration_type(db: Session) -> List[CelebrationType]:
     """
     Retrieve all active celebration types from the database.
@@ -214,22 +219,36 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
 
         user = get_user_by_username(bookingDetails.created_by, db) if bookingDetails.created_by else None
 
+        items = bookingDetails.additional_items or []
+        package_price = bookingDetails.package_price
+        if package_price is None:
+            pkg = db.get(Packages, bookingDetails.package_id)
+            package_price = pkg.price if pkg else 0.0
+        payment_total = bookingDetails.payment_total
+        if not payment_total:
+            payment_total = package_price + _items_total(items)
+
         booking = Booking(
             customer_id=customer.customer_id,
             package_id=bookingDetails.package_id,
             celebration_id=bookingDetails.celebration_id,
             celebrant_name=(bookingDetails.customer_name or "").strip() or None,
+            package_price=package_price,
+            duration=bookingDetails.duration,
+            referral_source=bookingDetails.referral_source,
+            customer_message=bookingDetails.customer_message,
+            booked_by_staff=1 if bookingDetails.booked_by_staff else 0,
             event_date=bookingDetails.event_date,
             event_time=bookingDetails.time_slot,
             status=bookingDetails.status,
             notes=bookingDetails.addons_note,
-             payment_mode=bookingDetails.payment_mode,
-            payment_total=bookingDetails.payment_total,
+            payment_mode=bookingDetails.payment_mode,
+            payment_total=payment_total,
             payment_paid=bookingDetails.payment_paid,
             payment_notes=bookingDetails.payment_notes,
             created_by=user.id if user else None,
             created_at=datetime.now(timezone.utc),
-            additional_items = [item.dict() for item in bookingDetails.additional_items]
+            additional_items=[item.model_dump() for item in items],
         )
 
 
@@ -252,7 +271,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             "package_name": package.package_name if package else str(bookingDetails.package_id),
             "celebration_name": celebration.celebration_name if celebration else str(bookingDetails.celebration_id),
             "addons_note": bookingDetails.addons_note,
-            "payment_total": bookingDetails.payment_total,
+            "payment_total": payment_total,
             "payment_paid": bookingDetails.payment_paid,
             "payment_mode": bookingDetails.payment_mode,
             "status": bookingDetails.status,
@@ -352,8 +371,17 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
         booking.payment_notes=booking_details.payment_notes
         booking.updated_at = datetime.now(timezone.utc)
         booking.updated_by = user.id
-        booking.additional_items = [item.dict() for item in booking_details.additional_items]
-        
+        booking.additional_items = [item.model_dump() for item in (booking_details.additional_items or [])]
+
+        # Structured fields are optional on edit: only overwrite what the client sent,
+        # so older clients can't wipe them.
+        sent = booking_details.model_fields_set
+        for field in ("package_price", "duration", "referral_source", "customer_message"):
+            if field in sent:
+                setattr(booking, field, getattr(booking_details, field))
+        if "booked_by_staff" in sent and booking_details.booked_by_staff is not None:
+            booking.booked_by_staff = 1 if booking_details.booked_by_staff else 0
+
         db.commit()
         return {
             "message": "Booking updated successfully",

@@ -273,6 +273,15 @@ function Bookings() {
     }
   };
 
+  // Price charged for the package on this booking. Bookings store their own
+  // package_price (it depends on duration); fall back to the package list price.
+  const currentPackagePrice = () => {
+    if (formData.package_price !== undefined && formData.package_price !== null && formData.package_price !== "") {
+      return Number(formData.package_price);
+    }
+    return Number(packageOptions.find((pkg) => String(pkg.package_id) === formData.package_id)?.price) || 0;
+  };
+
   const handleEditBooking = async (booking) => {
     try {
       const fullBooking = await fetchBookingById(booking.booking_id);
@@ -296,6 +305,7 @@ function Bookings() {
         payment_paid: fullBooking.payment_paid,
         payment_notes: fullBooking.payment_notes,
         payment_total: fullBooking.payment_total,
+        package_price: fullBooking.package_price,
       });
       setAdditionalItems(fullBooking.additional_items || []);
 
@@ -362,7 +372,7 @@ function Bookings() {
         fetchPackage(),
       ]);
       const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
-      const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+      const fullAmount = Number(fullBooking.payment_total) || pkg?.price || 0; // never overwrite a real total with the bare package price
       await updatePayment(booking.booking_id, {
         ...fullBooking,
         email: fullBooking.email ?? "",
@@ -392,7 +402,7 @@ function Bookings() {
       try {
         const fullBooking = await fetchBookingById(booking.booking_id);
         const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
-        const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+        const fullAmount = Number(fullBooking.payment_total) || pkg?.price || 0; // never overwrite a real total with the bare package price
         await updatePayment(fullBooking.booking_id, {
           ...fullBooking,
           email: fullBooking.email ?? "",
@@ -664,6 +674,30 @@ function Bookings() {
                       <span className="nb-field-key">Type</span>
                       <span className="nb-field-val">{popupView.booking.celebration_name}</span>
                     </div>
+                    {popupView.booking.duration && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Duration</span>
+                        <span className="nb-field-val">{popupView.booking.duration}</span>
+                      </div>
+                    )}
+                    {popupView.booking.referral_source && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Heard from</span>
+                        <span className="nb-field-val">{popupView.booking.referral_source}</span>
+                      </div>
+                    )}
+                    {popupView.booking.customer_message && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Message</span>
+                        <span className="nb-field-val">{popupView.booking.customer_message}</span>
+                      </div>
+                    )}
+                    {popupView.booking.booked_by_staff && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Booked by</span>
+                        <span className="nb-field-val">Staff — cross check</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -674,8 +708,8 @@ function Bookings() {
                 <div className="nb-package-card">
                   <div className="nb-package-top">
                     <span className="nb-package-name">{popupView.booking.package_name}</span>
-                    {popupView.booking.payment_total && (
-                      <span className="nb-package-price">₹{popupView.booking.payment_total}</span>
+                    {(popupView.booking.package_price ?? popupView.booking.payment_total) != null && (
+                      <span className="nb-package-price">₹{popupView.booking.package_price ?? popupView.booking.payment_total}</span>
                     )}
                   </div>
                 </div>
@@ -1002,6 +1036,7 @@ function Bookings() {
                           setFormData({
                             ...formData,
                             package_id: e.target.value,
+                            package_price: pkg.price,
                           })
                         }
                       />
@@ -1061,7 +1096,7 @@ function Bookings() {
                             <strong>🎁 {pkg.package_name}</strong>
                           </p>
                           <p>
-                            💵 <strong>Price:</strong> ₹{pkg.price}
+                            💵 <strong>Price:</strong> ₹{currentPackagePrice()}
                           </p>
                         </div>
                       )
@@ -1190,10 +1225,7 @@ function Bookings() {
                     <strong>Total Amount:</strong> ₹
                     {(() => {
                       const packagePrice =
-                        packageOptions.find(
-                          (pkg) =>
-                            String(pkg.package_id) === formData.package_id
-                        )?.price || 0;
+                        currentPackagePrice();
                       const addOnPrice = additionalItems.reduce(
                         (sum, item) => sum + Number(item.price || 0),
                         0
@@ -1208,10 +1240,7 @@ function Bookings() {
                     <strong>Balance:</strong> ₹
                     {(() => {
                       const packagePrice =
-                        packageOptions.find(
-                          (pkg) =>
-                            String(pkg.package_id) === formData.package_id
-                        )?.price || 0;
+                        currentPackagePrice();
                       const addOnPrice = additionalItems.reduce(
                         (sum, item) => sum + Number(item.price || 0),
                         0
@@ -1286,7 +1315,7 @@ function Bookings() {
                           </span>
                           <br />
                           <span style={{ fontSize: "0.85rem" }}>
-                            Price: ₹{pkg.price}
+                            Price: ₹{currentPackagePrice()}
                           </span>
                         </p>
                       )
@@ -1431,9 +1460,7 @@ function Bookings() {
 
                   if (step === 6) {
                     const packagePrice =
-                      packageOptions.find(
-                        (pkg) => String(pkg.package_id) === formData.package_id
-                      )?.price || 0;
+                      currentPackagePrice();
                     const addOnPrice = additionalItems.reduce(
                       (sum, item) => sum + Number(item.price || 0),
                       0
@@ -1445,7 +1472,8 @@ function Bookings() {
                       return;
                     }
                     if (
-                      !formData.payment_paid ||
+                      formData.payment_paid === "" ||
+                      formData.payment_paid == null ||
                       Number(formData.payment_paid) < 0
                     ) {
                       alert("Amount paid must be a valid number.");

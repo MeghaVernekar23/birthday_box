@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line, LabelList
 } from "recharts";
-import { fetchBookingsByFilter, fetchPackage } from "../services/bookingServices";
+import { fetchBookingsByFilter } from "../services/bookingServices";
 import "../css/Dashboard.css";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -15,6 +15,13 @@ const STATUS_COLORS = {
 };
 
 const BAR_COLORS = ["#4f8ef7","#7c5cbf","#2bba8f","#f5a623","#e8603c","#a0c4ff"];
+
+// Revenue figures use what was actually billed/paid on each booking, not the
+// package list price (which ignores duration, add-ons, extra guests, hall...).
+const isCancelled = (b) => (b.status || "").toLowerCase() === "cancelled";
+const bookingTotal = (b) =>
+  Number(b.payment_total) || Number(b.package_price) || 0;
+const bookingPaid = (b) => Number(b.payment_paid) || 0;
 
 function getMonthlyData(bookings) {
   const now = new Date();
@@ -57,12 +64,12 @@ function getCelebrationData(bookings) {
 function getReferralData(bookings) {
   const counts = {};
   bookings.forEach((b) => {
-    const note = b.addons_note || "";
-    const match = note.match(/Heard from:\s*([^|]+)/i);
-    if (match) {
-      const source = match[1].trim();
-      counts[source] = (counts[source] || 0) + 1;
+    let source = b.referral_source;
+    if (!source) {
+      const match = (b.addons_note || "").match(/Heard from:\s*([^|]+)/i);
+      source = match ? match[1].trim() : null;
     }
+    if (source) counts[source] = (counts[source] || 0) + 1;
   });
   return Object.entries(counts)
     .map(([name, count]) => ({ name, count }))
@@ -81,7 +88,7 @@ function getPackageData(bookings) {
     .slice(0, 6);
 }
 
-function getPackageRevenueData(bookings, packagePriceMap) {
+function getPackageRevenueData(bookings) {
   const now = new Date();
   const thisYear = now.getFullYear();
   const thisMonth = now.getMonth();
@@ -89,16 +96,16 @@ function getPackageRevenueData(bookings, packagePriceMap) {
   bookings.forEach((b) => {
     if (!b.event_date) return;
     const [y, m] = b.event_date.split("-").map(Number);
-    if (y !== thisYear || m - 1 !== thisMonth) return;
+    if (y !== thisYear || m - 1 !== thisMonth || isCancelled(b)) return;
     const pkg = b.package_name || "Unknown";
     if (!data[pkg]) data[pkg] = { name: pkg, revenue: 0, count: 0 };
-    data[pkg].revenue += packagePriceMap[pkg] || 0;
+    data[pkg].revenue += bookingTotal(b);
     data[pkg].count += 1;
   });
   return Object.values(data).sort((a, b) => b.revenue - a.revenue);
 }
 
-function getThisMonthRevenue(bookings, packagePriceMap) {
+function getThisMonthRevenue(bookings) {
   const now = new Date();
   const thisYear = now.getFullYear();
   const thisMonth = now.getMonth();
@@ -106,13 +113,13 @@ function getThisMonthRevenue(bookings, packagePriceMap) {
   bookings.forEach((b) => {
     if (!b.event_date) return;
     const [y, m] = b.event_date.split("-").map(Number);
-    if (y !== thisYear || m - 1 !== thisMonth) return;
-    total += packagePriceMap[b.package_name] || 0;
+    if (y !== thisYear || m - 1 !== thisMonth || isCancelled(b)) return;
+    total += bookingTotal(b);
   });
   return total;
 }
 
-function getMonthlyRevenueData(bookings, packagePriceMap) {
+function getMonthlyRevenueData(bookings) {
   const now = new Date();
   const rows = {};
   for (let i = 12; i >= 0; i--) {
@@ -124,9 +131,9 @@ function getMonthlyRevenueData(bookings, packagePriceMap) {
     if (!b.event_date) return;
     const [y, m] = b.event_date.split("-");
     const key = `${y}-${m}`;
-    if (!rows[key]) return;
+    if (!rows[key] || isCancelled(b)) return;
     const pkg = b.package_name || "Unknown";
-    const price = packagePriceMap[pkg] || 0;
+    const price = bookingTotal(b);
     rows[key][pkg] = (rows[key][pkg] || 0) + price;
     rows[key]._total = (rows[key]._total || 0) + price;
     const countKey = `_count_${pkg}`;
@@ -190,19 +197,14 @@ const AnalyticsSection = () => {
   }, []);
   const isMobile = windowWidth <= 480;
   const [bookings, setBookings] = useState([]);
-  const [packagePriceMap, setPackagePriceMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [revenueModal, setRevenueModal] = useState(null); // { label, bookings }
 
   useEffect(() => {
-    Promise.all([fetchBookingsByFilter("all"), fetchPackage()])
-      .then(([bookingData, packageData]) => {
+    fetchBookingsByFilter("all")
+      .then((bookingData) => {
         setBookings(Array.isArray(bookingData) ? bookingData : (bookingData?.data ?? []));
-        const pkgs = Array.isArray(packageData) ? packageData : (packageData?.data ?? []);
-        const map = {};
-        pkgs.forEach((p) => { map[p.package_name] = p.price; });
-        setPackagePriceMap(map);
       })
       .catch((err) => { console.error("Analytics fetch error", err); setError("Failed to load analytics."); })
       .finally(() => setLoading(false));
@@ -214,9 +216,13 @@ const AnalyticsSection = () => {
   const packageData = useMemo(() => getPackageData(bookings), [bookings]);
   const referralData = useMemo(() => getReferralData(bookings), [bookings]);
   const dailyComparisonData = useMemo(() => getDailyComparisonData(bookings), [bookings]);
-  const packageRevenueData = useMemo(() => getPackageRevenueData(bookings, packagePriceMap), [bookings, packagePriceMap]);
-  const thisMonthRevenue = useMemo(() => getThisMonthRevenue(bookings, packagePriceMap), [bookings, packagePriceMap]);
-  const monthlyRevenueData = useMemo(() => getMonthlyRevenueData(bookings, packagePriceMap), [bookings, packagePriceMap]);
+  const packageRevenueData = useMemo(() => getPackageRevenueData(bookings), [bookings]);
+  const thisMonthRevenue = useMemo(() => getThisMonthRevenue(bookings), [bookings]);
+  const monthlyRevenueData = useMemo(() => getMonthlyRevenueData(bookings), [bookings]);
+  const revenuePackageNames = useMemo(
+    () => Array.from(new Set(bookings.filter((b) => !isCancelled(b)).map((b) => b.package_name || "Unknown"))),
+    [bookings]
+  );
 
   const now = new Date();
   const comparisonMonths = Array.from({ length: 4 }, (_, i) => {
@@ -226,14 +232,14 @@ const AnalyticsSection = () => {
 
   const { totalBilled, totalCollected } = useMemo(
     () =>
-      bookings.reduce(
+      bookings.filter((b) => !isCancelled(b)).reduce(
         (acc, b) => ({
-          totalBilled: acc.totalBilled + (packagePriceMap[b.package_name] || 0),
-          totalCollected: acc.totalCollected + (packagePriceMap[b.package_name] || 0),
+          totalBilled: acc.totalBilled + bookingTotal(b),
+          totalCollected: acc.totalCollected + bookingPaid(b),
         }),
         { totalBilled: 0, totalCollected: 0 }
       ),
-    [bookings, packagePriceMap]
+    [bookings]
   );
   const totalPending = Math.max(0, totalBilled - totalCollected);
 
@@ -346,7 +352,7 @@ const AnalyticsSection = () => {
               }}
             />
             {!isMobile && <Legend verticalAlign="top" wrapperStyle={{ fontSize: 11 }} />}
-            {Object.keys(packagePriceMap).map((pkg, i, arr) => (
+            {revenuePackageNames.map((pkg, i, arr) => (
               <Bar
                 key={pkg}
                 dataKey={pkg}
@@ -361,7 +367,7 @@ const AnalyticsSection = () => {
                   const monthIdx = MONTHS.indexOf(mon);
                   const year = parseInt(yr, 10);
                   const filtered = bookings.filter((b) => {
-                    if (!b.event_date) return false;
+                    if (!b.event_date || isCancelled(b)) return false;
                     const [y, m] = b.event_date.split("-").map(Number);
                     return y === year && m - 1 === monthIdx;
                   });
@@ -398,7 +404,7 @@ const AnalyticsSection = () => {
 
             {/* Summary chips */}
             {revenueModal.bookings.length > 0 && (() => {
-              const total = revenueModal.bookings.reduce((s, b) => s + (packagePriceMap[b.package_name] || 0), 0);
+              const total = revenueModal.bookings.reduce((s, b) => s + bookingTotal(b), 0);
               return (
                 <div className="rev-modal__chips">
                   <div className="rev-chip rev-chip--green">
@@ -454,7 +460,7 @@ const AnalyticsSection = () => {
                             </span>
                           </td>
                           <td className="rev-table__right rev-table__amount">
-                            {formatCurrency(packagePriceMap[b.package_name] || 0)}
+                            {formatCurrency(bookingTotal(b))}
                           </td>
                         </tr>
                       ))}

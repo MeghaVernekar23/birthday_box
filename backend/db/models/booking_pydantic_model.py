@@ -1,10 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 
 class AdditionalItem(BaseModel):
+    """One priced line on a booking: an add-on, extra guests, dining hall, adjustment..."""
     description: str
-    price: float
+    price: float = 0.0
+
+    @field_validator("price", mode="before")
+    @classmethod
+    def _blank_price_is_zero(cls, v):
+        return 0.0 if v in (None, "") else v
+
 class BookingDetails(BaseModel):
     booking_id: int
     customer_name: Optional[str] = None
@@ -28,6 +35,12 @@ class BookingDetails(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     additional_items: Optional[List[AdditionalItem]] = []
+    celebrant_name: Optional[str] = None
+    package_price: Optional[float] = None
+    duration: Optional[str] = None
+    referral_source: Optional[str] = None
+    customer_message: Optional[str] = None
+    booked_by_staff: Optional[bool] = None
 
     class Config:
         from_attributes = True  
@@ -71,6 +84,12 @@ class AddBookingDetails(BaseModel):
     created_by: Optional[str] = None
     updated_by: Optional[str] = None
     additional_items: Optional[List[AdditionalItem]] = []
+    celebrant_name: Optional[str] = None
+    package_price: Optional[float] = None
+    duration: Optional[str] = None
+    referral_source: Optional[str] = None
+    customer_message: Optional[str] = None
+    booked_by_staff: Optional[bool] = None
 
 
 class EditBookingDetails(BaseModel):
@@ -94,6 +113,12 @@ class EditBookingDetails(BaseModel):
     created_at: datetime 
     updated_at: Optional[datetime] 
     additional_items: Optional[List[AdditionalItem]] = []
+    celebrant_name: Optional[str] = None
+    package_price: Optional[float] = None
+    duration: Optional[str] = None
+    referral_source: Optional[str] = None
+    customer_message: Optional[str] = None
+    booked_by_staff: Optional[bool] = None
 
 class CustomerBookingSummary(BaseModel):
     booking_id: int

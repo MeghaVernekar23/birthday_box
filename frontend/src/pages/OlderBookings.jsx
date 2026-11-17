@@ -189,7 +189,7 @@ function Bookings() {
         fetchPackage(),
       ]);
       const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
-      const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+      const fullAmount = Number(fullBooking.payment_total) || pkg?.price || 0; // never overwrite a real total with the bare package price
       await updatePayment(popupMarkPaid.booking.booking_id, {
         ...fullBooking,
         email: fullBooking.email ?? "",
@@ -226,7 +226,7 @@ function Bookings() {
       try {
         const fullBooking = await fetchBookingById(booking.booking_id);
         const pkg = packages.find((p) => p.package_id === fullBooking.package_id);
-        const fullAmount = pkg?.price ?? fullBooking.payment_total ?? 0;
+        const fullAmount = Number(fullBooking.payment_total) || pkg?.price || 0; // never overwrite a real total with the bare package price
         await updatePayment(fullBooking.booking_id, {
           ...fullBooking,
           email: fullBooking.email ?? "",
@@ -662,6 +662,30 @@ function Bookings() {
                       <span className="nb-field-key">Type</span>
                       <span className="nb-field-val">{popupView.booking.celebration_name}</span>
                     </div>
+                    {popupView.booking.duration && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Duration</span>
+                        <span className="nb-field-val">{popupView.booking.duration}</span>
+                      </div>
+                    )}
+                    {popupView.booking.referral_source && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Heard from</span>
+                        <span className="nb-field-val">{popupView.booking.referral_source}</span>
+                      </div>
+                    )}
+                    {popupView.booking.customer_message && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Message</span>
+                        <span className="nb-field-val">{popupView.booking.customer_message}</span>
+                      </div>
+                    )}
+                    {popupView.booking.booked_by_staff && (
+                      <div className="nb-field">
+                        <span className="nb-field-key">Booked by</span>
+                        <span className="nb-field-val">Staff — cross check</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -671,8 +695,8 @@ function Bookings() {
                 <div className="nb-package-card">
                   <div className="nb-package-top">
                     <span className="nb-package-name">{popupView.booking.package_name}</span>
-                    {popupView.booking.payment_total && (
-                      <span className="nb-package-price">₹{popupView.booking.payment_total}</span>
+                    {(popupView.booking.package_price ?? popupView.booking.payment_total) != null && (
+                      <span className="nb-package-price">₹{popupView.booking.package_price ?? popupView.booking.payment_total}</span>
                     )}
                   </div>
                 </div>

@@ -28,6 +28,13 @@ class Booking(Base):
     # Name of the person being celebrated for this booking. A returning customer
     # (same phone number) may book for someone else; falls back to Customer.name.
     celebrant_name = Column(String, nullable=True)
+    # Price actually charged for the package (depends on duration, so it can
+    # differ from Packages.price). payment_total = package_price + sum(additional_items).
+    package_price = Column(Float, nullable=True)
+    duration = Column(String, nullable=True)          # e.g. "1.5 Hours (Classic)"
+    referral_source = Column(String, nullable=True)   # e.g. "Instagram"
+    customer_message = Column(Text, nullable=True)
+    booked_by_staff = Column(Integer, nullable=False, server_default="0")
     event_date = Column(Date)
     event_time = Column(String)
     location = Column(Text)

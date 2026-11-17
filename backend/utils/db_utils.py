@@ -82,6 +82,12 @@ def get_booking_query(db: Session) -> List[Booking]:
                 Booking.created_at,
                 Booking.updated_at,
                 Booking.additional_items,
+                Booking.celebrant_name,
+                Booking.package_price,
+                Booking.duration,
+                Booking.referral_source,
+                Booking.customer_message,
+                Booking.booked_by_staff,
                 updated_by_user.username.label("updated_by"),
                 created_by_user.username.label("created_by"),
             )
