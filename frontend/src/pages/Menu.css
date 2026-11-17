@@ -115,6 +115,3 @@
   .mn-page .bn-nav-back { padding: 6px 10px; font-size: 0.8rem; }
   .mn-page .bn-hero-title { font-size: 1.15rem; }
 }
-
-/* Neon hero title: spacing comes from NeonText's gaps, not letter-spacing */
-.mn-page .bn-hero-title.neon-text { letter-spacing: 0; display: flex; }

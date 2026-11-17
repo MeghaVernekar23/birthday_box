@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import logo from "../images/logo.jpg";
+import logo from "../images/logo_mark.png"; // gift mark only (no wordmark) in the navbar
 import "./BookNow.css";
 import "./PublicBooking.css";
 import { BASE_URL } from "../services/utils";

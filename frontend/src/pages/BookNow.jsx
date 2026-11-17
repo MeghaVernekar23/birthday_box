@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import logo from "../images/logo.jpg";
+import logo from "../images/logo_mark.png"; // gift mark only (no wordmark) in the navbar
 import "./BookNow.css";
+import NeonText from "../components/NeonText";
 import { BASE_URL } from "../services/utils";
 import { PACKAGES_1HR, PACKAGES_1HR30, PACKAGES_2HR, PACKAGES_3HR, ADDONS } from "../data/packageCatalog";
 
@@ -628,7 +629,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
 
       {/* Hero */}
       <div className="bn-hero">
-        <h1 className="bn-hero-title">B I R T H D A Y &nbsp; B O X</h1>
+        <NeonText as="h1" text="BIRTHDAY BOX" className="bn-hero-title" />
         <p className="bn-hero-sub">Fill in the form below to request your celebration slot</p>
       </div>
 

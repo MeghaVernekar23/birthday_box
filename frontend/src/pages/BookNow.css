@@ -32,7 +32,7 @@
 }
 
 .bn-logo {
-  height: 48px;
+  height: 44px;
   object-fit: contain;
   cursor: pointer;
 }
@@ -75,6 +75,13 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   margin-bottom: 10px;
+}
+
+/* Neon hero title (Book Now + Menu): spacing comes from NeonText's gaps */
+.bn-hero-title.neon-text,
+.mn-page .bn-hero-title.neon-text {
+  display: flex;
+  letter-spacing: 0;
 }
 
 .bn-hero-sub {
