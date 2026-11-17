@@ -10,6 +10,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import {
+  confirmBooking,
   reactivateBooking,
   unconfirmBooking,
   fetchBookingsByFilter,
@@ -38,8 +39,11 @@ const formatEventDate = (dateStr) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid, onSendTelegram }) => {
+const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid, onSendTelegram, onConfirm, onUnconfirm, onReactivate }) => {
   const ps = getPaymentStatus(row);
+  const status = (row.status || "").toLowerCase();
+  const isUnconfirmed = status === "unconfirmed";
+  const isPending = status === "pending";
   return (
     <div className="booking-card booking-card--blue">
       <div className="booking-card__header">
@@ -51,7 +55,12 @@ const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid, onSendTelegram
         <div className="booking-card__field">📦 {row.package_name || "—"}</div>
         <div className="booking-card__field">🎉 {row.celebration_name || "—"}</div>
         <div className="booking-card__field">👤 {row.updated_by || "—"}</div>
-        <span className={`booking-card__pill booking-card__pill--${ps.key}`}>{ps.label}</span>
+        <div className="booking-card__pills">
+          <span className={`booking-card__pill booking-card__pill--${ps.key}`}>{ps.label}</span>
+          {status && (
+            <span className={`booking-card__pill booking-card__status booking-card__status--${status}`}>{row.status}</span>
+          )}
+        </div>
       </div>
       <div className="booking-card__actions">
         <button className="btn btn-sm btn-primary" onClick={() => onEdit(row)}>Edit</button>
@@ -59,6 +68,14 @@ const BookingCard = ({ row, onEdit, onView, onDelete, onMarkPaid, onSendTelegram
         <button className="btn btn-sm btn-danger" onClick={() => onDelete(row)}>Delete</button>
         {ps.key !== "paid" && (
           <button className="btn btn-sm btn-success" onClick={() => onMarkPaid(row)}>Paid</button>
+        )}
+        {isPending && (
+          <button className="btn btn-sm btn-outline-success" title="Mark this booking as confirmed" onClick={() => onConfirm(row)}>Confirm</button>
+        )}
+        {isUnconfirmed ? (
+          <button className="btn btn-sm btn-outline-success" title="Set back to confirmed; reminders resume" onClick={() => onReactivate(row)}>Reactivate</button>
+        ) : (
+          <button className="btn btn-sm btn-outline-warning" title="Stops Telegram reminders; excluded from dashboard" onClick={() => onUnconfirm(row)}>Unconfirm</button>
         )}
         <button className="btn btn-sm btn-info" onClick={() => onSendTelegram(row)}>Telegram</button>
       </div>
@@ -202,6 +219,17 @@ function Bookings() {
   useEffect(() => {
     fetchTodaysBookings();
   }, []);
+
+  const handleConfirm = async (booking) => {
+    if (!window.confirm(`Confirm the booking for ${booking.customer_name}?`)) return;
+    try {
+      await confirmBooking(booking.booking_id);
+      fetchTodaysBookings();
+    } catch (error) {
+      console.error("Confirm failed:", error);
+      alert("Failed to confirm the booking. Please try again.");
+    }
+  };
 
   const handleUnconfirm = async (booking) => {
     if (!window.confirm(`Unconfirm the booking for ${booking.customer_name}? No Telegram reminders will be sent and it won't count in the dashboard. You can reactivate it later.`)) return;
@@ -495,9 +523,12 @@ function Bookings() {
         onDelete={handleDeleteBooking}
         onMarkPaid={handleMarkPaid}
         onSendTelegram={handleSendTelegram}
+        onConfirm={handleConfirm}
+        onUnconfirm={handleUnconfirm}
+        onReactivate={handleReactivate}
       />
     ),
-    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid, handleSendTelegram]
+    [handleEditBooking, handleViewBooking, handleDeleteBooking, handleMarkPaid, handleSendTelegram, handleConfirm, handleUnconfirm, handleReactivate]
   );
 
   return (

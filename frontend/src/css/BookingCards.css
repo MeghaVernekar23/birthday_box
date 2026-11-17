@@ -53,7 +53,7 @@
 
 /* ===== Card Body ===== */
 .booking-card__body {
-  padding: 10px 16px 48px; /* bottom padding reserves space for action bar */
+  padding: 10px 16px 12px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px 12px;
@@ -88,23 +88,26 @@
 .booking-card__pill--partial { background: #f5a623; color: #fff; }
 .booking-card__pill--unpaid  { background: #e8603c; color: #fff; }
 
-/* ===== Hover Action Bar ===== */
+/* Payment + booking status side by side */
+.booking-card__pills { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.booking-card__status { text-transform: capitalize; }
+.booking-card__status--confirmed   { background: #d1fae5; color: #065f46; }
+.booking-card__status--pending     { background: #fef3c7; color: #92400e; }
+.booking-card__status--completed   { background: #dbeafe; color: #1e3a8a; }
+.booking-card__status--cancelled   { background: #fee2e2; color: #991b1b; }
+.booking-card__status--unconfirmed { background: #e5e7eb; color: #374151; text-decoration: line-through; }
+
+/* ===== Action Bar =====
+   Always visible and allowed to wrap (it used to slide in on hover as a single
+   row, which cut off buttons once there were more than ~5). */
 .booking-card__actions {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.97);
+  background: #fff;
   border-top: 1px solid #f0f4ff;
-  transform: translateY(100%);
-  transition: transform 0.2s ease;
-}
-
-.booking-card:hover .booking-card__actions {
-  transform: translateY(0);
+  margin-top: auto;
 }
 
 /* Intentionally overrides Bootstrap .btn-sm border-radius (0.25rem → 6px) */

@@ -344,6 +344,23 @@ async def update_payment(
 
 
 @bookings_router.put(
+    "/{booking_id}/confirm",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Confirm a pending (or unconfirmed) booking.",
+)
+def confirm(booking_id: int, db: Session = Depends(get_db)) -> dict:
+    from services.booking_status_service import confirm_booking
+    try:
+        booking = confirm_booking(booking_id, db)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"message": "Booking confirmed", "booking_id": booking.booking_id, "status": booking.status}
+
+
+@bookings_router.put(
     "/{booking_id}/unconfirm",
     response_model=dict,
     dependencies=[Depends(get_current_user)],

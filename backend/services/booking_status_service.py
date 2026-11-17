@@ -81,6 +81,11 @@ def unconfirm_booking(booking_id: int, db) -> Booking:
     return _set_status(booking_id, db, UNCONFIRMED, lambda s: s not in {UNCONFIRMED, "cancelled", "canceled"})
 
 
+def confirm_booking(booking_id: int, db) -> Booking:
+    """Staff confirm a pending (or unconfirmed) booking."""
+    return _set_status(booking_id, db, CONFIRMED, lambda s: s in {"pending", UNCONFIRMED})
+
+
 def reactivate_booking(booking_id: int, db) -> Booking:
     """Staff reactivate an unconfirmed booking: it becomes confirmed again."""
     return _set_status(booking_id, db, CONFIRMED, lambda s: s == UNCONFIRMED)

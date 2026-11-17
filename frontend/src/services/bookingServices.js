@@ -150,3 +150,11 @@ export const fetchScheduledMessages = () => {
         url: `${BASE_URL}/scheduler/messages`,
     });
 };
+
+// Staff confirm a pending booking.
+export const confirmBooking = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/${bookingId}/confirm`,
+        method: "PUT",
+    });
+};
