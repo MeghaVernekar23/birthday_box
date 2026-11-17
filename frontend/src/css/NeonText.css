@@ -1,0 +1,77 @@
+/* Neon sign text — white tubes with a warm pink glow, made for the
+   brand gradient (pink → orange) hero backgrounds.
+   Override --neon-off / --neon-on / --neon-glow on .neon-text to recolour. */
+
+.neon-text {
+  --neon-off: rgba(255, 255, 255, 0.32);
+  --neon-on: #ffffff;
+  --neon-glow: 255, 214, 236; /* soft pink-white, as r,g,b */
+  --neon-glow-deep: 255, 40, 150;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  row-gap: 0.1em;
+}
+
+/* One word: letters spaced out like the original title, never wrapping */
+.neon-word {
+  display: inline-flex;
+  column-gap: 0.32em;
+  white-space: nowrap;
+}
+
+.neon-ch {
+  position: relative;
+  display: inline-block;
+  color: var(--neon-off);
+}
+
+/* Lit tube layered exactly over the dim one */
+.neon-ch::after {
+  content: attr(data-ch);
+  position: absolute;
+  inset: 0;
+  color: var(--neon-on);
+  opacity: 0;
+  text-shadow:
+    0 0 2px rgba(var(--neon-glow), 1),
+    0 0 8px rgba(var(--neon-glow), 0.9),
+    0 0 18px rgba(var(--neon-glow-deep), 0.75),
+    0 0 34px rgba(var(--neon-glow-deep), 0.45);
+  pointer-events: none;
+}
+
+.neon-ch--quick::after {
+  --dur: 0.7s;
+  animation:
+    neon-quick var(--dur) linear var(--d) both,
+    neon-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+.neon-ch--sputter::after {
+  --dur: 1.3s;
+  animation:
+    neon-sputter var(--dur) linear var(--d) both,
+    neon-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+.neon-ch--struggle::after {
+  --dur: 2s;
+  animation:
+    neon-struggle var(--dur) linear var(--d) both,
+    neon-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+/* Word gap (the space between BIRTHDAY and BOX) */
+.neon-gap {
+  display: inline-block;
+  width: 0.75em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-ch::after {
+    animation: none;
+    opacity: 1;
+  }
+}

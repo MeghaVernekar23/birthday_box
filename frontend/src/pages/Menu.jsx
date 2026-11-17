@@ -4,6 +4,7 @@ import logo from "../images/logo.jpg";
 import "./BookNow.css";
 import "./Menu.css";
 import PhotoCarousel from "../components/PhotoCarousel";
+import NeonText from "../components/NeonText";
 import {
   MENU_DURATIONS, ADDONS, EVERY_BOOKING_PERKS, OCCASIONS, CAKE_ADDON,
   tierFor, priceToNumber, formatINR,
@@ -37,7 +38,7 @@ export default function Menu() {
       </nav>
 
       <div className="bn-hero">
-        <h1 className="bn-hero-title">B I R T H D A Y &nbsp; B O X</h1>
+        <NeonText as="h1" text="BIRTHDAY BOX" className="bn-hero-title" />
         <p className="bn-hero-sub">Private celebrations with decoration, screening & music. Pick a duration, then a package.</p>
       </div>
 

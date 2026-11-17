@@ -1,6 +1,7 @@
 import React from "react";
 import LogoMark from "../images/logo_mark.png";
 import LogoWordmark from "../images/logo_wordmark.png";
+import "../css/neon.css";
 import "../css/PartyLogo.css";
 
 /* Birthday Box logo: the gift mark spins, fireworks go off behind it, and
