@@ -8,7 +8,7 @@
   padding: 4px 14px;
   border: none;
   border-radius: 6px;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #d6197f, #e5472e);
   color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
@@ -120,8 +120,8 @@
 }
 .pkg-field-input:focus,
 .pkg-field-textarea:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  border-color: #d6197f;
+  box-shadow: 0 0 0 3px rgba(214, 25, 127, 0.12);
   background: #fff;
 }
 .pkg-field-textarea {
@@ -156,7 +156,7 @@
 }
 
 .pkg-btn-save {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #d6197f, #e5472e);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -164,11 +164,11 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(214, 25, 127, 0.3);
   transition: box-shadow 0.2s, opacity 0.2s;
 }
 .pkg-btn-save:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 14px rgba(214, 25, 127, 0.4);
 }
 .pkg-btn-save:disabled {
   opacity: 0.5;

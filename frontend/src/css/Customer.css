@@ -27,7 +27,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #d6197f 0%, #e5472e 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -35,13 +35,13 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 2px 8px rgba(214, 25, 127, 0.35);
   transition: box-shadow 0.2s, transform 0.15s;
   white-space: nowrap;
 }
 
 .btn-add-customer:hover {
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 4px 14px rgba(214, 25, 127, 0.45);
   transform: translateY(-1px);
 }
 
@@ -135,8 +135,8 @@
 }
 
 .field-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  border-color: #d6197f;
+  box-shadow: 0 0 0 3px rgba(214, 25, 127, 0.12);
   background: #fff;
 }
 
@@ -161,7 +161,7 @@
 
 .btn-check {
   flex-shrink: 0;
-  background: #6366f1;
+  background: #d6197f;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -174,7 +174,7 @@
 }
 
 .btn-check:hover:not(:disabled) {
-  background: #4f46e5;
+  background: #b5146b;
 }
 
 .btn-check:disabled {
@@ -232,7 +232,7 @@
 }
 
 .btn-save {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #d6197f 0%, #e5472e 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -240,12 +240,12 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(214, 25, 127, 0.3);
   transition: box-shadow 0.2s, opacity 0.2s;
 }
 
 .btn-save:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 14px rgba(214, 25, 127, 0.4);
 }
 
 .btn-save:disabled {

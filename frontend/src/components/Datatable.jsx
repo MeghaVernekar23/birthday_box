@@ -82,7 +82,7 @@ const DataTable = ({
           </div>
         ) : (
           <div className="dt-scroll">
-            <table className="table table-bordered table-hover align-middle">
+            <table className="table table-bordered table-hover align-middle dt-responsive">
               <thead className="table-light">
                 <tr>
                   {columns.map((col) => (
@@ -98,7 +98,7 @@ const DataTable = ({
                   <tr>
                     <td
                       colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                      className="text-center"
+                      className="text-center dt-empty-cell"
                     >
                       No results found
                     </td>
@@ -114,12 +114,12 @@ const DataTable = ({
                       }
                     >
                       {columns.map((col) => (
-                        <td key={col.key}>
+                        <td key={col.key} data-label={col.label}>
                           {col.render ? col.render(row) : row[col.key] ?? "--"}
                         </td>
                       ))}
                       {actions.length > 0 && (
-                        <td>
+                        <td className="dt-actions-cell" data-label="Actions">
                           {actions.map((ActionBtn, i) => (
                             <ActionBtn key={i} row={row} />
                           ))}

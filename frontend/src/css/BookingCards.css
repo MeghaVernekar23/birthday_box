@@ -19,8 +19,8 @@
 }
 
 /* ===== Accent Variants ===== */
-.booking-card--blue  { border-left-color: #4f8ef7; }
-.booking-card--purple { border-left-color: #7c5cbf; }
+.booking-card--blue  { border-left-color: #3d38a8; }
+.booking-card--purple { border-left-color: #e91e8c; }
 .booking-card--gray  { border-left-color: #8a9bb0; }
 
 /* ===== Card Header ===== */
@@ -29,7 +29,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 14px 16px 10px;
-  border-bottom: 1px solid #f0f4ff;
+  border-bottom: 1px solid #fdf2f8;
 }
 
 .booking-card__name {
@@ -85,8 +85,8 @@
 }
 
 .booking-card__pill--paid    { background: #2bba8f; color: #fff; }
-.booking-card__pill--partial { background: #f5a623; color: #fff; }
-.booking-card__pill--unpaid  { background: #e8603c; color: #fff; }
+.booking-card__pill--partial { background: #f7941d; color: #fff; }
+.booking-card__pill--unpaid  { background: #f05537; color: #fff; }
 
 /* Payment + booking status side by side */
 .booking-card__pills { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -106,7 +106,7 @@
   gap: 8px;
   padding: 8px 14px;
   background: #fff;
-  border-top: 1px solid #f0f4ff;
+  border-top: 1px solid #fdf2f8;
   margin-top: auto;
 }
 
@@ -127,7 +127,7 @@
   .booking-card__actions {
     transform: translateY(0); /* always visible on mobile (no hover) */
     position: static;
-    border-top: 1px solid #f0f4ff;
+    border-top: 1px solid #fdf2f8;
     padding: 8px 14px;
     flex-wrap: wrap;
     transition: none; /* no slide animation on touch */

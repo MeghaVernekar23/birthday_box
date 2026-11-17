@@ -1,18 +1,18 @@
 /* ── Variables ───────────────────────────────────── */
 :root {
-  --ab-primary:       #7c8fe8;
-  --ab-primary-light: #b2c1f7;
-  --ab-primary-soft:  #eef1fd;
-  --ab-primary-hover: #6678d4;
+  --ab-primary:       #d6197f;
+  --ab-primary-light: #f3a9cf;
+  --ab-primary-soft:  #fdeef6;
+  --ab-primary-hover: #b5146b;
   --ab-danger:        #e05555;
   --ab-text:          #1e2230;
   --ab-muted:         #7a8394;
   --ab-border:        #dde3f5;
-  --ab-bg:            #f4f6fb;   /* matches layout bg */
+  --ab-bg:            #fbf7fa;   /* matches layout bg */
   --ab-white:         #ffffff;
   --ab-radius:        12px;
   --ab-radius-sm:     8px;
-  --ab-shadow:        0 4px 24px rgba(124, 143, 232, 0.13);
+  --ab-shadow:        0 4px 24px rgba(214, 25, 127, 0.13);
 }
 
 /* ── Page wrapper ────────────────────────────────── */
@@ -64,7 +64,7 @@
 .step.active .step-number {
   background: var(--ab-primary);
   color: #fff;
-  box-shadow: 0 0 0 4px rgba(124,143,232,0.18);
+  box-shadow: 0 0 0 4px rgba(214, 25, 127,0.18);
 }
 .step.completed .step-number {
   background: var(--ab-primary);
@@ -215,13 +215,13 @@
   background: var(--ab-primary);
   border-color: var(--ab-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(124,143,232,0.28);
+  box-shadow: 0 2px 8px rgba(214, 25, 127,0.28);
 }
 .btn-nav-primary:hover {
   background: var(--ab-primary-hover);
   border-color: var(--ab-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(124,143,232,0.36);
+  box-shadow: 0 4px 14px rgba(214, 25, 127,0.36);
 }
 
 /* ── Form fields ─────────────────────────────────── */
@@ -266,7 +266,7 @@
 .form-field select:focus,
 .form-field textarea:focus {
   border-color: var(--ab-primary);
-  box-shadow: 0 0 0 3px rgba(124,143,232,0.13);
+  box-shadow: 0 0 0 3px rgba(214, 25, 127,0.13);
   background: #fff;
 }
 .form-field input:disabled {
@@ -341,7 +341,7 @@
 .option-card.selected {
   border-color: var(--ab-primary);
   background: var(--ab-primary-soft);
-  box-shadow: 0 0 0 3px rgba(124,143,232,0.13);
+  box-shadow: 0 0 0 3px rgba(214, 25, 127,0.13);
 }
 .option-card input[type="radio"] {
   margin-top: 2px;
@@ -368,7 +368,7 @@
   border: 1.5px solid var(--ab-border) !important;
   border-radius: var(--ab-radius) !important;
   padding: 8px;
-  box-shadow: 0 2px 12px rgba(124,143,232,0.09);
+  box-shadow: 0 2px 12px rgba(214, 25, 127,0.09);
 }
 .react-datepicker__header {
   background: var(--ab-primary-soft);
@@ -425,7 +425,7 @@
   text-align: center;
 }
 .time-slot-btn:hover:not(:disabled) { border-color: var(--ab-primary-light); background: var(--ab-primary-soft); color: var(--ab-primary); }
-.time-slot-btn.selected { background: var(--ab-primary); border-color: var(--ab-primary); color: #fff; box-shadow: 0 2px 8px rgba(124,143,232,0.28); }
+.time-slot-btn.selected { background: var(--ab-primary); border-color: var(--ab-primary); color: #fff; box-shadow: 0 2px 8px rgba(214, 25, 127,0.28); }
 .time-slot-btn:disabled { opacity: 0.35; cursor: not-allowed; background: #f2f4f9; }
 
 /* ── Add-ons ─────────────────────────────────────── */

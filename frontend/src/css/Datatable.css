@@ -24,7 +24,7 @@
 .dt-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1a1f3c;
+  color: #1b1464;
   margin: 0;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -53,8 +53,8 @@
 }
 .dt-search::placeholder { color: #a0aec0; }
 .dt-search:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #d6197f;
+  box-shadow: 0 0 0 3px rgba(214, 25, 127, 0.1);
   background: #fff;
 }
 
@@ -87,7 +87,7 @@
 
 /* Header */
 .dt-scroll thead tr {
-  background: linear-gradient(135deg, #1a1f3c 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1b1464 0%, #2a1f7a 100%);
 }
 
 .dt-scroll thead th,
@@ -113,8 +113,8 @@
   transition: background 0.13s;
 }
 .dt-scroll tbody tr:last-child { border-bottom: none; }
-.dt-scroll tbody tr:nth-child(even) { background: #fafbff; }
-.dt-scroll tbody tr:hover { background: #f0f4ff !important; }
+.dt-scroll tbody tr:nth-child(even) { background: #fcf8fb; }
+.dt-scroll tbody tr:hover { background: #fdf2f8 !important; }
 
 .dt-scroll tbody td,
 .dt-scroll .table > tbody > tr > td {
@@ -185,17 +185,17 @@
 
 .dt-page-btn:hover:not(.dt-page-btn--disabled):not(.dt-page-btn--active) {
   background: #eef2ff;
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: #d6197f;
+  color: #d6197f;
 }
 
 .dt-page-btn--active {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #d6197f, #e5472e);
   border-color: transparent;
   color: #fff;
   font-weight: 700;
   cursor: default;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(214, 25, 127, 0.3);
 }
 
 .dt-page-btn--disabled {
@@ -264,6 +264,111 @@
     min-width: 30px;
     height: 30px;
     font-size: 0.78rem;
+  }
+}
+
+/* ── Phones: each row becomes a stacked card (label · value) ─── */
+@media (max-width: 640px) {
+  .dt-table-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .dt-scroll {
+    overflow: visible;
+  }
+
+  .dt-scroll table.dt-responsive {
+    min-width: 0 !important;
+    display: block;
+  }
+
+  .dt-scroll table.dt-responsive thead {
+    display: none;
+  }
+
+  .dt-scroll table.dt-responsive tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dt-scroll table.dt-responsive tbody tr {
+    display: block;
+    background: #ffffff !important;
+    border: 1px solid #efe6ef !important;
+    border-left: 4px solid #e91e8c !important;
+    border-radius: 12px;
+    padding: 6px 14px;
+    box-shadow: 0 1px 6px rgba(27, 20, 100, 0.06);
+  }
+
+  .dt-scroll table.dt-responsive tbody td,
+  .dt-scroll .table.dt-responsive > tbody > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: none;
+    padding: 8px 0 !important;
+    text-align: right !important;
+    border-bottom: 1px dashed #f1e8f0 !important;
+    background: transparent !important;
+  }
+
+  .dt-scroll table.dt-responsive tbody td:last-child {
+    border-bottom: none !important;
+  }
+
+  .dt-scroll table.dt-responsive tbody td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    max-width: 45%;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8a7f9e;
+    padding-top: 2px;
+  }
+
+  /* First column (usually the name) reads as the card title */
+  .dt-scroll table.dt-responsive tbody td:first-child {
+    font-weight: 700;
+    color: #1b1464;
+    font-size: 0.92rem;
+  }
+
+  /* Action buttons: full-width row of buttons, no label */
+  .dt-scroll table.dt-responsive tbody td.dt-actions-cell {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 10px !important;
+  }
+  .dt-scroll table.dt-responsive tbody td.dt-actions-cell::before {
+    display: none;
+  }
+
+  /* "No results" row */
+  .dt-scroll table.dt-responsive tbody td.dt-empty-cell {
+    justify-content: center;
+    text-align: center !important;
+    color: #94a3b8;
+    border: none !important;
+  }
+  .dt-scroll table.dt-responsive tbody td.dt-empty-cell::before {
+    display: none;
+  }
+
+  .dt-pagination--table {
+    background: transparent;
+    border-top: none;
   }
 }
 

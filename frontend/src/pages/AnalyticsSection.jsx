@@ -10,12 +10,12 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 
 const STATUS_COLORS = {
   confirmed: "#2bba8f",
-  pending: "#f5a623",
-  cancelled: "#e8603c",
+  pending: "#f7941d",
+  cancelled: "#f05537",
   unconfirmed: "#9ca3af",
 };
 
-const BAR_COLORS = ["#4f8ef7","#7c5cbf","#2bba8f","#f5a623","#e8603c","#a0c4ff"];
+const BAR_COLORS = ["#3d38a8","#e91e8c","#2bba8f","#f7941d","#f05537","#a9a6e6"];
 
 // Revenue figures use what was actually billed/paid on each booking, not the
 // package list price (which ignores duration, add-ons, extra guests, hall...).
@@ -269,7 +269,7 @@ const AnalyticsSection = () => {
     return (
       <div className="dashboard-grid-analytics">
         <div className="analytics-card">
-          <p style={{ color: "#e8603c", margin: 0 }}>{error}</p>
+          <p style={{ color: "#f05537", margin: 0 }}>{error}</p>
         </div>
       </div>
     );
@@ -285,14 +285,14 @@ const AnalyticsSection = () => {
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: isMobile ? 10 : 11 }}
               angle={-35}
               textAnchor="end"
-              interval={0}
+              interval={isMobile ? 2 : 0}
             />
             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
             <Tooltip />
-            <Bar dataKey="count" name="Bookings" fill="#4f8ef7" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="count" name="Bookings" fill="#3d38a8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -334,7 +334,7 @@ const AnalyticsSection = () => {
               tick={{ fontSize: isMobile ? 9 : 11 }}
               angle={-45}
               textAnchor="end"
-              interval={isMobile ? 1 : 0}
+              interval={isMobile ? 2 : 0}
             />
             <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 11 }} width={isMobile ? 52 : 60} />
             <Tooltip
@@ -487,7 +487,7 @@ const AnalyticsSection = () => {
         <div className="analytics-month-summary">
           {comparisonMonths.map((mon, i) => {
             const total = dailyComparisonData.reduce((s, row) => s + (row[mon] || 0), 0);
-            const colors = ["#4f8ef7", "#f5a623", "#2bba8f", "#7c5cbf"];
+            const colors = ["#3d38a8", "#f7941d", "#2bba8f", "#e91e8c"];
             return (
               <div key={mon} className="analytics-month-badge" style={{ borderLeft: `3px solid ${colors[i]}` }}>
                 <span style={{ color: "#666" }}>{mon} (till {now.getDate()}th): </span>
@@ -499,14 +499,14 @@ const AnalyticsSection = () => {
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={dailyComparisonData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="day" tick={{ fontSize: 11 }} label={{ value: "Day of Month", position: "insideBottom", offset: -2, fontSize: 11 }} />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={isMobile ? 14 : 5} label={{ value: "Day of Month", position: "insideBottom", offset: -2, fontSize: 11 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
             <Tooltip />
             <Legend verticalAlign="top" />
-            <Line type="monotone" dataKey={comparisonMonths[0]} stroke="#4f8ef7" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-            <Line type="monotone" dataKey={comparisonMonths[1]} stroke="#f5a623" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 5" />
+            <Line type="monotone" dataKey={comparisonMonths[0]} stroke="#3d38a8" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+            <Line type="monotone" dataKey={comparisonMonths[1]} stroke="#f7941d" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="5 5" />
             <Line type="monotone" dataKey={comparisonMonths[2]} stroke="#2bba8f" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="4 4" />
-            <Line type="monotone" dataKey={comparisonMonths[3]} stroke="#7c5cbf" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="2 4" />
+            <Line type="monotone" dataKey={comparisonMonths[3]} stroke="#e91e8c" strokeWidth={2} dot={false} activeDot={{ r: 4 }} strokeDasharray="2 4" />
           </LineChart>
         </ResponsiveContainer>
       </div>

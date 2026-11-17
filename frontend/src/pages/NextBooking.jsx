@@ -48,7 +48,7 @@ const NextBookingCard = () => {
       <div className="dashboard-card dashboard-card--purple shadow-sm">
         {loading ? (
           <div className="card-spinner-wrapper">
-            <div className="spinner-border" style={{ color: "#7c5cbf" }} role="status">
+            <div className="spinner-border" style={{ color: "#e91e8c" }} role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>

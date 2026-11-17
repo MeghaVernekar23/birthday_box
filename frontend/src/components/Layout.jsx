@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import BirthdayLogo from "../images/logo_white.png";
+import BirthdayLogo from "../images/logo.png";
 import "../css/Layout.css";
 import {
   LayoutDashboard,
