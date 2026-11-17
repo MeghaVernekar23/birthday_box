@@ -63,6 +63,20 @@
     neon-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
 }
 
+/* Coloured letters on light backgrounds: faint navy tubes when off,
+   tighter glow so it doesn't wash out on white */
+.neon-text--gradient {
+  --neon-off: rgba(27, 20, 100, 0.13);
+}
+
+.neon-text--gradient .neon-ch::after {
+  text-shadow:
+    0 0 1px rgba(var(--neon-glow), 1),
+    0 0 6px rgba(var(--neon-glow), 0.7),
+    0 0 14px rgba(var(--neon-glow-deep), 0.45),
+    0 0 26px rgba(var(--neon-glow-deep), 0.25);
+}
+
 /* Word gap (the space between BIRTHDAY and BOX) */
 .neon-gap {
   display: inline-block;

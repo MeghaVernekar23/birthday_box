@@ -2,12 +2,28 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import logoPng from "../images/logo.png";
+import logoMark from "../images/logo_mark.png";
 import imgScreen from "../images/screen.webp";
 import imgDoll from "../images/doll.webp";
 import imgDeco from "../images/deco.webp";
 import imgHall from "../images/hall.webp";
 import imgHallOther from "../images/hall_other.webp";
 import imgSitting from "../images/sitting.webp";
+import NeonText from "../components/NeonText";
+import { EVERY_BOOKING_PERKS, OCCASIONS } from "../data/packageCatalog";
+import { Lock, PartyPopper, Clapperboard, Music, Users, Cake, Camera, Gift } from "lucide-react";
+
+// Line icons for the "What We Offer" perks (same order as EVERY_BOOKING_PERKS)
+const PERK_ICONS = {
+  "Fully private space": Lock,
+  "Decor ready on arrival": PartyPopper,
+  "Your own screening": Clapperboard,
+  "Music of your choice": Music,
+  "10 guests included": Users,
+  "Cake-cutting moment": Cake,
+  "Photo-ready backdrop": Camera,
+  "Help with surprises": Gift,
+};
 import "./Home.css";
 import { fetchPackage } from "../services/bookingServices";
 
@@ -83,29 +99,6 @@ function PackageCard({ pkg, desc, images, startIdx, onBook }) {
   );
 }
 
-const services = [
-  {
-    icon: "🎂",
-    title: "Birthday Parties",
-    desc: "From toddlers to milestone birthdays — we create magical, personalised setups that make every moment count.",
-  },
-  {
-    icon: "💍",
-    title: "Anniversary & Proposals",
-    desc: "Surprise your loved one with a beautifully decorated private venue, perfect for intimate celebrations.",
-  },
-  {
-    icon: "🏏",
-    title: "IPL & Sports Screenings",
-    desc: "Book the venue for match nights with your crew. Big screen, great vibes, unforgettable game days.",
-  },
-  {
-    icon: "🎊",
-    title: "Private Gatherings",
-    desc: "Baby showers, farewells, graduations — any occasion that deserves a special, dedicated space.",
-  },
-];
-
 const highlights = [
   { num: "500+", label: "Events Hosted" },
   { num: "1000+", label: "Happy Guests" },
@@ -145,7 +138,7 @@ export default function Home() {
 
       {/* ── NAVBAR ── */}
       <header className="bb-nav">
-        <img src={logoPng} alt="Birthday Box" className="bb-nav-logo" />
+        <img src={logoMark} alt="Birthday Box" className="bb-nav-logo" />
         <nav className="bb-nav-links">
           <a href="#services">Services</a>
           <a href="#venue">Venue</a>
@@ -168,7 +161,12 @@ export default function Home() {
         <div className="bb-hero-inner">
           <div className="bb-hero-text">
             <span className="bb-pill">📍 Mysuru's Favourite Celebration Venue</span>
-            <span className="bb-pill bb-pill-price">🎉 Celebrations Starting at ₹999</span>
+            <NeonText
+              as="div"
+              text="BIRTHDAY BOX"
+              className="bb-hero-neon"
+              gradient={["#e91e8c", "#f7941d"]}
+            />
             <h1>
               Every Occasion <br />
               <span className="bb-gradient-text">Deserves a Box</span>
@@ -228,15 +226,26 @@ export default function Home() {
         <div className="bb-section-head">
           <span className="bb-pill bb-pill-dark">What We Offer</span>
           <h2>Every Celebration, <span className="bb-gradient-text">Perfectly Hosted</span></h2>
-          <p>We handle the setup so you can focus on the moments that matter.</p>
+          <p>Every booking includes all of this — no hidden extras.</p>
         </div>
         <div className="bb-services-grid">
-          {services.map((s) => (
-            <div className="bb-service-card" key={s.title}>
-              <div className="bb-service-icon">{s.icon}</div>
-              <h3>{s.title}</h3>
-              <p>{s.desc}</p>
-            </div>
+          {EVERY_BOOKING_PERKS.map((p) => {
+            const Icon = PERK_ICONS[p.title] || PartyPopper;
+            return (
+              <div className="bb-service-card" key={p.title}>
+                <div className="bb-service-icon" aria-hidden="true">
+                  <Icon size={24} strokeWidth={2} />
+                </div>
+                <h3>{p.title}</h3>
+                <p>{p.text}</p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="bb-occasions">
+          <span className="bb-occasions-label">Perfect for</span>
+          {OCCASIONS.map((o) => (
+            <span className="bb-occasion" key={o}>{o}</span>
           ))}
         </div>
       </section>

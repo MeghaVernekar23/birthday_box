@@ -28,9 +28,33 @@ function defaultPlan(chars) {
   });
 }
 
-export default function NeonText({ text, as: Tag = "span", className = "", plan }) {
+const hexToRgb = (hex) => {
+  const n = parseInt(hex.replace("#", ""), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+/* Per-letter colour along a two-stop gradient, returned as "r,g,b" */
+function gradientColors(chars, [from, to]) {
+  const a = hexToRgb(from);
+  const b = hexToRgb(to);
+  const lit = chars.map((c, i) => (c.trim() ? i : -1)).filter((i) => i >= 0);
+  const out = {};
+  lit.forEach((idx, k) => {
+    const t = lit.length > 1 ? k / (lit.length - 1) : 0;
+    out[idx] = a.map((v, j) => Math.round(v + (b[j] - v) * t)).join(",");
+  });
+  return out;
+}
+
+/**
+ * gradient: optional ["#from", "#to"] — each letter lights in its own colour
+ * along the gradient (for light backgrounds). Without it, letters light white
+ * with a pink glow (for the brand-gradient hero banners).
+ */
+export default function NeonText({ text, as: Tag = "span", className = "", plan, gradient }) {
   const chars = Array.from(text);
   const steps = plan || defaultPlan(chars);
+  const colors = gradient ? gradientColors(chars, gradient) : null;
 
   // Group letters by word so lines only ever break between words
   const words = [];
@@ -41,7 +65,7 @@ export default function NeonText({ text, as: Tag = "span", className = "", plan 
   });
 
   return (
-    <Tag className={`neon-text ${className}`} aria-label={text}>
+    <Tag className={`neon-text${gradient ? " neon-text--gradient" : ""} ${className}`} aria-label={text}>
       {words.map((w, wi) =>
         w === null ? (
           <span key={`g${wi}`} aria-hidden="true" className="neon-gap" />
@@ -52,7 +76,11 @@ export default function NeonText({ text, as: Tag = "span", className = "", plan 
                 key={i}
                 className={`neon-ch neon-ch--${steps[i].mode}`}
                 data-ch={chars[i]}
-                style={{ "--d": `${steps[i].d}s` }}
+                style={
+                  colors
+                    ? { "--d": `${steps[i].d}s`, "--neon-on": `rgb(${colors[i]})`, "--neon-glow": colors[i], "--neon-glow-deep": colors[i] }
+                    : { "--d": `${steps[i].d}s` }
+                }
               >
                 {chars[i]}
               </span>

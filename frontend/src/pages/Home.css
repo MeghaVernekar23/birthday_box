@@ -135,7 +135,7 @@ body {
 }
 
 .bb-nav-logo {
-  height: 52px;
+  height: 46px; /* gift mark only — the hero sign carries the name */
   object-fit: contain;
 }
 
@@ -277,6 +277,16 @@ body {
   gap: 4rem;
   align-items: center;
   width: 100%;
+}
+
+/* Neon "BIRTHDAY BOX" sign above the headline (see NeonText) */
+.bb-hero-neon {
+  display: flex;
+  justify-content: flex-start;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 1.4rem 0 0;
 }
 
 .bb-hero-text h1 {
@@ -435,16 +445,16 @@ body {
 
 .bb-services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .bb-service-card {
   background: #fdf6f9;
-  border-radius: 20px;
-  padding: 2.2rem 1.8rem;
+  border-radius: 18px;
+  padding: 1.6rem 1.4rem;
   border: 1px solid rgba(233,30,140,0.08);
   transition: transform 0.25s, box-shadow 0.25s, background 0.25s;
 }
@@ -455,23 +465,77 @@ body {
   background: #fff;
 }
 
+/* Brand-gradient icon tile with a white line icon */
 .bb-service-icon {
-  font-size: 2.6rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  box-shadow: 0 6px 16px rgba(233, 30, 140, 0.25);
   margin-bottom: 1rem;
-  line-height: 1;
 }
 
 .bb-service-card h3 {
-  font-size: 1.1rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: #1b1464;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .bb-service-card p {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #666;
-  line-height: 1.65;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* "Perfect for" occasion chips */
+.bb-occasions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  max-width: 1000px;
+  margin: 2.2rem auto 0;
+}
+
+.bb-occasions-label {
+  font-weight: 700;
+  color: #1b1464;
+  font-size: 0.92rem;
+  margin-right: 4px;
+}
+
+.bb-occasion {
+  background: linear-gradient(135deg, #fde3f1, #feeadf);
+  color: #a3165f;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .bb-services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .bb-services-grid { grid-template-columns: 1fr; gap: 0.9rem; }
+  .bb-service-card {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    column-gap: 14px;
+    align-items: start;
+    padding: 1.1rem 1.1rem;
+  }
+  .bb-service-icon { width: 44px; height: 44px; border-radius: 12px; margin: 0; grid-row: span 2; }
+  .bb-service-card h3 { margin-bottom: 0.2rem; }
+  .bb-occasions-label { width: 100%; text-align: center; margin: 0 0 2px; }
+  .bb-occasion { font-size: 0.8rem; padding: 5px 12px; }
 }
 
 /* ══════════════════════════════════════
@@ -1064,6 +1128,8 @@ body {
     text-align: center;
     padding: 3rem 5%;
   }
+
+  .bb-hero-neon { justify-content: center; }
 
   .bb-hero-text h1,
   .bb-hero-sub { max-width: 100%; }
