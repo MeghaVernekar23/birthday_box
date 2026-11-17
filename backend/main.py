@@ -9,6 +9,7 @@ from api.customers import customer_router
 from api.holidays import holidays_router
 from api.health import health_router
 from api.public import public_router
+from api.scheduler import scheduler_router
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from collections.abc import AsyncGenerator
@@ -73,3 +74,4 @@ app.include_router(bookings_router)
 app.include_router(customer_router)
 app.include_router(holidays_router)
 app.include_router(public_router)
+app.include_router(scheduler_router)

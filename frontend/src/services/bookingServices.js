@@ -143,3 +143,10 @@ export const unconfirmBooking = (bookingId) => {
         method: "PUT",
     });
 };
+
+// Read-only list of scheduled Telegram messages (admin only).
+export const fetchScheduledMessages = () => {
+    return apiRequest({
+        url: `${BASE_URL}/scheduler/messages`,
+    });
+};

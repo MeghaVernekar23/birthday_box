@@ -1,0 +1,37 @@
+.sm-page { padding: 24px; max-width: 1200px; }
+.sm-header h4 { margin: 0 0 4px; }
+.sm-header p { margin: 0 0 20px; color: #6b7280; font-size: 0.9rem; }
+.sm-h5 { margin: 24px 0 12px; font-size: 1rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.sm-count { font-size: 0.8rem; font-weight: 500; color: #6b7280; }
+
+.sm-daily { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; }
+.sm-daily-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.sm-daily-card span { font-size: 0.85rem; color: #6b7280; }
+.sm-daily-card .sm-next { color: #111827; font-weight: 600; }
+
+.sm-table-wrap { overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; }
+.sm-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.sm-table th { text-align: left; padding: 10px 12px; background: #f9fafb; color: #6b7280; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+.sm-table td { padding: 10px 12px; border-top: 1px solid #f1f1f4; vertical-align: top; }
+.sm-sub { font-size: 0.78rem; color: #9ca3af; }
+.sm-nowrap { white-space: nowrap; }
+.sm-row-skip td { color: #9ca3af; }
+.sm-yes { color: #065f46; background: #d1fae5; border-radius: 999px; padding: 2px 10px; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+.sm-no { color: #991b1b; background: #fee2e2; border-radius: 999px; padding: 2px 10px; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+.sm-empty, .sm-error { color: #6b7280; }
+.sm-error { color: #b91c1c; }
+
+/* Phones: each reminder becomes a card with labelled fields (no sideways scroll). */
+@media (max-width: 700px) {
+  .sm-page { padding: 16px 12px; }
+  .sm-table-wrap { background: none; border: none; overflow: visible; }
+  .sm-table, .sm-table tbody, .sm-table tr, .sm-table td { display: block; width: 100%; }
+  .sm-table thead { display: none; }
+  .sm-table tr { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; }
+  .sm-table td { border: none; padding: 5px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; text-align: right; white-space: normal; }
+  .sm-table td::before { content: attr(data-label); flex-shrink: 0; text-align: left; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: #9ca3af; padding-top: 2px; }
+  .sm-table td.sm-when { font-weight: 700; color: #111827; border-bottom: 1px solid #f1f1f4; padding-bottom: 8px; margin-bottom: 4px; }
+  .sm-row-skip td.sm-when { color: #9ca3af; }
+  .sm-yes, .sm-no { white-space: normal; text-align: right; }
+  .sm-val { min-width: 0; overflow-wrap: anywhere; }
+}

@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import BookNow from "./pages/BookNow";
 import PublicBooking from "./pages/PublicBooking";
 import Menu from "./pages/Menu";
+import ScheduledMessages from "./pages/ScheduledMessages";
 import Dashboard from "./pages/Dashboard";
 import CustomerDetails from "./pages/Customer";
 import TodaysBookings from "./pages/TodaysBookings";
@@ -33,6 +34,7 @@ function App() {
           <Route path="/bookings/older" element={<OlderBookings />} />
           <Route path="addbooking" element={<AddBookings />} />
           <Route path="packages" element={<Packages />} />
+          <Route path="scheduled-messages" element={<ScheduledMessages />} />
         </Route>
       </Routes>
     </>

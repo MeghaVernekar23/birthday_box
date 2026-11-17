@@ -14,6 +14,7 @@ import {
   ChevronUp,
   LogOut,
   Package,
+  MessageSquareText,
 } from "lucide-react";
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { label: "Customer details", path: "/customers", Icon: Users },
   { label: "Packages", path: "/packages", Icon: Package },
   { label: "Add booking", path: "/addbooking", Icon: CalendarPlus },
+  { label: "Scheduled messages", path: "/scheduled-messages", Icon: MessageSquareText },
   {
     label: "Booking details",
     Icon: CalendarDays,
