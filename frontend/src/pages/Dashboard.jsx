@@ -11,7 +11,13 @@ function TotalBookingsCard() {
 
   useEffect(() => {
     fetchBookingsByFilter("all")
-      .then((data) => setTotal(Array.isArray(data) ? data.length : 0))
+      .then((data) =>
+        setTotal(
+          Array.isArray(data)
+            ? data.filter((b) => (b.status || "").toLowerCase() !== "unconfirmed").length
+            : 0
+        )
+      )
       .catch(() => setTotal(0));
   }, []);
 

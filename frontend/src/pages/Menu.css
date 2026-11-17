@@ -27,7 +27,9 @@
 
 /* Package cards */
 .mn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 16px; }
-.mn-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 18px rgba(233, 30, 140, 0.08); padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.mn-card { background: #fff; border: 1px solid rgba(233, 30, 140, 0.12); border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07); display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s; }
+.mn-card:hover { transform: translateY(-5px); box-shadow: 0 14px 36px rgba(233, 30, 140, 0.14); }
+.mn-card-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
 .mn-card-top { display: flex; align-items: center; gap: 12px; }
 .mn-card-top > div { flex: 1; }
 .mn-emoji { font-size: 1.8rem; width: 46px; height: 46px; display: grid; place-items: center; background: #fdf6f9; border-radius: 12px; flex-shrink: 0; }
@@ -91,7 +93,7 @@
   .mn-tab { padding: 8px 4px; font-size: 0.85rem; border-radius: 12px; white-space: nowrap; }
   .mn-pop { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); font-size: 0.55rem; padding: 1px 6px; }
 
-  .mn-card { padding: 16px; }
+  .mn-card-body { padding: 16px; }
   .mn-emoji { width: 40px; height: 40px; font-size: 1.5rem; }
   .mn-price { font-size: 1.1rem; }
 

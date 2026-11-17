@@ -712,6 +712,7 @@
 .nb-status--confirmed  { background: #d1fae5; color: #065f46; }
 .nb-status--pending    { background: #fef3c7; color: #92400e; }
 .nb-status--cancelled  { background: #fee2e2; color: #991b1b; }
+.nb-status--unconfirmed { background: #e5e7eb; color: #374151; text-decoration: line-through; }
 .nb-status--completed  { background: #dbeafe; color: #1e3a8a; }
 
 /* Sections */

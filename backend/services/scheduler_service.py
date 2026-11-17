@@ -21,7 +21,13 @@ def get_scheduler() -> AsyncIOScheduler:
         jobstores = {
             "default": SQLAlchemyJobStore(url="sqlite:///./birthdayBox.db")
         }
-        _scheduler = AsyncIOScheduler(jobstores=jobstores, timezone=IST)
+        # misfire_grace_time: a reminder due while the server was down still goes out
+        # (up to an hour late) instead of being silently dropped.
+        _scheduler = AsyncIOScheduler(
+            jobstores=jobstores,
+            timezone=IST,
+            job_defaults={"misfire_grace_time": 3600, "coalesce": True},
+        )
     return _scheduler
 
 
@@ -30,6 +36,15 @@ def start_scheduler() -> None:
     if not scheduler.running:
         scheduler.start()
         log.info("[Scheduler] APScheduler started.")
+    # Safety net for the 24h rule (server restarts, edited dates, missed jobs).
+    scheduler.add_job(
+        _unconfirm_sweep_job,
+        trigger="interval",
+        minutes=10,
+        id="unconfirm_sweep",
+        replace_existing=True,
+        next_run_time=datetime.now(IST) + timedelta(seconds=30),
+    )
 
 
 def stop_scheduler() -> None:
@@ -39,10 +54,49 @@ def stop_scheduler() -> None:
         log.info("[Scheduler] APScheduler stopped.")
 
 
+def _unconfirm_sweep_job() -> None:
+    from services.booking_status_service import unconfirm_due_bookings
+    n = unconfirm_due_bookings()
+    if n:
+        log.info(f"[Scheduler] Unconfirmed {n} booking(s).")
+
+
 def _send_reminder_job(booking_data: dict, label: str) -> None:
-    """Synchronous job function called by APScheduler."""
+    """
+    Synchronous job function called by APScheduler.
+
+    Looks the booking up again at fire time (status/date may have changed since
+    it was scheduled):
+      - deleted, cancelled or unconfirmed  -> no reminder
+      - still pending at the 24h mark      -> Telegram notice, then set unconfirmed
+      - pending at the 4h mark             -> no reminder
+      - confirmed / completed              -> reminder with current details
+    """
+    from db.sessions import SessionLocal
+    from db.models.sqlalchemy_models import Booking
     from services.telegram_service import build_booking_message, _send_message_sync
-    message = build_booking_message(booking_data, label=label)
+    from services.booking_status_service import (
+        REMINDABLE_STATUSES, should_unconfirm, unconfirm_booking, _booking_message_data,
+    )
+
+    booking_id = booking_data.get("booking_id")
+    db = SessionLocal()
+    try:
+        booking = db.get(Booking, booking_id) if booking_id else None
+        if booking is None:
+            log.info(f"[Scheduler] Reminder skipped: booking {booking_id} no longer exists.")
+            return
+        status = (booking.status or "").lower()
+        if "24" in label and should_unconfirm(booking):
+            unconfirm_booking(booking, db)
+            return
+        if status not in REMINDABLE_STATUSES:
+            log.info(f"[Scheduler] Reminder skipped for booking {booking_id} (status={status}).")
+            return
+        fresh = _booking_message_data(booking_id, db) or booking_data
+        message = build_booking_message(fresh, label=label)
+    finally:
+        db.close()
     _send_message_sync(message)
 
 

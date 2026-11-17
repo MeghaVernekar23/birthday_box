@@ -12,18 +12,22 @@ const STATUS_COLORS = {
   confirmed: "#2bba8f",
   pending: "#f5a623",
   cancelled: "#e8603c",
+  unconfirmed: "#9ca3af",
 };
 
 const BAR_COLORS = ["#4f8ef7","#7c5cbf","#2bba8f","#f5a623","#e8603c","#a0c4ff"];
 
 // Revenue figures use what was actually billed/paid on each booking, not the
 // package list price (which ignores duration, add-ons, extra guests, hall...).
-const isCancelled = (b) => (b.status || "").toLowerCase() === "cancelled";
+// Cancelled and auto-unconfirmed bookings never count towards any figure.
+const INACTIVE = new Set(["cancelled", "canceled", "unconfirmed"]);
+const isCancelled = (b) => INACTIVE.has((b.status || "").toLowerCase());
 const bookingTotal = (b) =>
   Number(b.payment_total) || Number(b.package_price) || 0;
 const bookingPaid = (b) => Number(b.payment_paid) || 0;
 
 function getMonthlyData(bookings) {
+  bookings = bookings.filter((b) => !isCancelled(b));
   const now = new Date();
   const counts = {};
   for (let i = 12; i >= 0; i--) {
@@ -50,6 +54,7 @@ function getStatusData(bookings) {
 }
 
 function getCelebrationData(bookings) {
+  bookings = bookings.filter((b) => !isCancelled(b));
   const counts = {};
   bookings.forEach((b) => {
     const name = b.celebration_name || "Unknown";
@@ -62,6 +67,7 @@ function getCelebrationData(bookings) {
 }
 
 function getReferralData(bookings) {
+  bookings = bookings.filter((b) => !isCancelled(b));
   const counts = {};
   bookings.forEach((b) => {
     let source = b.referral_source;
@@ -77,6 +83,7 @@ function getReferralData(bookings) {
 }
 
 function getPackageData(bookings) {
+  bookings = bookings.filter((b) => !isCancelled(b));
   const counts = {};
   bookings.forEach((b) => {
     const name = b.package_name || "Unknown";
@@ -143,6 +150,7 @@ function getMonthlyRevenueData(bookings) {
 }
 
 function getDailyComparisonData(bookings) {
+  bookings = bookings.filter((b) => !isCancelled(b));
   const now = new Date();
   const todayDay = now.getDate();
 

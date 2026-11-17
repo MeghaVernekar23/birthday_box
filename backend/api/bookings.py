@@ -343,6 +343,31 @@ async def update_payment(
         raise HTTPException(status_code=500, detail=str(e))    
 
 
+@bookings_router.put(
+    "/{booking_id}/reactivate",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)],
+    description="Reactivate an unconfirmed booking (it becomes confirmed and gets reminders again).",
+)
+def reactivate(booking_id: int, db: Session = Depends(get_db)) -> dict:
+    from services.booking_status_service import reactivate_booking, event_datetime
+    from services.scheduler_service import schedule_booking_reminders
+    try:
+        booking = reactivate_booking(booking_id, db)
+    except LookupError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    try:
+        ev = event_datetime(booking.event_date, booking.event_time)
+        if ev:
+            # re-arm whichever reminders are still in the future (usually the 4h one)
+            schedule_booking_reminders({"booking_id": booking.booking_id}, ev)
+    except Exception as e:
+        print(f"Reminder reschedule failed (non-fatal): {e}")
+    return {"message": "Booking reactivated", "booking_id": booking.booking_id, "status": booking.status}
+
+
 @bookings_router.post(
     "/{booking_id}/send-telegram",
     dependencies=[Depends(get_current_user)],

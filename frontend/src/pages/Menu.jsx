@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import "./BookNow.css";
 import "./Menu.css";
+import PhotoCarousel from "../components/PhotoCarousel";
 import {
   MENU_DURATIONS, ADDONS, EVERY_BOOKING_PERKS, OCCASIONS, CAKE_ADDON,
   tierFor, priceToNumber, formatINR,
@@ -77,7 +78,7 @@ export default function Menu() {
         </div>
 
         <div className="mn-grid">
-          {duration.packages.map((p) => {
+          {duration.packages.map((p, i) => {
             const t = tierFor(p.label);
             const name = t ? t.name : p.label.split("=")[0].trim();
             const offerCake = t && !t.hasCake && CAKE_ADDON;
@@ -85,6 +86,8 @@ export default function Menu() {
             const total = priceToNumber(p.price) + (withCake ? CAKE_ADDON.price : 0);
             return (
               <div className="mn-card" key={p.id}>
+                <PhotoCarousel startIdx={i} alt={`${name} package at Birthday Box`} />
+                <div className="mn-card-body">
                 <div className="mn-card-top">
                   <span className="mn-emoji" aria-hidden="true">{t?.emoji || "🎉"}</span>
                   <div>
@@ -126,6 +129,7 @@ export default function Menu() {
                 <button className="bn-submit-btn mn-book" onClick={() => book(p.id)}>
                   Book {name}
                 </button>
+                </div>
               </div>
             );
           })}

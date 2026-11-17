@@ -495,7 +495,8 @@ def get_next_upcoming_booking(db: Session) -> BookingDetails:
             query.filter(
                 and_(
                     Booking.event_date == today,
-                    Booking.event_time > now  
+                    Booking.event_time > now,
+                    ~func.lower(func.coalesce(Booking.status, "")).in_(["cancelled", "canceled", "unconfirmed"]),
                 )
             )
             .order_by(Booking.event_time.asc())

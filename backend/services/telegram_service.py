@@ -253,7 +253,7 @@ def check_and_send_anniversary_reminders() -> None:
 
         non_cancelled = [
             (b, c, p, ct) for b, c, p, ct in rows
-            if (b.status or "").lower() not in {"cancelled", "canceled"}
+            if (b.status or "").lower() not in {"cancelled", "canceled", "unconfirmed"}
         ]
 
         if not non_cancelled:
@@ -313,7 +313,7 @@ def send_morning_digest() -> None:
             db.query(Booking, Customer)
             .join(Customer, Booking.customer_id == Customer.customer_id)
             .filter(Booking.event_date == today)
-            .filter(~Booking.status.in_(["cancelled", "canceled"]))
+            .filter(~Booking.status.in_(["cancelled", "canceled", "unconfirmed"]))
             .order_by(Booking.event_time)
             .all()
         )

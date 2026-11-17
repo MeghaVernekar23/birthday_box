@@ -127,3 +127,11 @@ export const deleteHoliday = (holidayId) => {
 
 
 
+
+// Owner reactivates an auto-unconfirmed booking (it becomes confirmed again).
+export const reactivateBooking = (bookingId) => {
+    return apiRequest({
+        url: `${BASE_URL}/bookings/${bookingId}/reactivate`,
+        method: "PUT",
+    });
+};

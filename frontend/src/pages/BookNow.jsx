@@ -338,6 +338,19 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     });
   };
 
+  // One package per booking: picking a package clears any other selection.
+  const selectPackage = (field, id) => {
+    setForm((prev) => ({
+      ...prev,
+      packages1hr: [],
+      packages1hr30: [],
+      packages2hr: [],
+      packages3hr: [],
+      [field]: [id],
+    }));
+    setErrors((prev) => ({ ...prev, packages: "" }));
+  };
+
   const parsePrice = (p) => parseInt((p || "").replace(/[₹,]/g, "")) || 0;
 
   const computeTotal = () => {
@@ -542,7 +555,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
         celebration_id,
         package_id,
         addons_note,
-        status: form.status,
+        status: "pending", // every new booking starts pending; staff confirm it
         payment_mode: "",
         payment_total: isNaN(finalTotal) ? computedTotal : finalTotal,
         payment_paid: form.paymentPaid ? parseFloat(form.paymentPaid) : 0,
@@ -785,9 +798,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 {PACKAGES_1HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name="package"
                       checked={form.packages1hr.includes(pkg.id)}
-                      onChange={() => toggleCheck("packages1hr", pkg.id)}
+                      onChange={() => selectPackage("packages1hr", pkg.id)}
                     />
                     <span className="bn-pkg-label">{pkg.label}</span>
                     <span className="bn-pkg-price">{pkg.price}</span>
@@ -807,9 +821,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 {PACKAGES_1HR30.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages1hr30.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name="package"
                       checked={form.packages1hr30.includes(pkg.id)}
-                      onChange={() => toggleCheck("packages1hr30", pkg.id)}
+                      onChange={() => selectPackage("packages1hr30", pkg.id)}
                     />
                     <span className="bn-pkg-label">{pkg.label}</span>
                     <span className="bn-pkg-price">{pkg.price}</span>
@@ -829,9 +844,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 {PACKAGES_3HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages3hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name="package"
                       checked={form.packages3hr.includes(pkg.id)}
-                      onChange={() => toggleCheck("packages3hr", pkg.id)}
+                      onChange={() => selectPackage("packages3hr", pkg.id)}
                     />
                     <span className="bn-pkg-label">{pkg.label}</span>
                     <span className="bn-pkg-price">{pkg.price}</span>
@@ -851,9 +867,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
                 {PACKAGES_2HR.map((pkg) => (
                   <label key={pkg.id} className={`bn-checkbox-option ${form.packages2hr.includes(pkg.id) ? "bn-checkbox-selected" : ""}`}>
                     <input
-                      type="checkbox"
+                      type="radio"
+                      name="package"
                       checked={form.packages2hr.includes(pkg.id)}
-                      onChange={() => toggleCheck("packages2hr", pkg.id)}
+                      onChange={() => selectPackage("packages2hr", pkg.id)}
                     />
                     <span className="bn-pkg-label">{pkg.label}</span>
                     <span className="bn-pkg-price">{pkg.price}</span>
@@ -1076,25 +1093,6 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               value={form.contactUs}
               onChange={(e) => set("contactUs", e.target.value)}
             />
-          </div>
-
-          {/* STATUS */}
-          <div className="bn-field">
-            <label className="bn-label">BOOKING STATUS</label>
-            <div className="bn-radio-group">
-              {["pending", "confirmed"].map((s) => (
-                <label key={s} className={`bn-radio-option ${form.status === s ? "bn-radio-selected" : ""}`}>
-                  <input
-                    type="radio"
-                    name="status"
-                    value={s}
-                    checked={form.status === s}
-                    onChange={() => set("status", s)}
-                  />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </label>
-              ))}
-            </div>
           </div>
 
           {/* TOTAL AMOUNT */}

@@ -3,13 +3,14 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import "../css/Booking.css";
 import "../css/UpcomingBookings.css";
 import "../css/BookingCards.css";
-import { Edit, Trash2, Eye, CheckCircle, X, Send } from "lucide-react";
+import { Edit, Trash2, Eye, CheckCircle, X, Send , RotateCcw } from "lucide-react";
 import DataTable from "../components/Datatable";
 import NotificationPopup from "../components/NotificationPopup";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import {
+  reactivateBooking,
   fetchBookingsByFilter,
   fetchCelebrationType,
   fetchPackage,
@@ -199,6 +200,11 @@ function Bookings() {
             />
           </span>
         )}
+        {(row.status || "").toLowerCase() === "unconfirmed" && (
+          <span title="Reactivate Booking">
+            <RotateCcw className="action-icon text-warning" size={18} onClick={() => handleReactivate(row)} />
+          </span>
+        )}
         <span title="Send Telegram">
           <Send
             className="action-icon text-secondary"
@@ -213,6 +219,17 @@ function Bookings() {
   useEffect(() => {
     fetchUpcomingBookings();
   }, []);
+
+  const handleReactivate = async (booking) => {
+    if (!window.confirm(`Reactivate the booking for ${booking.customer_name}? It will be marked as confirmed and reminders will resume.`)) return;
+    try {
+      await reactivateBooking(booking.booking_id);
+      fetchUpcomingBookings();
+    } catch (error) {
+      console.error("Reactivate failed:", error);
+      alert("Failed to reactivate the booking. Please try again.");
+    }
+  };
 
   const fetchUpcomingBookings = async () => {
     setLoading(true);
@@ -1084,6 +1101,7 @@ function Bookings() {
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
                     <option value="completed">Completed</option>
+                    <option value="unconfirmed">Unconfirmed</option>
                   </select>
                 </div>
                 <div className="review-box mb-3">
