@@ -3,6 +3,7 @@ import { fetchBookingsByFilter, updatePayment } from "../services/bookingService
 import DataTable from "../components/Datatable";
 import "../css/Dashboard.css";
 import { Edit } from "lucide-react";
+import { notify } from "../components/Notify";
 
 const PaymentStatus = () => {
   const user = localStorage.getItem("current_user");
@@ -63,17 +64,17 @@ const PaymentStatus = () => {
       const paid = Number(editFormData.payment_paid);
       const total = Number(editFormData.payment_total);
       if (paid > total) {
-        alert("Paid amount cannot exceed the total amount.");
+        notify.warning("Paid amount cannot exceed the total amount.");
         return;
       }
       const username = JSON.parse(user).username;
       await updatePayment(editFormData.booking_id, { ...editFormData, updated_by: username });
-      alert("Payment updated");
+      notify.success("Payment updated");
       const updated = await loadPendingPayments();
       setPendingPayments(updated);
       setEditModalVisible(false);
     } catch (err) {
-      alert("Error saving payment");
+      notify.error("Error saving payment");
     }
   };
 

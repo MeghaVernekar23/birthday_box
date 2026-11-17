@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import DataTable from "../components/Datatable";
 import { fetchPackage, updatePackage, deletePackage } from "../services/bookingServices";
 import "../css/Packages.css";
+import { notify, confirmDialog } from "../components/Notify";
 
 const Packages = () => {
   const [packages, setPackages] = useState([]);
@@ -19,7 +20,7 @@ const Packages = () => {
       setPackages(data);
     } catch (error) {
       console.error("Failed to fetch packages:", error);
-      alert("Failed to load package details.");
+      notify.error("Failed to load package details.");
     }
   };
 
@@ -38,8 +39,8 @@ const Packages = () => {
   };
 
   const handleSave = async () => {
-    if (!form.package_name.trim()) return alert("Package name required.");
-    if (form.price === "" || isNaN(Number(form.price))) return alert("Valid price required.");
+    if (!form.package_name.trim()) return notify.warning("Package name required.");
+    if (form.price === "" || isNaN(Number(form.price))) return notify.warning("Valid price required.");
     setSaving(true);
     try {
       await updatePackage(editingPkg.package_id, {
@@ -50,19 +51,19 @@ const Packages = () => {
       closeEdit();
       fetchPackageData();
     } catch (err) {
-      alert("Failed to update package.");
+      notify.error("Failed to update package.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (pkg) => {
-    if (!window.confirm(`Delete package "${pkg.package_name}"? This cannot be undone.`)) return;
+    if (!await confirmDialog({ message: `Delete package "${pkg.package_name}"? This cannot be undone.`, title: "Delete package?", confirmText: "Delete", tone: "danger" })) return;
     try {
       await deletePackage(pkg.package_id);
       fetchPackageData();
     } catch (err) {
-      alert("Failed to delete package.");
+      notify.error("Failed to delete package.");
     }
   };
 

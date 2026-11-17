@@ -1,0 +1,244 @@
+/* Birthday Box notifications — toasts + confirm dialog
+   Palette: navy #1b1464 · magenta #e91e8c · coral #f05537 */
+
+/* ===== Toasts ===== */
+.bbn-toasts {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 11000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.bbn-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(27, 20, 100, 0.08);
+  border-radius: 14px;
+  padding: 14px 12px 14px 14px;
+  box-shadow: 0 12px 32px rgba(27, 20, 100, 0.16), 0 2px 6px rgba(27, 20, 100, 0.06);
+  position: relative;
+  overflow: hidden;
+  animation: bbn-slide-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.bbn-toast::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--bbn-accent);
+}
+
+.bbn-toast--success { --bbn-accent: #22a87a; --bbn-tint: rgba(34, 168, 122, 0.12); }
+.bbn-toast--error   { --bbn-accent: #e5383b; --bbn-tint: rgba(229, 56, 59, 0.12); }
+.bbn-toast--warning { --bbn-accent: #f7941d; --bbn-tint: rgba(247, 148, 29, 0.14); }
+.bbn-toast--info    { --bbn-accent: #e91e8c; --bbn-tint: rgba(233, 30, 140, 0.1); }
+
+.bbn-toast__icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--bbn-tint);
+  color: var(--bbn-accent);
+}
+
+.bbn-toast__body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.bbn-toast__title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1b1464;
+  line-height: 1.3;
+}
+
+.bbn-toast__msg {
+  font-size: 0.86rem;
+  color: #5b5578;
+  line-height: 1.4;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.bbn-toast__close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 8px;
+  color: #a39cb8;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.bbn-toast__close:hover {
+  background: rgba(27, 20, 100, 0.06);
+  color: #1b1464;
+  border-color: transparent;
+}
+
+@keyframes bbn-slide-in {
+  from { opacity: 0; transform: translateX(24px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ===== Confirm dialog ===== */
+.bbn-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background: rgba(27, 20, 100, 0.38);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  animation: bbn-fade 0.18s ease;
+}
+
+.bbn-dialog {
+  width: min(420px, 100%);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px 24px 22px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(27, 20, 100, 0.25);
+  animation: bbn-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.bbn-dialog__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #e91e8c;
+  background: linear-gradient(135deg, rgba(233, 30, 140, 0.12), rgba(240, 85, 55, 0.12));
+}
+
+.bbn-dialog--danger .bbn-dialog__icon {
+  color: #e5383b;
+  background: rgba(229, 56, 59, 0.1);
+}
+
+.bbn-dialog__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1b1464;
+  margin: 0 0 8px;
+}
+
+.bbn-dialog__msg {
+  font-size: 0.92rem;
+  color: #5b5578;
+  line-height: 1.5;
+  margin: 0 0 22px;
+}
+
+.bbn-dialog__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.bbn-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  border: none;
+  padding: 0 16px;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.bbn-btn:focus-visible {
+  outline: 3px solid rgba(233, 30, 140, 0.35);
+  outline-offset: 2px;
+}
+
+.bbn-btn--ghost {
+  background: #f5f2f8;
+  color: #1b1464;
+}
+
+.bbn-btn--ghost:hover {
+  background: #ece6f2;
+  border-color: transparent;
+}
+
+.bbn-btn--primary {
+  background: linear-gradient(135deg, #e91e8c, #f05537);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(233, 30, 140, 0.3);
+}
+
+.bbn-btn--danger {
+  background: #e5383b;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(229, 56, 59, 0.3);
+}
+
+.bbn-btn--primary:hover,
+.bbn-btn--danger:hover {
+  transform: translateY(-1px);
+  border-color: transparent;
+}
+
+@keyframes bbn-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes bbn-pop {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ===== Phones: toasts across the top ===== */
+@media (max-width: 480px) {
+  .bbn-toasts {
+    top: 10px;
+    right: 50%;
+    transform: translateX(50%);
+    width: calc(100vw - 20px);
+  }
+
+  .bbn-dialog {
+    padding: 24px 18px 18px;
+    border-radius: 18px;
+  }
+
+  .bbn-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .bbn-dialog__actions .bbn-btn {
+    flex: none;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bbn-toast,
+  .bbn-dialog,
+  .bbn-overlay {
+    animation: none;
+  }
+}

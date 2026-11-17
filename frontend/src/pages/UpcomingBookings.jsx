@@ -23,6 +23,7 @@ import {
   fetchUpcomingHoliday,
   sendTelegramMessage,
 } from "../services/bookingServices";
+import { notify, confirmDialog } from "../components/Notify";
 
 const getPaymentStatus = (row) => {
   const total = Number(row.payment_total) || 0;
@@ -177,9 +178,9 @@ function Bookings() {
   const handleSendTelegram = async (booking) => {
     try {
       await sendTelegramMessage(booking.booking_id);
-      alert("Telegram message sent!");
+      notify.success("Telegram message sent!");
     } catch (error) {
-      alert("Failed to send Telegram message.");
+      notify.error("Failed to send Telegram message.");
       console.error("Telegram send error:", error);
     }
   };
@@ -243,35 +244,35 @@ function Bookings() {
   }, []);
 
   const handleConfirm = async (booking) => {
-    if (!window.confirm(`Confirm the booking for ${booking.customer_name}?`)) return;
+    if (!await confirmDialog({ message: `Confirm the booking for ${booking.customer_name}?`, title: "Confirm booking?", confirmText: "Confirm" })) return;
     try {
       await confirmBooking(booking.booking_id);
       fetchUpcomingBookings();
     } catch (error) {
       console.error("Confirm failed:", error);
-      alert("Failed to confirm the booking. Please try again.");
+      notify.error("Failed to confirm the booking. Please try again.");
     }
   };
 
   const handleUnconfirm = async (booking) => {
-    if (!window.confirm(`Unconfirm the booking for ${booking.customer_name}? No Telegram reminders will be sent and it won't count in the dashboard. You can reactivate it later.`)) return;
+    if (!await confirmDialog({ message: `Unconfirm the booking for ${booking.customer_name}? No Telegram reminders will be sent and it won't count in the dashboard. You can reactivate it later.`, title: "Unconfirm booking?", confirmText: "Unconfirm", tone: "danger" })) return;
     try {
       await unconfirmBooking(booking.booking_id);
       fetchUpcomingBookings();
     } catch (error) {
       console.error("Unconfirm failed:", error);
-      alert("Failed to unconfirm the booking. Please try again.");
+      notify.error("Failed to unconfirm the booking. Please try again.");
     }
   };
 
   const handleReactivate = async (booking) => {
-    if (!window.confirm(`Reactivate the booking for ${booking.customer_name}? It will be marked as confirmed and reminders will resume.`)) return;
+    if (!await confirmDialog({ message: `Reactivate the booking for ${booking.customer_name}? It will be marked as confirmed and reminders will resume.`, title: "Reactivate booking?", confirmText: "Reactivate" })) return;
     try {
       await reactivateBooking(booking.booking_id);
       fetchUpcomingBookings();
     } catch (error) {
       console.error("Reactivate failed:", error);
-      alert("Failed to reactivate the booking. Please try again.");
+      notify.error("Failed to reactivate the booking. Please try again.");
     }
   };
 
@@ -322,14 +323,14 @@ function Bookings() {
       };
 
       await updateBooking(editingBookingId, updatedForm);
-      alert("Booking updated successfully!");
+      notify.success("Booking updated successfully!");
 
       setPopupEdit({ visible: false, booking: null });
       setShowModal(false);
       setStep(1);
       fetchUpcomingBookings();
     } catch (error) {
-      alert("Something went wrong. Please try again.");
+      notify.error("Something went wrong. Please try again.");
       console.error("Submit failed:", error);
     }
   };
@@ -381,7 +382,7 @@ function Bookings() {
       setShowModal(true);
     } catch (error) {
       console.error("Error fetching booking for edit:", error);
-      alert("Failed to load booking details for editing.");
+      notify.error("Failed to load booking details for editing.");
     }
   };
 
@@ -397,11 +398,11 @@ function Bookings() {
     try {
       await deleteBooking(popupDelete.booking.booking_id);
       setPopupDelete({ visible: false, booking: null });
-      alert("Booking deleted successfully!");
+      notify.success("Booking deleted successfully!");
       fetchUpcomingBookings();
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete the booking. Please try again.");
+      notify.error("Failed to delete the booking. Please try again.");
       setPopupDelete({ visible: false, booking: null });
     }
   };
@@ -419,13 +420,13 @@ function Bookings() {
       const fullBooking = await fetchBookingById(booking.booking_id);
       setPopupView({ visible: true, booking: fullBooking });
     } catch (error) {
-      alert("Failed to load booking details.");
+      notify.error("Failed to load booking details.");
       console.error("View error:", error);
     }
   };
 
   const handleMarkPaid = async (booking) => {
-    if (!window.confirm(`Mark "${booking.customer_name}" as fully paid?`)) return;
+    if (!await confirmDialog({ message: `Mark "${booking.customer_name}" as fully paid?`, title: "Mark as paid?", confirmText: "Mark as paid" })) return;
     try {
       const username = JSON.parse(user).username;
       const [fullBooking, packages] = await Promise.all([
@@ -448,7 +449,7 @@ function Bookings() {
       });
       fetchUpcomingBookings();
     } catch (error) {
-      alert("Failed to mark as paid.");
+      notify.error("Failed to mark as paid.");
       console.error("Mark paid error:", error);
     }
   };
@@ -1494,7 +1495,7 @@ function Bookings() {
                 onClick={() => {
                   if (step === 2) {
                     if (!bookingDate || !selectedTime) {
-                      alert("Please select a date and time.");
+                      notify.warning("Please select a date and time.");
                       return;
                     }
 
@@ -1506,13 +1507,13 @@ function Bookings() {
                   }
                   if (step === 3) {
                     if (!formData.celebration_id) {
-                      alert("Please select a celebration type.");
+                      notify.warning("Please select a celebration type.");
                       return;
                     }
                   }
                   if (step === 4) {
                     if (!formData.package_id) {
-                      alert("Please select a package.");
+                      notify.warning("Please select a package.");
                       return;
                     }
                   }
@@ -1533,7 +1534,7 @@ function Bookings() {
                     const total = packagePrice + addOnPrice;
 
                     if (!formData.payment_mode) {
-                      alert("Please select a payment mode.");
+                      notify.warning("Please select a payment mode.");
                       return;
                     }
                     if (
@@ -1541,7 +1542,7 @@ function Bookings() {
                       formData.payment_paid == null ||
                       Number(formData.payment_paid) < 0
                     ) {
-                      alert("Amount paid must be a valid number.");
+                      notify.warning("Amount paid must be a valid number.");
                       return;
                     }
                     setFormData({

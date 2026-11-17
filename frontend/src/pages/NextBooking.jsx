@@ -5,6 +5,7 @@ import {
   fetchPackage,
 } from "../services/bookingServices";
 import "../css/Dashboard.css";
+import { notify } from "../components/Notify";
 
 const NextBookingCard = () => {
   const [nextBooking, setNextBooking] = useState(null);
@@ -39,7 +40,7 @@ const NextBookingCard = () => {
       setPackageOptions(packagesType);
     } catch (err) {
       console.error("Error fetching bookings", err);
-      alert("Failed to load bookings");
+      notify.error("Failed to load bookings");
     }
   };
 

@@ -11,6 +11,7 @@ import {
   submitBooking,
   fetchUpcomingHoliday,
 } from "../services/bookingServices";
+import { notify } from "../components/Notify";
 
 const STEPS = [
   { label: "Customer",    title: "Customer Details",      subtitle: "Look up an existing customer or enter details manually" },
@@ -119,11 +120,11 @@ function AddBookings() {
     try {
       const username = JSON.parse(user).username;
       await submitBooking({ ...formData, updated_by: username, created_by: username });
-      alert("Booking created successfully!");
+      notify.success("Booking created successfully!");
       resetForm();
       setPopup({ visible: false, booking: null });
     } catch (error) {
-      alert("Something went wrong. Please try again.");
+      notify.error("Something went wrong. Please try again.");
       console.error("Submit failed:", error);
     }
   };
@@ -133,21 +134,21 @@ function AddBookings() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (step === 1) {
-      if (!formData.customer_name.trim()) { alert("Customer name is required."); return; }
-      if (!nameRegex.test(formData.customer_name.trim())) { alert("Name should contain only letters and spaces."); return; }
-      if (formData.email.trim() && !emailRegex.test(formData.email)) { alert("Please enter a valid email address."); return; }
+      if (!formData.customer_name.trim()) { notify.warning("Customer name is required."); return; }
+      if (!nameRegex.test(formData.customer_name.trim())) { notify.warning("Name should contain only letters and spaces."); return; }
+      if (formData.email.trim() && !emailRegex.test(formData.email)) { notify.warning("Please enter a valid email address."); return; }
     }
     if (step === 2) {
-      if (!bookingDate || !selectedTime) { alert("Please select a date and time."); return; }
+      if (!bookingDate || !selectedTime) { notify.warning("Please select a date and time."); return; }
       setFormData({ ...formData, event_date: bookingDate.toLocaleDateString("en-CA"), time_slot: selectedTime });
     }
-    if (step === 3 && !formData.celebration_id) { alert("Please select a celebration type."); return; }
-    if (step === 4 && !formData.package_id) { alert("Please select a package."); return; }
+    if (step === 3 && !formData.celebration_id) { notify.warning("Please select a celebration type."); return; }
+    if (step === 4 && !formData.package_id) { notify.warning("Please select a package."); return; }
     if (step === 5) { setFormData({ ...formData, additional_items: additionalItems }); }
     if (step === 6) {
       const { total } = calcTotals();
-      if (!paymentMode) { alert("Please select a payment mode."); return; }
-      if (!amountPaid || Number(amountPaid) < 0) { alert("Amount paid must be a valid number."); return; }
+      if (!paymentMode) { notify.warning("Please select a payment mode."); return; }
+      if (!amountPaid || Number(amountPaid) < 0) { notify.warning("Amount paid must be a valid number."); return; }
 setFormData({ ...formData, payment_mode: paymentMode, payment_paid: amountPaid, payment_notes: paymentNotes, payment_total: total });
     }
     if (step === 7) { setPopup({ visible: true, booking: formData }); return; }

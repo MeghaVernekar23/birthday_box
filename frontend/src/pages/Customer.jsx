@@ -11,6 +11,7 @@ import { fetchBookingsByCustomer } from "../services/bookingServices";
 import { Edit, Trash2, Eye, Plus, X, CalendarX } from "lucide-react";
 import NotificationPopup from "../components/NotificationPopup";
 import "../css/Customer.css";
+import { notify } from "../components/Notify";
 
 const CustomerDetails = () => {
   const [showModal, setShowModal] = useState(false);
@@ -53,7 +54,7 @@ const CustomerDetails = () => {
       setCustomers(data);
     } catch (error) {
       console.error("Failed to fetch customers:", error);
-      alert("Failed to load customer details.");
+      notify.error("Failed to load customer details.");
     }
   };
 
@@ -120,24 +121,24 @@ const CustomerDetails = () => {
     const updatedForm = { ...formData, customer_id: editingCustomerId };
     try {
       if (!isEditMode && isExistingCustomer) {
-        alert("This phone number is already linked to a customer. Please use Edit instead.");
+        notify.warning("This phone number is already linked to a customer. Please use Edit instead.");
         return;
       }
       if (!isEditMode && !customerChecked) {
-        alert("Please check the phone number before proceeding.");
+        notify.warning("Please check the phone number before proceeding.");
         return;
       }
       if (isEditMode) {
         await updateCustomer(editingCustomerId, updatedForm);
-        alert("Customer updated successfully!");
+        notify.success("Customer updated successfully!");
       } else {
         await submitCustomer(updatedForm);
-        alert("Customer added successfully!");
+        notify.success("Customer added successfully!");
       }
       closeModal();
       fetchCustomerData();
     } catch (error) {
-      alert("Something went wrong. Please try again.");
+      notify.error("Something went wrong. Please try again.");
       console.error("Submit failed:", error);
     }
   };
@@ -146,15 +147,15 @@ const CustomerDetails = () => {
     const nameRegex = /^[A-Za-z\s]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.name.trim() === "") {
-      alert("Customer name is required.");
+      notify.warning("Customer name is required.");
       return;
     }
     if (!nameRegex.test(formData.name.trim())) {
-      alert("Customer name should contain only alphabets and spaces.");
+      notify.warning("Customer name should contain only alphabets and spaces.");
       return;
     }
     if (formData.email.trim() && !emailRegex.test(formData.email)) {
-      alert("Please enter a valid email address.");
+      notify.warning("Please enter a valid email address.");
       return;
     }
     submitCustomerDetails();
@@ -197,13 +198,13 @@ const CustomerDetails = () => {
     try {
       const data = await fetchBookingsByCustomer(customer.customer_id);
       if (data.length > 0) {
-        alert(`Cannot delete "${customer.name}" – associated bookings exist.`);
+        notify.warning(`Cannot delete "${customer.name}" – associated bookings exist.`);
       } else {
         setPopup({ visible: true, customer });
       }
     } catch (err) {
       console.error("Error checking bookings:", err);
-      alert("Failed to check bookings. Try again later.");
+      notify.error("Failed to check bookings. Try again later.");
     }
   };
 
@@ -215,7 +216,7 @@ const CustomerDetails = () => {
       setShowBookingModal(true);
     } catch (err) {
       console.error("Error fetching bookings", err);
-      alert("Failed to load bookings");
+      notify.error("Failed to load bookings");
     }
   };
 
@@ -223,11 +224,11 @@ const CustomerDetails = () => {
     try {
       await deleteCustomer(popup.customer.customer_id);
       setPopup({ visible: false, customer: null });
-      alert("Customer deleted successfully!");
+      notify.success("Customer deleted successfully!");
       fetchCustomerData();
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete the customer. Please try again.");
+      notify.error("Failed to delete the customer. Please try again.");
       setPopup({ visible: false, customer: null });
     }
   };
@@ -252,6 +253,7 @@ const CustomerDetails = () => {
 
       {popup.visible && (
         <NotificationPopup
+          title="Delete customer?"
           message={`Are you sure you want to delete ${popup.customer.name}?`}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}

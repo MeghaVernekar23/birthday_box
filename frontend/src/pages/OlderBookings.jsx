@@ -16,6 +16,7 @@ import {
   updatePayment,
   fetchPackage,
 } from "../services/bookingServices";
+import { notify } from "../components/Notify";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -150,7 +151,7 @@ function Bookings() {
       const fullBooking = await fetchBookingById(booking.booking_id);
       setPopupView({ visible: true, booking: fullBooking });
     } catch (error) {
-      alert("Failed to load booking details.");
+      notify.error("Failed to load booking details.");
       console.error("View error:", error);
     }
   };
@@ -163,11 +164,11 @@ function Bookings() {
     try {
       await deleteBooking(popupDelete.booking.booking_id);
       setPopupDelete({ visible: false, booking: null });
-      alert("Booking deleted successfully!");
+      notify.success("Booking deleted successfully!");
       fetchOlderBookings();
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete the booking. Please try again.");
+      notify.error("Failed to delete the booking. Please try again.");
       setPopupDelete({ visible: false, booking: null });
     }
   };
@@ -206,7 +207,7 @@ function Bookings() {
       fetchOlderBookings();
     } catch (error) {
       console.error("Mark paid failed:", error);
-      alert("Failed to update payment. Please try again.");
+      notify.error("Failed to update payment. Please try again.");
       setPopupMarkPaid({ visible: false, booking: null });
     }
   };
@@ -328,7 +329,7 @@ function Bookings() {
     }));
 
     if (rows.length === 0) {
-      alert("No bookings found for the selected filter.");
+      notify.info("No bookings found for the selected filter.");
       return;
     }
 

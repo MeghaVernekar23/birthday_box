@@ -1,4 +1,5 @@
 
+import { notify } from "../components/Notify";
 export const apiRequest = async ({ url, method = "GET", data = null, headers = {} }) => {
   const token = localStorage.getItem("access_token");
 
@@ -45,7 +46,7 @@ export const apiRequest = async ({ url, method = "GET", data = null, headers = {
         } else {
 
           localStorage.clear();
-          alert("Session expired. Please log in again.");
+          notify.flash("Your session expired. Please log in again.", "warning");
           window.location.href = "/";
           throw new Error("Session expired");
         }

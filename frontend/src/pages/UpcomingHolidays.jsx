@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import DataTable from "../components/Datatable";
 import { Trash2 } from "lucide-react";
 import NotificationPopup from "../components/NotificationPopup";
+import { notify } from "../components/Notify";
 
 const UpcomingHolidaysCard = () => {
   const navigate = useNavigate();
@@ -55,13 +56,13 @@ const UpcomingHolidaysCard = () => {
 
   const handleSaveHoliday = async () => {
     if (!selectedDate || !holidayTitle.trim()) {
-      alert("Please select a date and enter a title");
+      notify.warning("Please select a date and enter a title");
       return;
     }
     try {
       const formattedDate = selectedDate.toLocaleDateString("en-CA");
       await addHoliday({ date: formattedDate, title: holidayTitle });
-      alert("Holiday added successfully!");
+      notify.success("Holiday added successfully!");
       setShowCalenderModal(false);
       setHolidayTitle("");
       setSelectedDate(null);
@@ -70,9 +71,9 @@ const UpcomingHolidaysCard = () => {
       navigate("/dashboard", { state: { refetch: true } });
     } catch (error) {
       if (error.response && error.response.data && error.response.data.detail) {
-        alert(error.response.data.detail);
+        notify.error(error.response.data.detail);
       } else {
-        alert("Failed to add holiday");
+        notify.error("Failed to add holiday");
       }
       console.error("Error adding holiday", error);
     }
@@ -82,13 +83,13 @@ const UpcomingHolidaysCard = () => {
     try {
       await deleteHoliday(deletePopup.holiday.holiday_id);
       setDeletePopup({ visible: false, holiday: null });
-      alert("Holiday deleted successfully!");
+      notify.success("Holiday deleted successfully!");
       const updated = await fetchUpcomingHoliday();
       setHolidays(updated);
       navigate("/dashboard", { state: { refetch: true } });
     } catch (error) {
       console.error("Delete failed:", error);
-      alert("Failed to delete the holiday. Please try again.");
+      notify.error("Failed to delete the holiday. Please try again.");
       setDeletePopup({ visible: false, holiday: null });
     }
   };
