@@ -409,6 +409,9 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     }
   }, [showDiningHall]);
 
+  const hasPackageSelected =
+    form.packages1hr.length + form.packages1hr30.length + form.packages2hr.length + form.packages3hr.length > 0;
+
   const validate = () => {
     const e = {};
     if (!form.name.trim()) e.name = "Name is required.";
@@ -416,6 +419,7 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
     if (!form.timeSlot) e.timeSlot = "Please choose a time slot.";
     if (!form.preferredTime.trim()) e.preferredTime = "Preferred time is required.";
     if (!form.celebrationType) e.celebrationType = "Please select a celebration type.";
+    if (form.timeSlot && !hasPackageSelected) e.packages = "Please select a celebration package.";
     if (!form.referral) e.referral = "Please tell us how you heard about us.";
     if (!form.agreement) e.agreement = "You must agree to the Customer Disclaimer.";
     if (!totalUnlocked && computeTotal() === 0) e.total = "Please select at least one package before submitting.";
@@ -824,6 +828,10 @@ return startMin != null ? { start: startMin, end: startMin + durationMin } : nul
               </div>
             </div>
           )}
+
+          <div id="field-packages">
+            {errors.packages && !hasPackageSelected && <span className="bn-error">{errors.packages}</span>}
+          </div>
 
           {/* EXTRA GUESTS */}
           <div className="bn-field">
