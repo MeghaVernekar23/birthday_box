@@ -3,7 +3,8 @@ import LogoMark from "../images/logo_mark.png";
 import LogoWordmark from "../images/logo_wordmark.png";
 import "../css/PartyLogo.css";
 
-/* Birthday Box logo: the gift mark spins, then fireworks go off behind it.
+/* Birthday Box logo: the gift mark spins, fireworks go off behind it, and
+   the wordmark lights up letter by letter like a neon sign.
    Pure CSS animation; honours prefers-reduced-motion (static logo). */
 
 // Each firework: burst position (relative to the stage), radius, colours, stagger
@@ -14,6 +15,25 @@ const FIREWORKS = [
 ];
 
 const SPARKS = 16;
+
+// Neon letters of "BIRTHDAY BOX" (R+T and A+Y touch in the logo font, so they
+// light together). Overlay images are generated full-size, one per group.
+const GLOW_IMAGES = Object.entries(
+  import.meta.glob("../images/logo_wm_glow_*.png", { eager: true, import: "default" })
+)
+  .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+  .map(([, url]) => url);
+const LETTERS = [
+  { label: "B",  glow: "255,82,169",  d: 0.9, mode: "struggle" },
+  { label: "I",  glow: "255,86,162",  d: 1.15, mode: "quick" },
+  { label: "RT", glow: "255,92,150",  d: 1.45, mode: "sputter" },
+  { label: "H",  glow: "255,100,135", d: 1.25, mode: "quick" },
+  { label: "D",  glow: "255,105,125", d: 1.65, mode: "quick" },
+  { label: "AY", glow: "255,114,108", d: 1.35, mode: "sputter" },
+  { label: "B",  glow: "255,124,90",  d: 1.85, mode: "quick" },
+  { label: "O",  glow: "255,131,77",  d: 1.55, mode: "quick" },
+  { label: "X",  glow: "255,137,65",  d: 1.5, mode: "struggle" },
+];
 
 function Firework({ x, y, r, delay, colors }) {
   return (
@@ -45,7 +65,19 @@ export default function PartyLogo() {
         ))}
         <img src={LogoMark} alt="" className="pl-mark" />
       </div>
-      <img src={LogoWordmark} alt="" className="pl-wordmark" />
+      <div className="pl-word">
+        <img src={LogoWordmark} alt="" className="pl-wordmark" />
+        {/* Neon sign: each letter sputters on, then stays lit */}
+        {LETTERS.map((l, i) => (
+          <img
+            key={i}
+            src={GLOW_IMAGES[i]}
+            alt=""
+            className={`pl-bulb pl-bulb--${l.mode}`}
+            style={{ "--glow": l.glow, "--d": `${l.d}s` }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

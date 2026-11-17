@@ -40,11 +40,105 @@
   100% { transform: rotateY(360deg) scale(1); }
 }
 
-.pl-wordmark {
+.pl-word {
   position: relative;
   z-index: 2;
   width: 100%;
+}
+
+.pl-wordmark {
+  display: block;
+  width: 100%;
   height: auto;
+}
+
+/* ── Neon sign: every letter of the wordmark lights up ──
+   Each overlay is the full wordmark size with one letter (or touching
+   pair) painted in the magenta→orange gradient, so it lines up at every
+   width. Letters sputter on at their own pace, then stay lit and breathe.
+   Per-letter inputs (inline): --glow colour, --d start delay. */
+.pl-bulb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 1px rgb(var(--glow)))
+    drop-shadow(0 0 5px rgba(var(--glow), 0.75))
+    drop-shadow(0 0 12px rgba(var(--glow), 0.4));
+}
+
+/* Catches almost at once: one blink, then on */
+.pl-bulb--quick {
+  --dur: 0.7s;
+  animation:
+    pl-bulb-quick var(--dur) linear var(--d) both,
+    pl-bulb-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+/* A couple of sputters before it holds */
+.pl-bulb--sputter {
+  --dur: 1.3s;
+  animation:
+    pl-bulb-sputter var(--dur) linear var(--d) both,
+    pl-bulb-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+/* Struggles: tries, fails, tries again, finally catches */
+.pl-bulb--struggle {
+  --dur: 2s;
+  animation:
+    pl-bulb-struggle var(--dur) linear var(--d) both,
+    pl-bulb-hum 2.8s ease-in-out calc(var(--d) + var(--dur)) infinite;
+}
+
+@keyframes pl-bulb-quick {
+  0%   { opacity: 0; }
+  20%  { opacity: 0.8; }
+  32%  { opacity: 0.1; }
+  55%  { opacity: 0.1; }
+  70%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes pl-bulb-sputter {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.75; }
+  12%  { opacity: 0; }
+  20%  { opacity: 0.9; }
+  25%  { opacity: 0.2; }
+  45%  { opacity: 0; }
+  58%  { opacity: 0.85; }
+  64%  { opacity: 0.3; }
+  78%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes pl-bulb-struggle {
+  0%   { opacity: 0; }
+  6%   { opacity: 0.85; }
+  9%   { opacity: 0.05; }
+  14%  { opacity: 0.6; }
+  16%  { opacity: 0; }
+  38%  { opacity: 0; }
+  41%  { opacity: 0.9; }
+  52%  { opacity: 0.8; }
+  55%  { opacity: 0.1; }
+  58%  { opacity: 0.7; }
+  61%  { opacity: 0; }
+  80%  { opacity: 0; }
+  84%  { opacity: 1; }
+  87%  { opacity: 0.45; }
+  91%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* Once lit: gentle breathing glow */
+@keyframes pl-bulb-hum {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.94; }
 }
 
 /* ── Fireworks ── */
@@ -188,5 +282,9 @@
   }
   .fw {
     display: none;
+  }
+  .pl-bulb {
+    animation: none;
+    opacity: 1;
   }
 }
