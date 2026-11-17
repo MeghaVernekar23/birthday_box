@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session,aliased
 from typing import List
 from db.models.sqlalchemy_models import Booking, Customer, CelebrationType, Packages, Users
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 def get_user_by_username(username: str, db: Session) -> Users :
     """
@@ -63,7 +63,7 @@ def get_booking_query(db: Session) -> List[Booking]:
         query = (
             db.query(
                 Booking.booking_id,
-                Customer.name.label("customer_name"),
+                func.coalesce(Booking.celebrant_name, Customer.name).label("customer_name"),
                 Customer.email,
                 Customer.address,
                 Customer.phone_number,

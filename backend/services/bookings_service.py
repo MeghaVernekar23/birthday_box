@@ -218,6 +218,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             customer_id=customer.customer_id,
             package_id=bookingDetails.package_id,
             celebration_id=bookingDetails.celebration_id,
+            celebrant_name=(bookingDetails.customer_name or "").strip() or None,
             event_date=bookingDetails.event_date,
             event_time=bookingDetails.time_slot,
             status=bookingDetails.status,
@@ -339,6 +340,8 @@ def update_booking_detail(booking_id: int, booking_details: EditBookingDetails, 
 
         booking.package_id = booking_details.package_id
         booking.celebration_id = booking_details.celebration_id
+        if (booking_details.customer_name or "").strip():
+            booking.celebrant_name = booking_details.customer_name.strip()
         booking.event_date = booking_details.event_date
         booking.event_time = booking_details.time_slot
         booking.notes = booking_details.addons_note

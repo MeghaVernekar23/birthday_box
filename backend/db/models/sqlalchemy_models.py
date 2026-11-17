@@ -25,6 +25,9 @@ class Booking(Base):
     customer_id = Column(Integer, ForeignKey("customers.customer_id"))
     package_id = Column(Integer, ForeignKey("packages.package_id"))
     celebration_id = Column(Integer, ForeignKey("celebration_type.celebration_id"))
+    # Name of the person being celebrated for this booking. A returning customer
+    # (same phone number) may book for someone else; falls back to Customer.name.
+    celebrant_name = Column(String, nullable=True)
     event_date = Column(Date)
     event_time = Column(String)
     location = Column(Text)
