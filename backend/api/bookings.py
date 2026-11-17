@@ -29,6 +29,8 @@ from services.bookings_service import (
 )
 from services.telegram_service import build_booking_message, _send_message_sync
 from services.oauth import get_current_user
+from services.public_booking_service import ensure_public_access, public_link_and_password
+from db.models.sqlalchemy_models import Booking
 from utils.exceptions import BookingDetailsNotFoundException, InvalidFilterException
 
 
@@ -368,6 +370,9 @@ def send_booking_telegram(
             "status": booking.status,
             "booking_id": booking.booking_id,
         }
+        row = db.get(Booking, booking_id)
+        ensure_public_access(row, db)
+        booking_data.update(public_link_and_password(row, booking.phone_number))
         message = build_booking_message(booking_data, label="📋 Booking Details")
         _send_message_sync(message)
         return {"status": "sent"}

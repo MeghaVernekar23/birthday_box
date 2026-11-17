@@ -1,0 +1,42 @@
+/* Customer-facing booking page (/booking/:token). Builds on BookNow.css. */
+.pb-wrap { max-width: 620px; margin: 0 auto; padding: 32px 16px 48px; }
+
+.pb-lock { text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+.pb-lock-icon { font-size: 2.4rem; }
+.pb-title { margin: 0; color: #1b1464; font-size: 1.4rem; }
+.pb-sub { margin: 0; color: #666; font-size: 0.92rem; }
+.pb-pass { text-align: center; font-size: 1.4rem; letter-spacing: 0.4em; }
+
+.pb-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.pb-eyebrow { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #e91e8c; font-weight: 600; }
+.pb-status { padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize; background: #eee; color: #555; white-space: nowrap; }
+.pb-status--confirmed, .pb-status--completed { background: #e3f7ef; color: #1d8a66; }
+.pb-status--pending { background: #fff4e0; color: #a56a00; }
+.pb-status--cancelled { background: #fde8e4; color: #c0391b; }
+
+.pb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.pb-chip { background: #fdf6f9; border: 1px solid #f6d6e6; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.pb-chip span { font-size: 0.75rem; color: #888; }
+.pb-chip strong { color: #1b1464; font-size: 0.95rem; }
+
+.pb-section { margin: 22px 0 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #888; }
+.pb-lines { border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+.pb-line { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: 0.92rem; }
+.pb-line + .pb-line { border-top: 1px solid #f2f2f2; }
+.pb-line span:last-child { white-space: nowrap; font-weight: 600; }
+.pb-desc { display: block; font-size: 0.78rem; color: #888; margin-top: 2px; }
+
+.pb-pay { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+.pb-pay div { background: #f7f7fb; border-radius: 10px; padding: 10px; text-align: center; display: flex; flex-direction: column; }
+.pb-pay span { font-size: 0.75rem; color: #888; }
+.pb-pay strong { font-size: 1.05rem; color: #1b1464; }
+.pb-pay .pb-balance { background: #fdeef6; }
+.pb-pay .pb-balance strong { color: #e91e8c; }
+
+.pb-note { margin: 16px 0 0; font-size: 0.9rem; color: #555; }
+.pb-help { margin-top: 20px; text-align: center; }
+
+@media (max-width: 420px) {
+  .pb-pay strong { font-size: 0.95rem; }
+  .pb-title { font-size: 1.2rem; }
+}

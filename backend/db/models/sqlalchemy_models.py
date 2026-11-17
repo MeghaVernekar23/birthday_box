@@ -35,6 +35,12 @@ class Booking(Base):
     referral_source = Column(String, nullable=True)   # e.g. "Instagram"
     customer_message = Column(Text, nullable=True)
     booked_by_staff = Column(Integer, nullable=False, server_default="0")
+    # Public, password-protected booking page shared with the customer.
+    # Password = access_pin + last 4 digits of the customer's phone.
+    public_token = Column(String, unique=True, index=True, nullable=True)
+    access_pin = Column(String(4), nullable=True)
+    access_failed_attempts = Column(Integer, nullable=False, server_default="0")
+    access_locked_until = Column(DateTime, nullable=True)
     event_date = Column(Date)
     event_time = Column(String)
     location = Column(Text)

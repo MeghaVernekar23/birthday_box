@@ -147,6 +147,14 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
     if parsed.get("message"):
         message_line = f"\n<b>💬 Customer Message:</b> {parsed['message']}"
 
+    share_lines = ""
+    if booking_data.get("public_link") and booking_data.get("public_password"):
+        share_lines = (
+            "\n\n🔗 <b>Customer booking link</b> (forward to the customer):\n"
+            f"{booking_data['public_link']}\n"
+            f"🔑 <b>Password:</b> <code>{booking_data['public_password']}</code>"
+        )
+
     return (
         f"<b>{label}</b>\n\n"
         f"<b>👤 Customer:</b> {booking_data['customer_name']}\n"
@@ -164,6 +172,7 @@ def build_booking_message(booking_data: dict, label: str = "New Booking") -> str
         f"<b>📋 Status:</b> {booking_data.get('status', '')}"
         f"{payment_lines}"
         f"{staff_note}"
+        f"{share_lines}"
     )
 
 

@@ -13,6 +13,7 @@ from sqlalchemy import func
 from sqlalchemy import and_
 from services.telegram_service import notify_new_booking
 from services.scheduler_service import schedule_booking_reminders
+from services.public_booking_service import ensure_public_access, public_link_and_password
 
 
 def _items_total(items) -> float:
@@ -256,6 +257,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
         db.add(booking)
         db.commit()
         db.refresh(booking)
+        ensure_public_access(booking, db)
 
         # Look up package and celebration names for the notification
         package = db.get(Packages, bookingDetails.package_id)
@@ -275,6 +277,7 @@ def add_booking_details(bookingDetails: AddBookingDetails, db: Session)-> dict:
             "payment_paid": bookingDetails.payment_paid,
             "payment_mode": bookingDetails.payment_mode,
             "status": bookingDetails.status,
+            **public_link_and_password(booking, bookingDetails.phone_number),
         }
 
         # Send immediate confirmation and schedule persistent reminders via APScheduler
