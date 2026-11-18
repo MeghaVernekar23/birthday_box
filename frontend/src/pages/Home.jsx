@@ -27,6 +27,12 @@ const PERK_ICONS = {
 import "./Home.css";
 import { fetchPackage } from "../services/bookingServices";
 
+// Tags in the hero card (same tick-tag style as the package cards on /menu)
+const HERO_CARD_FEATURES = [
+  "Upto 10 guests", "Custom décor", "HD projector", "Flexible slots",
+  "Fully private room", "Your own music", "Photo backdrop", "Cake cutting", "Surprise planning help",
+];
+
 // Parse "BASIC = BALLOON DECORATION + MUSIC = 999/-" into { name, features, price }
 function parsePackageName(raw) {
   const parts = raw.split(" = ").map((s) => s.trim());
@@ -157,6 +163,10 @@ export default function Home() {
 
       {/* ── HERO ── */}
       <section className="bb-hero">
+        {/* soft background video under the hero's light wash */}
+        {/* home-bg.mp4 is already trimmed (first 19s of girlsvideo.mp4 cut), so it just loops */}
+        <video className="bb-hero-backdrop" src="/home-bg.mp4" autoPlay muted loop playsInline aria-hidden="true" />
+        <div className="bb-hero-wash" aria-hidden="true" />
         <div className="bb-hero-bg" />
         <div className="bb-hero-inner">
           <div className="bb-hero-text">
@@ -197,10 +207,9 @@ export default function Home() {
                 +91 89715 43330
               </a>
               <ul className="bb-hero-card-list">
-                <li>✔ Upto 10 Guests (extra charges apply)</li>
-                <li>✔ Custom Décor</li>
-                <li>✔ HD Projector</li>
-                <li>✔ Flexible Slots</li>
+                {HERO_CARD_FEATURES.map((f) => (
+                  <li key={f}><span className="bb-tick" aria-hidden="true">✓</span>{f}</li>
+                ))}
               </ul>
               <div className="bb-hero-card-price">Starting at <strong>₹999</strong> · up to 10 guests</div>
               <button className="bb-btn-primary" style={{ width: "100%", textAlign: "center", display: "block" }} onClick={() => navigate("/booknow")}>

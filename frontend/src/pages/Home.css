@@ -345,19 +345,42 @@ body {
   border-bottom: 1px solid #f0e6ee;
 }
 
+/* Features as tick tags that sit side by side and wrap (matches /menu package cards) */
 .bb-hero-card-list {
   list-style: none;
-  text-align: left;
+  padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
   margin-bottom: 1.6rem;
 }
 
 .bb-hero-card-list li {
-  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
   font-weight: 600;
+  line-height: 1.25;
   color: #1b1464;
+  background: #fdf6f9;
+  border: 1px solid #f6d6e6;
+  border-radius: 999px;
+  padding: 4px 10px 4px 5px;
+}
+
+.bb-tick {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e91e8c;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
 }
 
 .bb-hero-card-price {
@@ -1307,4 +1330,34 @@ body {
   .bb-section-head h2 {
     font-size: 1.7rem;
   }
+}
+
+/* ── Hero background video ──
+   Shown sharp (no blur). A light wash on top keeps the dark text readable. */
+.bb-hero-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.08) saturate(1.1);   /* no blur; a touch of contrast so it reads crisper */
+  pointer-events: none;
+}
+/* strongest behind the text (left), fading out so the video shows on the right */
+.bb-hero-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    rgba(255, 245, 249, 0.92) 0%,
+    rgba(255, 245, 249, 0.82) 38%,
+    rgba(255, 245, 249, 0.35) 65%,
+    rgba(255, 245, 249, 0.15) 100%);
+}
+/* phones/tablets: text spans the hero, so use an even wash */
+@media (max-width: 960px) {
+  .bb-hero-wash { background: rgba(255, 245, 249, 0.72); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-hero-backdrop, .bb-hero-wash { display: none; }
 }
