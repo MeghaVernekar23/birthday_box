@@ -37,9 +37,15 @@ export default function Menu() {
         <button className="bn-nav-back" onClick={() => navigate("/booknow")}>Book Now →</button>
       </nav>
 
-      <div className="bn-hero">
-        <NeonText as="h1" text="BIRTHDAY BOX" className="bn-hero-title" />
-        <p className="bn-hero-sub">Private celebrations with decoration, screening & music. Pick a duration, then a package.</p>
+      <div className="bn-hero mn-hero">
+        {/* blurred copy fills the wide hero; the sharp copy shows the whole portrait video */}
+        <video className="mn-hero-backdrop" src="/menu-bg.mp4" autoPlay muted loop playsInline aria-hidden="true" />
+        <div className="mn-hero-overlay" aria-hidden="true" />
+        <div className="mn-hero-text">
+          <NeonText as="h1" text="BIRTHDAY BOX" className="bn-hero-title" />
+          <p className="bn-hero-sub">Private celebrations with decoration, screening & music. Pick a duration, then a package.</p>
+        </div>
+        <video className="mn-hero-video" src="/menu-bg.mp4" autoPlay muted loop playsInline aria-hidden="true" />
       </div>
 
       <div className="mn-wrap">

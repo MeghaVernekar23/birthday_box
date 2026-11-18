@@ -115,3 +115,55 @@
   .mn-page .bn-nav-back { padding: 6px 10px; font-size: 0.8rem; }
   .mn-page .bn-hero-title { font-size: 1.15rem; }
 }
+
+/* ── Hero video background ── */
+/* Video is portrait (9:16): show it whole beside the title, with a blurred copy behind. */
+.mn-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 40px 24px;
+  /* keeps the original brand gradient from .bn-hero (BookNow.css) */
+}
+.mn-hero-backdrop {
+  position: absolute;
+  inset: -40px;               /* hide the blur's soft edges */
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(28px) saturate(1.2);
+  z-index: -2;
+}
+.mn-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* original hero gradient, slightly see-through so the video shows behind it */
+  background: linear-gradient(135deg, rgba(233, 30, 140, 0.78) 0%, rgba(240, 85, 55, 0.74) 60%, rgba(247, 148, 29, 0.74) 100%);
+}
+.mn-hero-text { max-width: 520px; }
+.mn-hero .bn-hero-sub { text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5); }
+.mn-hero-video {
+  height: min(62vh, 520px);
+  aspect-ratio: 9 / 16;
+  object-fit: cover; /* box matches the video's 9:16, so nothing is cropped */
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 30px rgba(233, 30, 140, 0.45);
+  background: #000;
+  flex-shrink: 0;
+}
+
+/* Phones are portrait too: let the video fill a tall hero with the title over it. */
+@media (max-width: 768px) {
+  .mn-hero { min-height: 75vh; padding: 32px 16px; }
+  .mn-hero-backdrop { inset: 0; width: 100%; height: 100%; filter: none; }
+  .mn-hero-video { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mn-hero-backdrop, .mn-hero-video { display: none; }
+}
