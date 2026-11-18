@@ -38,9 +38,10 @@
 .mn-price { font-size: 1.25rem; font-weight: 700; color: #e91e8c; white-space: nowrap; flex-shrink: 0; }
 
 .mn-count { align-self: flex-start; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1d8a66; background: #e3f7ef; border-radius: 999px; padding: 3px 10px; }
-.mn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 0.92rem; flex: 1; }
-.mn-list li { display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
-.mn-list .mn-tick { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; margin-top: 1px; }
+/* Inclusions flow side by side as compact tags and wrap, instead of one per line */
+.mn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; font-size: 0.82rem; flex: 1; }
+.mn-list li { display: inline-flex; gap: 6px; align-items: center; line-height: 1.25; background: #fdf6f9; border: 1px solid #f6d6e6; border-radius: 999px; padding: 4px 10px 4px 5px; max-width: 100%; }
+.mn-list .mn-tick { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 0.62rem; font-weight: 700; }
 .mn-new { color: #1b1464; font-weight: 600; }
 .mn-tick { background: #e91e8c; color: #fff; }  /* every tick is filled, so nothing looks disabled */
 .mn-inh { color: #333; }

@@ -118,6 +118,7 @@ export default function Menu() {
                         <li key={f} className="mn-inh"><span className="mn-tick">✓</span>{f}</li>
                       ))}
                     </ul>
+                    {t.previous && <span className="mn-prev">Includes everything in {t.previous}</span>}
                     {offerCake && (
                       <label className={`mn-optional ${withCake ? "mn-optional--on" : ""}`}>
                         <input
@@ -129,7 +130,6 @@ export default function Menu() {
                         <span>Add a ½ kg cake for <strong>{formatINR(CAKE_ADDON.price)}</strong> <em>(optional)</em></span>
                       </label>
                     )}
-                    {t.previous && <span className="mn-prev">Includes everything in {t.previous}</span>}
                   </>
                 )}
 
