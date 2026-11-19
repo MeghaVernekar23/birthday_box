@@ -165,7 +165,7 @@ export default function Home() {
       <section className="bb-hero">
         {/* soft background video under the hero's light wash */}
         {/* home-bg.mp4 is already trimmed (first 19s of girlsvideo.mp4 cut), so it just loops */}
-        <video className="bb-hero-backdrop" src="/home-bg.mp4" autoPlay muted loop playsInline aria-hidden="true" />
+        <video className="bb-hero-backdrop" src="/home-bg.mp4" poster="/home-bg-poster.jpg" preload="auto" autoPlay muted loop playsInline aria-hidden="true" />
         <div className="bb-hero-wash" aria-hidden="true" />
         <div className="bb-hero-bg" />
         <div className="bb-hero-inner">
