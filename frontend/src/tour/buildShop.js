@@ -15,6 +15,7 @@
 // (dollhouse cut-away), so you can always see inside.
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 const H = 3; // ceiling height
 const WALL_T = 0.08;
@@ -53,7 +54,15 @@ function dataCopy(t) {
 }
 
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0, ...o });
-const phys = (o) => new THREE.MeshPhysicalMaterial({ roughness: 0.75, metalness: 0, ...o });
+// Low-power mode (phones): physical extras (sheen, clearcoat) are dropped and
+// plain standard materials are used instead, which are much cheaper to draw.
+let LOW = false;
+const phys = (o) => {
+  if (!LOW) return new THREE.MeshPhysicalMaterial({ roughness: 0.75, metalness: 0, ...o });
+  // eslint-disable-next-line no-unused-vars
+  const { sheen, sheenRoughness, sheenColor, clearcoat, clearcoatRoughness, ...rest } = o;
+  return std(rest);
+};
 const glow = (color, intensity = 1.6) =>
   new THREE.MeshStandardMaterial({ color: "#000", emissive: color, emissiveIntensity: intensity });
 // soft fabric with a velvety sheen
@@ -383,7 +392,8 @@ function bouquet(rand) {
 }
 
 // ── the scene ─────────────────────────────────────────────────────────────
-export function buildShop(scene) {
+export function buildShop(scene, { low = false } = {}) {
+  LOW = low;
   const tex = makeTextures();
   const mats = {
     floorWood: phys({ map: tex.floorWood, bumpMap: tex.floorBump, bumpScale: 1.2, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.3 }),
@@ -433,15 +443,59 @@ export function buildShop(scene) {
     obj.position.copy(pivot);
   }
 
+  // Static batching: replace all the meshes inside a group with one merged mesh
+  // per material. A toy cabinet goes from ~600 draw calls to ~15.
+  const KEEP_ATTRS = ["position", "normal", "uv"];
+  const _inv = new THREE.Matrix4(), _rel = new THREE.Matrix4();
+  function bake(group) {
+    group.updateMatrixWorld(true);
+    _inv.copy(group.matrixWorld).invert();
+    const buckets = new Map();
+    const keep = [];
+    const meshes = [];
+    group.traverse((o) => { if (o.isMesh) meshes.push(o); });
+    if (meshes.length < 2) return;
+    for (const o of meshes) {
+      _rel.multiplyMatrices(_inv, o.matrixWorld);
+      if (o.isInstancedMesh || o.material.transparent) {
+        o.matrix.copy(_rel);
+        o.matrix.decompose(o.position, o.quaternion, o.scale);
+        keep.push(o);
+        continue;
+      }
+      const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+      Object.keys(g.attributes).forEach((k) => { if (!KEEP_ATTRS.includes(k)) g.deleteAttribute(k); });
+      if (!g.attributes.uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+      g.applyMatrix4(_rel);
+      const key = o.material.uuid + (o.castShadow ? "+s" : "");
+      if (!buckets.has(key)) buckets.set(key, { mat: o.material, cast: o.castShadow, receive: o.receiveShadow, geos: [] });
+      buckets.get(key).geos.push(g);
+    }
+    meshes.forEach((m) => { if (!keep.includes(m)) m.geometry.dispose(); });
+    group.clear();
+    for (const b of buckets.values()) {
+      const merged = new THREE.Mesh(mergeGeometries(b.geos, false), b.mat);
+      b.geos.forEach((g) => g.dispose());
+      merged.castShadow = b.cast;
+      merged.receiveShadow = b.receive;
+      group.add(merged);
+    }
+    keep.forEach((m) => group.add(m));
+  }
+
   function piece(step, obj, opts = {}) {
     recentre(obj);
+    // walls, floors, ceilings, trims and the beam never cast shadows (cheaper, and
+    // hiding/showing them for the cut-away view then never forces a shadow update)
+    const staticShell = !!opts.rule || !!opts.noDrop;
     obj.traverse((o) => {
       if (o.isMesh) {
         const emissive = o.material.emissiveIntensity > 1 || o.material.isMeshBasicMaterial || o.material.transparent;
-        o.castShadow = !emissive && !opts.noShadow;
+        o.castShadow = !emissive && !opts.noShadow && !staticShell;
         o.receiveShadow = !o.material.isMeshBasicMaterial;
       }
     });
+    if (obj.isGroup) bake(obj);
     obj.userData.base = obj.position.clone();
     obj.userData.baseScale = obj.scale.clone();
     obj.userData.p = 0;
@@ -450,8 +504,10 @@ export function buildShop(scene) {
     obj.userData.order = steps[step].length;
     obj.userData.rule = opts.rule || null;
     obj.userData.noDrop = !!opts.noDrop;
-    if (obj.isLight) obj.userData.baseIntensity = obj.intensity;
-    obj.visible = false;
+    if (obj.isLight) {
+      obj.userData.baseIntensity = obj.intensity;
+      obj.intensity = 0; // lights stay "visible" (just dimmed) so shaders never recompile
+    } else obj.visible = false;
     steps[step].push(obj);
     all.push(obj);
     (opts.world ? scene : root).add(obj);
@@ -505,7 +561,7 @@ export function buildShop(scene) {
     l.position.set(x, y, z);
     if (shadow) {
       l.castShadow = true;
-      l.shadow.mapSize.set(1024, 1024);
+      l.shadow.mapSize.set(LOW ? 512 : 1024, LOW ? 512 : 1024);
       l.shadow.bias = -0.002;
       l.shadow.normalBias = 0.03;
       l.shadow.camera.near = 0.1;
@@ -695,7 +751,6 @@ export function buildShop(scene) {
   }
   light(0, "#ffe2b0", 14, 5.8, 2.6, -1.2, 9, true);
   light(0, "#ffe2b0", 6, 7.4, 2.5, -2.4);
-  light(0, "#ffc070", 3, 5.0, 1.2, HZ1 - 0.9, 3);
 
   // ═════ STEP 1 — THE PROJECTOR (celebration room + screen) ═════
   const RX0 = -3, RX1 = 3, RZ0 = -3.5, RZ1 = 3.5;
@@ -778,10 +833,9 @@ export function buildShop(scene) {
     const rect = new THREE.RectAreaLight("#bfe8b5", 1.4, SCR.w, SCR.h);
     rect.position.set(0, SCR.y, SCR.z - 0.05);
     rect.lookAt(0, SCR.y, 0);
-    piece(1, rect, { world: true });
+    if (!LOW) piece(1, rect, { world: true }); // area light is costly on phones
   }
   light(1, "#ffd9a0", 6, 0, 2.7, 0.3, 8, true);
-  light(1, "#ffd9a0", 2.5, -1.8, 2.7, 1.8);
 
   // ═════ STEP 2 — THE SEATING ═════
   // (model x is mirrored: the steps at model +x end up on the LEFT when facing the sofas)
@@ -828,7 +882,6 @@ export function buildShop(scene) {
     piece(2, g, ruleOf(roomBack));
   }
   light(2, "#5b6cff", 4, 2.4, 0.5, -1.4, 3.5);
-  light(2, "#ffd9a0", 2.5, -0.4, 2.2, -2.2, 4);
 
   // ═════ STEP 3 — THE DECOR (model x=-3 wall → the right-hand wall) ═════
   const DZ = 0.6; // centre of the decor wall
@@ -874,7 +927,8 @@ export function buildShop(scene) {
     }
     const goldPts = pts.filter(() => r() < 0.12);
     const latexPts = pts.filter((p) => !goldPts.includes(p));
-    const geo = new THREE.SphereGeometry(1, 20, 14);
+    // balloons are small on screen: a light sphere looks the same and is ~4x cheaper
+    const geo = LOW ? new THREE.SphereGeometry(1, 10, 8) : new THREE.SphereGeometry(1, 14, 10);
     const make = (list, mat, colour) => {
       const mesh = new THREE.InstancedMesh(geo, mat, list.length);
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), col = new THREE.Color();
@@ -935,7 +989,6 @@ export function buildShop(scene) {
     piece(3, g);
   }
   light(3, "#ffe7c2", 3.5, RX0 + 1.6, 2.3, DZ, 7, false);
-  light(3, "#ff8fd0", 1.2, RX0 + 1.0, 0.9, DZ + 1.6, 3);
 
   // ── runtime ──────────────────────────────────────────────────────────────
   const easeOutBack = (t) => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
@@ -955,24 +1008,28 @@ export function buildShop(scene) {
     });
   }
 
-  // Returns true when anything moved or appeared/disappeared (so shadows need re-rendering).
+  // Advances the pop-in animations and the cut-away walls.
+  // Returns { animating, redraw, shadows }: whether pieces are still moving,
+  // whether the picture changed, and whether shadows need re-rendering.
   function update(dt, now, camera) {
-    let changed = false;
+    let animating = false, redraw = false, shadows = false;
     for (const obj of all) {
       const u = obj.userData;
       const before = u.p;
       if (u.target === 1 && now >= u.startAt) u.p = Math.min(1, u.p + dt / 0.6);
       else if (u.target === 0) u.p = Math.max(0, u.p - dt / 0.3);
-      if (u.p !== before) changed = true;
-
-      let vis = u.p > 0.001;
-      if (vis && u.rule) vis = tmp.copy(camera.position).sub(u.rule.point).dot(u.rule.normal) > 0;
-      if (obj.visible !== vis) { obj.visible = vis; changed = true; }
-      if (!vis) continue;
+      if (u.p !== before) { redraw = shadows = true; }
+      if ((u.target === 1 && u.p < 1) || (u.target === 0 && u.p > 0)) animating = true;
 
       if (obj.isLight) {
         obj.intensity = u.baseIntensity * u.p;
-      } else {
+        continue;
+      }
+      let vis = u.p > 0.001;
+      if (vis && u.rule) vis = tmp.copy(camera.position).sub(u.rule.point).dot(u.rule.normal) > 0;
+      if (obj.visible !== vis) { obj.visible = vis; redraw = true; }
+      if (!vis) continue;
+      {
         const e = u.target === 1 ? easeOutBack(u.p) : u.p;
         obj.scale.copy(u.baseScale).multiplyScalar(Math.max(e, 0.0001));
         if (!u.noDrop) obj.position.y = u.base.y + (1 - easeOutCubic(u.p)) * 0.5;
@@ -984,9 +1041,11 @@ export function buildShop(scene) {
     const inside = t > -0.15 && t < 1.05 &&
       Math.abs(tmp.x - BEAM.L.x) < t * BEAM.hw + 0.35 &&
       tmp.y > BEAM.L.y + t * (BEAM.y0 - BEAM.L.y) - 0.35 && tmp.y < BEAM.L.y + t * (BEAM.y1 - BEAM.L.y) + 0.35;
-    beamFade += ((inside ? 0 : 1) - beamFade) * Math.min(1, dt * 6);
-    beamMat.opacity = (0.05 + 0.008 * Math.sin(now * 9) + 0.005 * Math.sin(now * 23)) * beamFade;
-    return changed;
+    const fade = beamFade + ((inside ? 0 : 1) - beamFade) * Math.min(1, dt * 6);
+    if (Math.abs(fade - beamFade) > 0.002) { animating = redraw = true; }
+    beamFade = Math.abs(fade - (inside ? 0 : 1)) < 0.002 ? (inside ? 0 : 1) : fade;
+    beamMat.opacity = 0.05 * beamFade;
+    return { animating, redraw, shadows };
   }
 
   function dispose() {
@@ -997,5 +1056,10 @@ export function buildShop(scene) {
     Object.values(tex).forEach((t) => t.dispose());
   }
 
-  return { setStep, update, dispose };
+  // Show everything for a moment so all shaders can be compiled up front.
+  function setAllVisible(on) {
+    for (const obj of all) if (!obj.isLight) obj.visible = on;
+  }
+
+  return { setStep, update, dispose, setAllVisible };
 }

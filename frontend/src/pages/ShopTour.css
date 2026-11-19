@@ -152,3 +152,32 @@
   .tour-btn-ghost { padding: 5px 12px; }
   .tour-dots { gap: 5px; }
 }
+
+/* Loading screen while the 3D venue is built and its shaders compile */
+.tour-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(ellipse at 50% 35%, #2a2350 0%, #120f26 70%);
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  font-size: 15px;
+  z-index: 2;
+}
+.tour-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  border-top-color: var(--tour-pink);
+  border-right-color: var(--tour-orange);
+  animation: tour-spin 0.9s linear infinite;
+}
+@keyframes tour-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .tour-spinner { animation-duration: 2.5s; }
+}

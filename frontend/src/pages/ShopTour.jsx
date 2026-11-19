@@ -32,10 +32,11 @@ export default function ShopTour() {
   const tourRef = useRef(null);
   const [step, setStep] = useState(0);
   const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
-      tourRef.current = createTour(mountRef.current);
+      tourRef.current = createTour(mountRef.current, { onReady: () => setReady(true) });
     } catch (err) {
       console.error("3D tour failed to start:", err);
       setFailed(true);
@@ -56,6 +57,13 @@ export default function ShopTour() {
   return (
     <div className="tour-root">
       <div className="tour-canvas" ref={mountRef} />
+
+      {!ready && !failed && (
+        <div className="tour-loading" role="status">
+          <div className="tour-spinner" aria-hidden="true" />
+          <span>Building the venue…</span>
+        </div>
+      )}
 
       <header className="tour-top">
         <button className="tour-back" onClick={() => navigate("/")}>← Home</button>

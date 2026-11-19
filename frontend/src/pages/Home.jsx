@@ -56,6 +56,22 @@ const testimonials = [
 
 export default function Home() {
   const navigate = useNavigate();
+
+  // Preload the 3D tour code once the VR Zone is close to the screen, so the
+  // tour opens instantly (the browser then serves it from its cache).
+  const preloadTour = () => import("./ShopTour").catch(() => {});
+  useEffect(() => {
+    const el = document.getElementById("vr-zone");
+    if (!el || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        preloadTour();
+        io.disconnect();
+      }
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const heroVideoRef = useRef(null);
 
   // React sets `muted` only as a property, not as the HTML attribute, and iPhone
@@ -251,6 +267,8 @@ export default function Home() {
             <a
               href="/tour"
               className="bb-btn-primary bb-vr-btn"
+              onPointerEnter={preloadTour}
+              onTouchStart={preloadTour}
               onClick={(e) => { e.preventDefault(); navigate("/tour"); }}
             >
               Start the 3D Tour →

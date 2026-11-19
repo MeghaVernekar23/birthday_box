@@ -1,5 +1,13 @@
 // Sets up the renderer, camera, lighting and controls for the 3D venue tour, and
 // flies the camera between the tour stops.
+//
+// Performance notes:
+// - Frames are only drawn when something changes (camera move, animation, resize),
+//   so an idle tour costs nothing.
+// - All shaders are compiled once up front (behind the loading screen), so moving
+//   between stops never stalls.
+// - Phones / low-power devices get a lighter mode: lower resolution, no glow pass,
+//   cheaper materials and smaller shadow maps.
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -39,18 +47,27 @@ function backgroundTexture() {
   return t;
 }
 
-export function createTour(container) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-  const pixelRatio = Math.min(window.devicePixelRatio, 1.75);
+// Phones, tablets and small CPUs get the lighter mode.
+function isLowPower() {
+  const coarse = window.matchMedia?.("(pointer: coarse)").matches;
+  const fewCores = (navigator.hardwareConcurrency || 8) <= 4;
+  const lowMem = (navigator.deviceMemory || 8) <= 4;
+  return coarse || fewCores || lowMem;
+}
+
+export function createTour(container, { onReady } = {}) {
+  const low = isLowPower();
+  const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+  let pixelRatio = Math.min(window.devicePixelRatio, low ? 1.25 : 1.5);
   renderer.setPixelRatio(pixelRatio);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = low ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false; // re-rendered only when something changes
   container.appendChild(renderer.domElement);
 
-  RectAreaLightUniformsLib.init();
+  if (!low) RectAreaLightUniformsLib.init();
 
   const scene = new THREE.Scene();
   const bg = backgroundTexture();
@@ -75,19 +92,33 @@ export function createTour(container) {
   controls.maxDistance = 30;
   controls.maxPolarAngle = Math.PI * 0.495; // never below the floor
 
-  const shop = buildShop(scene);
-  if (import.meta.env.DEV) window.__tour = { scene, camera, THREE };
+  const shop = buildShop(scene, { low });
+  if (import.meta.env.DEV) window.__tour = { scene, camera, THREE, renderer, low };
 
-  // glow on LEDs, neon and the screen
-  const composer = new EffectComposer(renderer);
-  composer.setPixelRatio(pixelRatio);
-  composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.38, 0.4, 0.92);
-  composer.addPass(bloom);
-  composer.addPass(new OutputPass());
+  // Glow on LEDs, neon and the screen (desktop only). Rendered into a
+  // multisampled target so edges stay smooth.
+  let composer = null, bloom = null;
+  if (!low) {
+    const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+    composer = new EffectComposer(renderer, rt);
+    composer.setPixelRatio(pixelRatio);
+    composer.addPass(new RenderPass(scene, camera));
+    bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.38, 0.4, 0.92);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+  }
 
   const clock = new THREE.Clock();
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  // ── on-demand rendering ──
+  let raf = 0;
+  let disposed = false;
+  let ready = false;
+  function requestRender() {
+    if (!raf && !disposed && ready) raf = requestAnimationFrame(frame);
+  }
+  controls.addEventListener("change", requestRender);
 
   let tween = null;
   let current = 0;
@@ -102,18 +133,20 @@ export function createTour(container) {
     if (reduceMotion) {
       camera.position.copy(to.pos);
       controls.target.copy(to.target);
-      return;
+    } else {
+      // lift the camera a little on long moves so it swoops over walls instead of through them
+      const lift = Math.min(from.pos.distanceTo(to.pos) * 0.25, 3);
+      tween = { from, to, lift, t0: now, dur: 1.9 };
+      controls.enabled = false;
     }
-    // lift the camera a little on long moves so it swoops over walls instead of through them
-    const lift = Math.min(from.pos.distanceTo(to.pos) * 0.25, 3);
-    tween = { from, to, lift, t0: now, dur: 1.9 };
-    controls.enabled = false;
+    requestRender();
   }
 
+  let started = false;
   function resize() {
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
     renderer.setSize(w, h, false);
-    composer.setSize(w, h);
+    composer?.setSize(w, h);
     camera.aspect = w / h;
     const wasNarrow = camera.fov === 72;
     camera.fov = camera.aspect < 0.8 ? 72 : 55; // wider lens on phones (portrait)
@@ -123,43 +156,49 @@ export function createTour(container) {
     camera.updateProjectionMatrix();
     // phone rotated between portrait and landscape: re-frame the current stop
     if (started && wasNarrow !== (camera.fov === 72) && !tween) goTo(current);
+    requestRender();
   }
-  let started = false;
   const ro = new ResizeObserver(resize);
   ro.observe(container);
   resize();
 
-  // Adaptive quality: after a short warm-up, if the device can't keep up,
-  // drop the resolution and then the glow effect.
-  let perfFrames = 0, perfTime = 0, perfLevel = 0;
-  function adaptQuality(rawDt, now) {
-    if (perfLevel >= 2 || now < 1.5) return;
+  // Adaptive quality: while frames are being drawn continuously (animations,
+  // dragging), measure the frame rate; if the device can't keep up, lower the
+  // resolution and then drop the glow.
+  let perfFrames = 0, perfTime = 0, perfLevel = 0, lastFrameAt = 0;
+  function adaptQuality(now) {
+    const gap = now - lastFrameAt;
+    lastFrameAt = now;
+    if (perfLevel >= 2 || gap > 0.25) return; // only count back-to-back frames
     perfFrames++;
-    perfTime += rawDt;
-    if (perfFrames < 60) return;
+    perfTime += gap;
+    if (perfFrames < 45) return;
     const fps = perfFrames / perfTime;
     perfFrames = 0;
     perfTime = 0;
     if (fps >= 40) return;
     perfLevel++;
-    if (perfLevel === 1) {
+    if (perfLevel === 1 && pixelRatio > 1) {
+      pixelRatio = 1;
       renderer.setPixelRatio(1);
-      composer.setPixelRatio(1);
-    } else {
+      composer?.setPixelRatio(1);
+    } else if (bloom) {
       bloom.enabled = false;
+    } else {
+      perfLevel = 2;
     }
     resize();
   }
 
-  let raf = 0;
-  started = true;
-  renderer.shadowMap.needsUpdate = true;
+  let shadowsDirty = true;
   function frame() {
-    raf = requestAnimationFrame(frame);
-    const rawDt = clock.getDelta();
-    const dt = Math.min(rawDt, 0.05);
+    raf = 0;
+    // capped so a long pause doesn't make animations jump, but loose enough that
+    // slow devices still finish the pop-in animations on time
+    const dt = Math.min(clock.getDelta(), 0.12);
     const now = clock.elapsedTime;
-    adaptQuality(rawDt, now);
+    adaptQuality(now);
+    let keepGoing = false;
     if (tween) {
       const k = Math.min(1, (now - tween.t0) / tween.dur);
       const e = easeInOut(k);
@@ -169,23 +208,63 @@ export function createTour(container) {
       if (k >= 1) {
         tween = null;
         controls.enabled = true;
-      }
+      } else keepGoing = true;
     }
-    controls.update();
-    if (shop.update(dt, now, camera)) renderer.shadowMap.needsUpdate = true;
-    composer.render();
+    if (controls.update()) keepGoing = true; // still easing after a drag
+    const s = shop.update(dt, now, camera);
+    if (s.shadows) shadowsDirty = true;
+    if (s.animating) keepGoing = true;
+    // shadows are re-rendered once things settle, not on every animation frame
+    if (shadowsDirty && !s.animating) {
+      renderer.shadowMap.needsUpdate = true;
+      shadowsDirty = false;
+    }
+    drawFrame();
+    if (keepGoing) requestRender();
   }
-  frame();
+
+  // Build every shader before the tour starts (behind the loading screen), so
+  // moving between stops never stalls. Everything is made visible for one hidden
+  // warm-up frame drawn through the real pipeline (glow pass, shadows), which
+  // compiles exactly the shader variants the tour will use.
+  function drawFrame() {
+    if (composer && bloom.enabled) composer.render();
+    else renderer.render(scene, camera);
+  }
+  function warmUp() {
+    shop.setAllVisible(true);
+    const compiled = renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve();
+    compiled
+      .catch(() => {})
+      .then(() => {
+        if (disposed) return;
+        renderer.shadowMap.needsUpdate = true;
+        drawFrame();
+        shop.setAllVisible(false);
+        started = true;
+        ready = true;
+        shadowsDirty = true;
+        clock.getDelta();
+        goTo(current);
+        onReady?.();
+      });
+  }
+  // start on the next tick: in React dev mode the component mounts twice and the
+  // first instance is disposed immediately, so it never starts compiling
+  const warmUpTimer = setTimeout(() => { if (!disposed) warmUp(); }, 0);
 
   return {
     goTo,
     dispose() {
+      disposed = true;
+      clearTimeout(warmUpTimer);
       cancelAnimationFrame(raf);
       ro.disconnect();
+      controls.removeEventListener("change", requestRender);
       controls.dispose();
       shop.dispose();
-      bloom.dispose();
-      composer.dispose();
+      bloom?.dispose();
+      composer?.dispose();
       envRT.dispose();
       bg.dispose();
       renderer.dispose();
