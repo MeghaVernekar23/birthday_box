@@ -132,11 +132,18 @@ const venueImages = [imgScreen, imgDeco, imgSitting, imgHall, imgHallOther, imgD
 export default function Home() {
   const navigate = useNavigate();
   const [packages, setPackages] = useState([]);
+  const [packagesStatus, setPackagesStatus] = useState("loading"); // loading | ready | error
 
   useEffect(() => {
     fetchPackage()
-      .then((res) => setPackages(Array.isArray(res) ? res : []))
-      .catch((err) => console.error("Failed to load packages:", err));
+      .then((res) => {
+        setPackages(Array.isArray(res) ? res : []);
+        setPackagesStatus("ready");
+      })
+      .catch((err) => {
+        console.error("Failed to load packages:", err);
+        setPackagesStatus("error");
+      });
   }, []);
 
   return (
@@ -187,7 +194,13 @@ export default function Home() {
             </p>
             <div className="bb-hero-btns">
               <button className="bb-btn-primary" onClick={() => navigate("/booknow")}>Book Your Slot</button>
-              <a href="#packages" className="bb-btn-ghost">See Packages</a>
+              <a
+                href="/menu"
+                className="bb-btn-ghost"
+                onClick={(e) => { e.preventDefault(); navigate("/menu"); }}
+              >
+                See Packages
+              </a>
             </div>
             <a href="tel:+918971543330" className="bb-hero-phone-mobile">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="bb-phone-icon">
@@ -261,13 +274,25 @@ export default function Home() {
 
       {/* ── PACKAGES ── */}
       <section className="bb-packages" id="packages">
+        {/* Venue photos behind the section: they overlap with feathered edges so
+            there's no visible line between them, under one white wash. */}
+        <div className="bb-packages-photos" aria-hidden="true">
+          {[imgHall, imgSitting].map((src, i) => (
+            <div key={i} className="bb-packages-photo" style={{ backgroundImage: `url(${src})` }} />
+          ))}
+          <div className="bb-packages-wash" />
+        </div>
         <div className="bb-section-head">
           <span className="bb-pill bb-pill-dark">Our Packages</span>
           <h2>Choose Your <span className="bb-gradient-text">Celebration Package</span></h2>
           <p>Simple, transparent pricing. Pick the package that fits your occasion.</p>
         </div>
         {packages.length === 0 ? (
-          <p className="bb-packages-empty">Loading packages…</p>
+          <p className="bb-packages-empty">
+            {packagesStatus === "loading"
+              ? "Loading packages…"
+              : "See all our packages and prices on the menu below."}
+          </p>
         ) : (
           <div className="bb-packages-grid">
             {[...packages]
@@ -285,6 +310,16 @@ export default function Home() {
               ))}
           </div>
         )}
+        <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+          <a
+            href="/menu"
+            className="bb-btn-primary"
+            style={{ display: "inline-block" }}
+            onClick={(e) => { e.preventDefault(); navigate("/menu"); }}
+          >
+            View All Packages →
+          </a>
+        </div>
       </section>
 
       {/* ── VENUE ── */}

@@ -567,6 +567,78 @@ body {
 .bb-packages {
   padding: 6rem 5%;
   background: #fff;
+  position: relative;
+  isolation: isolate; /* keeps the photo layers behind the content */
+}
+
+/* Two venue photos behind the section (hall, seating — set in Home.jsx).
+   Each is 60% wide and they overlap by 20%; across the overlap one fades out while
+   the other fades in (masks), so there's no visible seam. One white wash spans the
+   whole section on top, so the heading and cards stay readable. */
+.bb-packages-photos {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bb-packages-photo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60%;
+  background-size: cover;
+  background-position: center;
+}
+
+.bb-packages-photo:nth-child(1) {
+  left: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 66.67%, transparent);
+          mask-image: linear-gradient(to right, #000 66.67%, transparent);
+}
+
+.bb-packages-photo:nth-child(2) {
+  right: 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 33.33%);
+          mask-image: linear-gradient(to right, transparent, #000 33.33%);
+}
+
+.bb-packages-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(255,255,255,0.72),
+    rgba(255,255,255,0.9) 50%,
+    rgba(255,255,255,0.72)
+  );
+}
+
+/* On phones, stack the photos top and bottom with the same feathered overlap */
+@media (max-width: 640px) {
+  .bb-packages-photo,
+  .bb-packages-photo:nth-child(n) {
+    left: 0;
+    right: auto;
+    width: 100%;
+    height: 60%;
+  }
+  .bb-packages-photo:nth-child(1) {
+    top: 0;
+    bottom: auto;
+    -webkit-mask-image: linear-gradient(to bottom, #000 66.67%, transparent);
+            mask-image: linear-gradient(to bottom, #000 66.67%, transparent);
+  }
+  .bb-packages-photo:nth-child(2) {
+    top: auto;
+    bottom: 0;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 33.33%);
+            mask-image: linear-gradient(to bottom, transparent, #000 33.33%);
+  }
+  .bb-packages-wash {
+    background: rgba(255,255,255,0.84);
+  }
 }
 
 .bb-packages-grid {
