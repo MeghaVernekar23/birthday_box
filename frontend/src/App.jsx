@@ -14,8 +14,11 @@ import OlderBookings from "./pages/OlderBookings";
 import AddBookings from "./pages/AddBookings";
 import Packages from "./pages/Packages";
 
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
+// 3D venue tour: loaded only when /tour is opened, so Three.js stays out of the main bundle
+const ShopTour = lazy(() => import("./pages/ShopTour"));
 
 // Start each new page at the top (the router otherwise keeps the previous
 // page's scroll position, e.g. /menu opened halfway down from the home page).
@@ -38,6 +41,7 @@ function App() {
         <Route path="/booknow" element={<BookNow />} />
         <Route path="/booking/:token" element={<PublicBooking />} />
         <Route path="/menu" element={<Menu />} />
+        <Route path="/tour" element={<Suspense fallback={null}><ShopTour /></Suspense>} />
 
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />

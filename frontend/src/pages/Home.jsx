@@ -8,6 +8,7 @@ import imgDeco from "../images/deco.webp";
 import imgHall from "../images/hall.webp";
 import imgHallOther from "../images/hall_other.webp";
 import imgSitting from "../images/sitting.webp";
+import imgVrPreview from "../images/vr-preview.webp";
 import NeonText from "../components/NeonText";
 import { EVERY_BOOKING_PERKS, OCCASIONS } from "../data/packageCatalog";
 import { Lock, PartyPopper, Clapperboard, Music, Users, Cake, Camera, Gift } from "lucide-react";
@@ -76,6 +77,7 @@ export default function Home() {
         <nav className="bb-nav-links">
           <a href="#services">Services</a>
           <a href="#venue">Venue</a>
+          <a href="#vr-zone">VR Zone</a>
           <a href="#testimonials">Reviews</a>
           <a href="#contact">Contact</a>
         </nav>
@@ -217,6 +219,44 @@ export default function Home() {
           >
             View All Packages →
           </a>
+        </div>
+      </section>
+
+      {/* ── VR ZONE ── */}
+      <section className="bb-vr" id="vr-zone">
+        <div className="bb-vr-inner">
+          <a
+            href="/tour"
+            className="bb-vr-preview"
+            onClick={(e) => { e.preventDefault(); navigate("/tour"); }}
+            aria-label="Open the 3D tour of Birthday Box"
+          >
+            <img src={imgVrPreview} alt="3D model of the Birthday Box toy hall and celebration room" loading="lazy" />
+            <span className="bb-vr-play" aria-hidden="true">▶</span>
+            <span className="bb-vr-badge">3D · 360°</span>
+          </a>
+          <div className="bb-vr-text">
+            <span className="bb-pill bb-vr-pill">VR Zone</span>
+            <h2>Walk Through <span className="bb-gradient-text">Birthday Box</span> in 3D</h2>
+            <p>
+              See the venue before you book. Step into our toy hall, then the celebration room
+              with its big screen, tiered sofas and balloon décor, all from your phone.
+            </p>
+            <ul className="bb-vr-steps">
+              <li><span>1</span>Toy Hall</li>
+              <li><span>2</span>Projector</li>
+              <li><span>3</span>Seating</li>
+              <li><span>4</span>Décor</li>
+            </ul>
+            <a
+              href="/tour"
+              className="bb-btn-primary bb-vr-btn"
+              onClick={(e) => { e.preventDefault(); navigate("/tour"); }}
+            >
+              Start the 3D Tour →
+            </a>
+            <p className="bb-vr-hint">Drag to look around · pinch to zoom</p>
+          </div>
         </div>
       </section>
 
