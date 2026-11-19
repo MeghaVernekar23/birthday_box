@@ -14,11 +14,24 @@ import OlderBookings from "./pages/OlderBookings";
 import AddBookings from "./pages/AddBookings";
 import Packages from "./pages/Packages";
 
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+
+// Start each new page at the top (the router otherwise keeps the previous
+// page's scroll position, e.g. /menu opened halfway down from the home page).
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    // "instant" so Bootstrap's smooth scrolling doesn't animate the jump
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
+}
 
 function App() {
   return (
     <>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import logoPng from "../images/logo.png";
 import logoMark from "../images/logo_mark.png";
 import imgScreen from "../images/screen.webp";
-import imgDoll from "../images/doll.webp";
 import imgDeco from "../images/deco.webp";
 import imgHall from "../images/hall.webp";
 import imgHallOther from "../images/hall_other.webp";
@@ -25,85 +24,12 @@ const PERK_ICONS = {
   "Help with surprises": Gift,
 };
 import "./Home.css";
-import { fetchPackage } from "../services/bookingServices";
 
 // Tags in the hero card (same tick-tag style as the package cards on /menu)
 const HERO_CARD_FEATURES = [
   "Upto 10 guests", "Custom décor", "HD projector", "Flexible slots",
   "Fully private room", "Your own music", "Photo backdrop", "Cake cutting", "Surprise planning help",
 ];
-
-// Parse "BASIC = BALLOON DECORATION + MUSIC = 999/-" into { name, features, price }
-function parsePackageName(raw) {
-  const parts = raw.split(" = ").map((s) => s.trim());
-  if (parts.length >= 3) {
-    const name = parts[0];
-    const featureStr = parts.slice(1, -1).join(" ");
-    const priceStr = parts[parts.length - 1];
-    const price = priceStr.replace(/[^\d]/g, "");
-    const features = featureStr.split("+").map((f) => f.trim()).filter(Boolean);
-    return { name, features, price };
-  }
-  return { name: raw, features: [], price: "" };
-}
-
-const EXCLUDED_PKG_IDS = [9, 13, 16];
-
-const PKG_DESC = {
-  1:  "Perfect for intimate get-togethers — a cosy setup to kick off your celebration.",
-  2:  "Our most popular starter — balloons, big screen, and great music all in one.",
-  3:  "Step it up with fun games and a surprise gift for the guest of honour.",
-  4:  "Add a dramatic fog entry to your Classic Package for an unforgettable entrance.",
-  5:  "Everything in Dynamic plus a delicious half-kg pastry to sweeten the moment.",
-  6:  "A dazzling fire entry crowns this premium package — pure golden vibes.",
-  7:  "Our ultimate package — drinks, a full photoshoot, and every luxury included.",
-  8:  "Catch every boundary live on our big screen with your squad — pure match-day magic.",
-  11: "An upgraded Dynamic experience with enhanced décor and added perks.",
-  14: "Pair our BASIC package with a professionally edited Instagram Reel — memories made shareable.",
-};
-
-function PackageCard({ pkg, desc, images, startIdx, onBook }) {
-  const [imgIdx, setImgIdx] = useState(startIdx % images.length);
-  const { name, features } = parsePackageName(pkg.package_name);
-  const price = pkg.price;
-
-  const prev = (e) => { e.stopPropagation(); setImgIdx((i) => (i - 1 + images.length) % images.length); };
-  const next = (e) => { e.stopPropagation(); setImgIdx((i) => (i + 1) % images.length); };
-
-  return (
-    <div className="bb-pkg-card">
-      <div className="bb-pkg-img-wrap">
-        <img src={images[imgIdx]} alt={name} className="bb-pkg-img" />
-        <button className="bb-pkg-arrow bb-pkg-arrow-left" onClick={prev}>‹</button>
-        <button className="bb-pkg-arrow bb-pkg-arrow-right" onClick={next}>›</button>
-        <div className="bb-pkg-dots">
-          {images.map((_, i) => (
-            <span key={i} className={`bb-pkg-dot${i === imgIdx ? " active" : ""}`} onClick={(e) => { e.stopPropagation(); setImgIdx(i); }} />
-          ))}
-        </div>
-        <div className="bb-pkg-rating">⭐ 4.9</div>
-      </div>
-      <div className="bb-pkg-body">
-        <h3 className="bb-pkg-name">{name}</h3>
-        {desc && <p className="bb-pkg-desc">{desc}</p>}
-        {price > 0 && (
-          <div className="bb-pkg-price">
-            <span className="bb-pkg-currency">₹</span>
-            <span className="bb-pkg-amount">{price.toLocaleString("en-IN")}</span>
-          </div>
-        )}
-        {features.length > 0 && (
-          <ul className="bb-pkg-features">
-            {features.map((f, i) => (
-              <li key={i}><span className="bb-pkg-check">✓</span>{f}</li>
-            ))}
-          </ul>
-        )}
-        <button className="bb-pkg-btn" onClick={onBook}>Book This Package</button>
-      </div>
-    </div>
-  );
-}
 
 const highlights = [
   { num: "500+", label: "Events Hosted" },
@@ -127,25 +53,20 @@ const testimonials = [
   },
 ];
 
-const venueImages = [imgScreen, imgDeco, imgSitting, imgHall, imgHallOther, imgDoll];
-
 export default function Home() {
   const navigate = useNavigate();
-  const [packages, setPackages] = useState([]);
-  const [packagesStatus, setPackagesStatus] = useState("loading"); // loading | ready | error
+  const heroVideoRef = useRef(null);
 
+  // React sets `muted` only as a property, not as the HTML attribute, and iPhone
+  // Safari won't autoplay a video it doesn't see as muted. Set both, then start it.
   useEffect(() => {
-    fetchPackage()
-      .then((res) => {
-        setPackages(Array.isArray(res) ? res : []);
-        setPackagesStatus("ready");
-      })
-      .catch((err) => {
-        console.error("Failed to load packages:", err);
-        setPackagesStatus("error");
-      });
+    const v = heroVideoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.setAttribute("muted", "");
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {}); // blocked (e.g. Low Power Mode): poster image stays
   }, []);
-
   return (
     <div className="bb-root">
 
@@ -172,7 +93,7 @@ export default function Home() {
       <section className="bb-hero">
         {/* soft background video under the hero's light wash */}
         {/* home-bg.mp4 is already trimmed (first 19s of girlsvideo.mp4 cut), so it just loops */}
-        <video className="bb-hero-backdrop" src="/home-bg.mp4" poster="/home-bg-poster.jpg" preload="auto" autoPlay muted loop playsInline aria-hidden="true" />
+        <video ref={heroVideoRef} className="bb-hero-backdrop" src="/home-bg.mp4" poster="/home-bg-poster.jpg" preload="auto" autoPlay muted loop playsInline aria-hidden="true" />
         <div className="bb-hero-wash" aria-hidden="true" />
         <div className="bb-hero-bg" />
         <div className="bb-hero-inner">
@@ -285,32 +206,9 @@ export default function Home() {
         <div className="bb-section-head">
           <span className="bb-pill bb-pill-dark">Our Packages</span>
           <h2>Choose Your <span className="bb-gradient-text">Celebration Package</span></h2>
-          <p>Simple, transparent pricing. Pick the package that fits your occasion.</p>
+          <p>Simple, transparent pricing. Packages start at <strong>₹999</strong> for up to 10 guests — see every package and what's included on our menu.</p>
         </div>
-        {packages.length === 0 ? (
-          <p className="bb-packages-empty">
-            {packagesStatus === "loading"
-              ? "Loading packages…"
-              : "See all our packages and prices on the menu below."}
-          </p>
-        ) : (
-          <div className="bb-packages-grid">
-            {[...packages]
-              .filter((pkg) => !EXCLUDED_PKG_IDS.includes(pkg.package_id) && !pkg.package_name.toUpperCase().startsWith("SIMPLE"))
-              .sort((a, b) => a.price - b.price)
-              .map((pkg, idx) => (
-                <PackageCard
-                  key={pkg.package_id}
-                  pkg={pkg}
-                  desc={PKG_DESC[pkg.package_id] || ""}
-                  images={venueImages}
-                  startIdx={idx}
-                  onBook={() => navigate("/booknow")}
-                />
-              ))}
-          </div>
-        )}
-        <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+        <div style={{ textAlign: "center" }}>
           <a
             href="/menu"
             className="bb-btn-primary"
