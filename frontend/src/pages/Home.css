@@ -919,6 +919,15 @@ body {
 
 .vt1, .vt2, .vt3, .vt4 { background: #1b1464; }
 
+/* Big featured photo across the top of the venue tiles */
+.vt-feature {
+  grid-column: 1 / -1;
+  aspect-ratio: 16 / 9;
+}
+.vt-feature img { opacity: 1; }
+.vt-feature:hover { transform: scale(1.02); }
+.vt-feature span { font-size: 0.85rem; padding: 0.7rem 1rem; }
+
 .bb-venue-text h2 {
   font-size: clamp(1.8rem, 3.5vw, 2.6rem);
   font-weight: 800;
@@ -967,7 +976,7 @@ body {
 .bb-gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 260px 260px;
+  grid-template-rows: 260px 260px 260px;
   gap: 1rem;
   max-width: 1200px;
   margin: 0 auto 2.5rem;
@@ -1271,7 +1280,9 @@ body {
 
   .bb-gallery-grid {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
+    grid-template-rows: none;
+    grid-auto-rows: 240px;
+    grid-auto-flow: dense;
   }
 
   .bb-gallery-tall { grid-row: span 1; }

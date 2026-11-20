@@ -3,11 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.jpg";
 import logoPng from "../images/logo.png";
 import logoMark from "../images/logo_mark.png";
-import imgScreen from "../images/screen.webp";
-import imgDeco from "../images/deco.webp";
-import imgHall from "../images/hall.webp";
-import imgHallOther from "../images/hall_other.webp";
-import imgSitting from "../images/sitting.webp";
+import { PHOTOS } from "../images/venuePhotos";
 import imgVrPreview from "../images/vr-preview.webp";
 import NeonText from "../components/NeonText";
 import { EVERY_BOOKING_PERKS, OCCASIONS } from "../data/packageCatalog";
@@ -38,6 +34,28 @@ const highlights = [
   { num: "50+", label: "Sports Screenings" },
   { num: "4.9 ★", label: "Average Rating" },
 ];
+
+// <img> for a venue photo: the browser picks the smallest file that fits `sizes`.
+function Photo({ photo, sizes, alt, eager = false }) {
+  return (
+    <img
+      src={photo.src}
+      srcSet={photo.srcSet}
+      sizes={sizes}
+      alt={alt ?? photo.alt}
+      style={{ objectPosition: photo.pos }}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+    />
+  );
+}
+
+// Venue tiles live in the left half of a 1200px layout (full width on phones).
+const VENUE_FEATURE_SIZES = "(max-width: 960px) 92vw, 520px";
+const VENUE_TILE_SIZES = "(max-width: 960px) 46vw, 260px";
+// Gallery: 3 columns on desktop, 2 on tablets (≤960px), 1 on phones (≤640px).
+const GALLERY_SIZES = "(max-width: 640px) 92vw, (max-width: 960px) 46vw, 400px";
+const GALLERY_WIDE_SIZES = "(max-width: 960px) 92vw, 800px";
 
 const testimonials = [
   {
@@ -216,7 +234,7 @@ export default function Home() {
         {/* Venue photos behind the section: they overlap with feathered edges so
             there's no visible line between them, under one white wash. */}
         <div className="bb-packages-photos" aria-hidden="true">
-          {[imgHall, imgSitting].map((src, i) => (
+          {[PHOTOS.mainDec.src, PHOTOS.hallMain.src].map((src, i) => (
             <div key={i} className="bb-packages-photo" style={{ backgroundImage: `url(${src})` }} />
           ))}
           <div className="bb-packages-wash" />
@@ -285,21 +303,25 @@ export default function Home() {
           <div className="bb-venue-img-mock">
             <div className="bb-venue-badge">🎈 Now Booking</div>
             <div className="bb-venue-tiles">
-              <div className="vt vt1">
-                <img src={imgScreen} alt="Birthday Setup" />
+              <div className="vt vt-feature">
+                <Photo photo={PHOTOS.mainDec} sizes={VENUE_FEATURE_SIZES} />
                 <span>Birthday Setup</span>
               </div>
               <div className="vt vt2">
-                <img src={imgDeco} alt="Balloon Décor" />
+                <Photo photo={PHOTOS.deco1} sizes={VENUE_TILE_SIZES} />
                 <span>Balloon Décor</span>
               </div>
               <div className="vt vt3">
-                <img src={imgSitting} alt="Seating Area" />
+                <Photo photo={PHOTOS.hallMain} sizes={VENUE_TILE_SIZES} />
                 <span>Seating Area</span>
               </div>
               <div className="vt vt4">
-                <img src={imgHall} alt="Toy Corner" />
+                <Photo photo={PHOTOS.entry} sizes={VENUE_TILE_SIZES} />
                 <span>Toy Corner</span>
+              </div>
+              <div className="vt vt1">
+                <Photo photo={PHOTOS.front} sizes={VENUE_TILE_SIZES} />
+                <span>The Entrance</span>
               </div>
             </div>
           </div>
@@ -334,20 +356,28 @@ export default function Home() {
         </div>
         <div className="bb-gallery-grid">
           <div className="bb-gallery-item bb-gallery-tall">
-            <img src={imgDeco} alt="Balloon Décor" />
-            <div className="bb-gallery-overlay"><span>🎂 Balloon Décor</span></div>
-          </div>
-          <div className="bb-gallery-item">
-            <img src={imgScreen} alt="Birthday + IPL Night" />
-            <div className="bb-gallery-overlay"><span>🏏 IPL Night</span></div>
-          </div>
-          <div className="bb-gallery-item">
-            <img src={imgSitting} alt="Seating Area" />
-            <div className="bb-gallery-overlay"><span>✨ Seating Ambience</span></div>
+            <Photo photo={PHOTOS.front} sizes={GALLERY_SIZES} />
+            <div className="bb-gallery-overlay"><span>🌸 The Entrance</span></div>
           </div>
           <div className="bb-gallery-item bb-gallery-wide">
-            <img src={imgHallOther} alt="Venue Hall" />
-            <div className="bb-gallery-overlay"><span>🎊 The Venue</span></div>
+            <Photo photo={PHOTOS.mainDec} sizes={GALLERY_WIDE_SIZES} />
+            <div className="bb-gallery-overlay"><span>🎂 Birthday Setup</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <Photo photo={PHOTOS.deco1} sizes={GALLERY_SIZES} />
+            <div className="bb-gallery-overlay"><span>🎈 Balloon Décor</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <Photo photo={PHOTOS.deco2} sizes={GALLERY_SIZES} />
+            <div className="bb-gallery-overlay"><span>✨ Balloon Arch</span></div>
+          </div>
+          <div className="bb-gallery-item bb-gallery-wide">
+            <Photo photo={PHOTOS.hallMain1} sizes={GALLERY_WIDE_SIZES} />
+            <div className="bb-gallery-overlay"><span>🛋️ Seating Ambience</span></div>
+          </div>
+          <div className="bb-gallery-item">
+            <Photo photo={PHOTOS.deco3} sizes={GALLERY_SIZES} />
+            <div className="bb-gallery-overlay"><span>💍 Bride To Be</span></div>
           </div>
         </div>
         <div className="bb-gallery-cta">
